@@ -24,11 +24,23 @@
 
 #include "include/application.h"
 
-const unsigned int DIM_X    = 2;
-const unsigned int DIM_V    = 2;
-const unsigned int DEGREE   = 3;
-const unsigned int N_POINTS = DEGREE + 1;
-const MPI_Comm     comm     = MPI_COMM_WORLD;
+#ifndef DIM_X
+#  define DIM_X 2
+#endif
+
+#ifndef DIM_V
+#  define DIM_V 2
+#endif
+
+#ifndef DEGREE
+#  define DEGREE 3
+#endif
+
+#ifndef N_POINTS
+#  define N_POINTS DEGREE + 1
+#endif
+
+const MPI_Comm comm = MPI_COMM_WORLD;
 
 using Number              = double;
 using VectorizedArrayType = dealii::VectorizedArray<Number>;

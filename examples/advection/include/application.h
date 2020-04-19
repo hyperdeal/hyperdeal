@@ -34,6 +34,7 @@
 #include <hyper.deal/operators/advection/advection_operation.h>
 #include <hyper.deal/operators/advection/cfl.h>
 #include <hyper.deal/operators/advection/velocity_field_view.h>
+#include <stdio.h>
 
 #include "parameters.h"
 
@@ -428,10 +429,27 @@ namespace hyperdeal
               analytical_solution, matrix_free, vct_solution, 0, 0, 0, 0);
 
             if (pcout.is_active())
-              printf("   Time:%10.3e, norm: %17.10e, error: %17.10e\n",
-                     cur_time,
-                     error[0],
-                     error[1]);
+              {
+                const auto print_result_to_stream = [&](auto fp) {
+                  fprintf(fp,
+                          "   Time:%10.3e, norm: %17.10e, error: %17.10e\n",
+                          cur_time,
+                          error[0],
+                          error[1]);
+                };
+
+                // print to screen
+                print_result_to_stream(stdout);
+
+                // print result to file
+                FILE *fp;
+                fp = fopen("time_history_diagnostic.out",
+                           cur_time == param.time_loop_parameters.start_time ?
+                             "w" :
+                             "a");
+                print_result_to_stream(fp);
+                fclose(fp);
+              }
           });
 
 #ifdef PERFORMANCE_TIMING
