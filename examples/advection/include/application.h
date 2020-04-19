@@ -288,8 +288,13 @@ namespace hyperdeal
         {
           pcout << "  - advection::initial_condition" << std::endl;
           initializer->set_analytical_solution(analytical_solution);
-          VectorTools::interpolate<degree, n_points>(
-            analytical_solution, matrix_free, vct_solution, 0 /* dof_no_x*/, 0 /* dof_no_v */, 2 /* quad_no_x */, 2 /* quad_no_v */);
+          VectorTools::interpolate<degree, n_points>(analytical_solution,
+                                                     matrix_free,
+                                                     vct_solution,
+                                                     0 /* dof_no_x*/,
+                                                     0 /* dof_no_v */,
+                                                     2 /* quad_no_x */,
+                                                     2 /* quad_no_v */);
         }
 
         // step 7: set boundary conditions

@@ -482,7 +482,12 @@ namespace hyperdeal
 
               //...use Gauss-Lobatto points (quad_no_v = 2)
               VectorTools::velocity_space_integration<degree, n_points>(
-                matrix_free, particle_density, src, 0 /* dof_no_x*/, 0 /*dof_no_v*/, 2 /* quad_no_v */);
+                matrix_free,
+                particle_density,
+                src,
+                0 /* dof_no_x*/,
+                0 /*dof_no_v*/,
+                2 /* quad_no_v */);
             }
 
             {
@@ -576,8 +581,7 @@ namespace hyperdeal
                 std::ofstream diag_file;
                 if (clear_diag_file == true)
                   {
-                    diag_file.open(param.diag_file,
-                                   std::ios::trunc);
+                    diag_file.open(param.diag_file, std::ios::trunc);
 
                     diag_file
                       << "# time    energy components  mass  l2norm  kinetic energy  momentum "
@@ -593,8 +597,7 @@ namespace hyperdeal
                   }
                 else
                   {
-                    diag_file.open(param.diag_file,
-                                   std::ios::app);
+                    diag_file.open(param.diag_file, std::ios::app);
                     diag_file << std::setw(8) << std::fixed
                               << std::setprecision(3) << cur_time << "  "
                               << std::setprecision(16) << std::scientific << en

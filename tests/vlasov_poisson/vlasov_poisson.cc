@@ -181,7 +181,6 @@ main(int argc, char **argv)
 
       hyperdeal::DynamicConvergenceTable table;
       run(table, SOURCE_DIR "/vlasov_poisson.json");
-
     }
   catch (std::exception &exc)
     {

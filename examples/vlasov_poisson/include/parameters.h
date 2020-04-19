@@ -82,9 +82,9 @@ namespace hyperdeal
       Number cfl_number = 0.3;
 
       // ... diagnostic
-      bool   dignostics_enabled = true;
-      Number dignostics_tick    = 0.1;
-      std::string diag_file = "time_history_diagnostics.out";
+      bool        dignostics_enabled = true;
+      Number      dignostics_tick    = 0.1;
+      std::string diag_file          = "time_history_diagnostics.out";
 
       // ... performance
       bool         performance_log_all_calls      = false;

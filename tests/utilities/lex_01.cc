@@ -25,7 +25,7 @@ main()
 {
   initlog();
 
-  for (unsigned int i = 0; i <20; i++)
+  for (unsigned int i = 0; i < 20; i++)
     {
       const auto result = hyperdeal::Utilities::lex_to_pair(i, 5, 4);
       deallog << i << " (" << result.first << " " << result.second << ")"
