@@ -1,6 +1,6 @@
 # Application: Vlasov-Poisson solver
 
-The `vlasov_poisson` application solves the Vlasov-Poisson problem in high dimensions.
+The `vlasov_poisson` application solves the Vlasov-Poisson problem.
 
 **NOTE:** For more detail, we refer readers to Section 6 in Munch, Kormann, and Kronbichler 2020.
 
@@ -8,7 +8,7 @@ The `vlasov_poisson` application solves the Vlasov-Poisson problem in high dimen
 
 **NOTE:** The same instructions as in in the `advection` application is valid here.
 
-Tha application can be run as follows:
+The application can be run as follows:
 ```bash
 ./vlasov_poisson A.json
 ```
