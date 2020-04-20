@@ -75,8 +75,8 @@ namespace hyperdeal
       {
       public:
         Initializer()
-          : n_subdivisions_x(3, 0)
-          , n_subdivisions_v(3, 0)
+          : n_subdivisions_x(dim_x, 4)
+          , n_subdivisions_v(dim_v, 4)
         {}
 
         void
@@ -84,22 +84,54 @@ namespace hyperdeal
         {
           prm.enter_subsection("Case");
 
-          prm.add_parameter("NRefinementsX", n_refinements_x);
-          prm.add_parameter("NRefinementsV", n_refinements_v);
+          prm.add_parameter("NRefinementsX",
+                            n_refinements_x,
+                            "x-space: number of global refinements.");
+          prm.add_parameter("NRefinementsV",
+                            n_refinements_v,
+                            "v-space: number of global refinements.");
 
-          prm.add_parameter("PeriodicX", do_periodic_x);
-          prm.add_parameter("PeriodicV", do_periodic_v);
+          prm.add_parameter("PeriodicX",
+                            do_periodic_x,
+                            "x-space: apply periodicity.");
+          prm.add_parameter("PeriodicV",
+                            do_periodic_v,
+                            "v-space: apply periodicity.");
 
           prm.enter_subsection("NSubdivisionsX");
-          prm.add_parameter("X", n_subdivisions_x[0]);
-          prm.add_parameter("Y", n_subdivisions_x[1]);
-          prm.add_parameter("Z", n_subdivisions_x[2]);
+          if (dim_x >= 1)
+            prm.add_parameter(
+              "X",
+              n_subdivisions_x[0],
+              "x-space: number of subdivisions in x-direction.");
+          if (dim_x >= 2)
+            prm.add_parameter(
+              "Y",
+              n_subdivisions_x[1],
+              "x-space: number of subdivisions in y-direction.");
+          if (dim_x >= 3)
+            prm.add_parameter(
+              "Z",
+              n_subdivisions_x[2],
+              "x-space: number of subdivisions in z-direction.");
           prm.leave_subsection();
 
           prm.enter_subsection("NSubdivisionsV");
-          prm.add_parameter("X", n_subdivisions_v[0]);
-          prm.add_parameter("Y", n_subdivisions_v[1]);
-          prm.add_parameter("Z", n_subdivisions_v[2]);
+          if (dim_v >= 1)
+            prm.add_parameter(
+              "X",
+              n_subdivisions_v[0],
+              "v-space: number of subdivisions in x-direction.");
+          if (dim_v >= 2)
+            prm.add_parameter(
+              "Y",
+              n_subdivisions_v[1],
+              "v-space: number of subdivisions in y-direction.");
+          if (dim_v >= 3)
+            prm.add_parameter(
+              "Z",
+              n_subdivisions_v[2],
+              "v-space: number of subdivisions in z-direction.");
           prm.leave_subsection();
 
           prm.leave_subsection();

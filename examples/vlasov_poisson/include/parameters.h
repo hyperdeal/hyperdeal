@@ -82,9 +82,9 @@ namespace hyperdeal
       Number cfl_number = 0.3;
 
       // ... diagnostic
-      bool   dignostics_enabled = true;
-      Number dignostics_tick    = 0.1;
-      std::string diag_file = "time_history_diagnostics.out";
+      bool        dignostics_enabled = true;
+      Number      dignostics_tick    = 0.1;
+      std::string diag_file          = "time_history_diagnostics.out";
 
       // ... performance
       bool         performance_log_all_calls      = false;
@@ -184,31 +184,54 @@ namespace hyperdeal
   {
     namespace cases
     {
+      struct Parameters
+      {
+        Parameters(std::string case_name)
+          : case_name(case_name)
+        {}
+
+        Parameters(const std::string &               file_name,
+                   const dealii::ConditionalOStream &pcout)
+          : case_name("dummy")
+        {
+          dealii::ParameterHandler prm;
+
+          std::ifstream file;
+          file.open(file_name);
+
+          add_parameters(prm);
+
+          prm.parse_input_from_json(file, true);
+
+          if (print_parameter && pcout.is_active())
+            prm.print_parameters(pcout.get_stream(),
+                                 dealii::ParameterHandler::OutputStyle::Text);
+
+          file.close();
+        }
+
+        void
+        add_parameters(dealii::ParameterHandler &prm)
+        {
+          prm.enter_subsection("General");
+          prm.add_parameter(
+            "Case",
+            case_name,
+            "Name of the case to be run (the section Case contains the parameters of this case).");
+          prm.add_parameter("Verbose",
+                            print_parameter,
+                            "Print the parameter after parsing.");
+          prm.leave_subsection();
+        }
+
+        std::string case_name;
+        bool        print_parameter = true;
+      };
+
       template <int dim_x, int dim_v, int degree, typename Number>
       std::shared_ptr<hyperdeal::vp::Initializer<dim_x, dim_v, degree, Number>>
-      get(const std::string &file_name, const dealii::ConditionalOStream &pcout)
+      get(const std::string &case_name)
       {
-        std::string case_name       = "dummy";
-        bool        print_parameter = true;
-
-        dealii::ParameterHandler prm;
-
-        std::ifstream file;
-        file.open(file_name);
-
-        prm.enter_subsection("General");
-        prm.add_parameter("Case", case_name);
-        prm.add_parameter("Verbose", print_parameter);
-        prm.leave_subsection();
-
-        prm.parse_input_from_json(file, true);
-
-        if (print_parameter && pcout.is_active())
-          prm.print_parameters(pcout.get_stream(),
-                               dealii::ParameterHandler::OutputStyle::Text);
-
-        file.close();
-
         // clang-format off
         std::shared_ptr<hyperdeal::vp::Initializer<dim_x, dim_v, degree, Number>> initializer;
         if(case_name == "hyperrectangle")
@@ -218,6 +241,15 @@ namespace hyperdeal
         // clang-format on
 
         return initializer;
+      }
+
+      template <int dim_x, int dim_v, int degree, typename Number>
+      std::shared_ptr<hyperdeal::vp::Initializer<dim_x, dim_v, degree, Number>>
+      get(const std::string &file_name, const dealii::ConditionalOStream &pcout)
+      {
+        Parameters params(file_name, pcout);
+
+        return get<dim_x, dim_v, degree, Number>(params.case_name);
       }
 
     } // namespace cases

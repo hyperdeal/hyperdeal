@@ -1,57 +1,20 @@
-# Application: advection
+# Application: Vlasov-Poisson solver
 
-The `advection` application performs a scalar transport in high dimensions.
+The `vlasov_poisson` application solves the Vlasov-Poisson problem.
+
+**NOTE:** For more detail, we refer readers to Section 6 in Munch, Kormann, and Kronbichler 2020.
+
+## Running the application and parameter input files
+
+**NOTE:** The same instructions as in in the `advection` application is valid here.
 
 The application can be run as follows:
-
 ```bash
-mpirun -np X ./advection A.json B.json
+./vlasov_poisson A.json
 ```
+where `A.json` a parameter file is that configures the solver and the case.
 
-A parameter file might look like this:
-
-```json
-{ 
-    "General" : {
-        "DimX"               : 2,
-        "DimV"               : 2,
-        "DegreeX"            : 3,
-        "DegreeV"            : 3,
-        "PartitionV"         : 1,
-        "PartitionX"         : 1,
-        "UseVirtualTopology" : true,
-        "Verbose"            : true,
-        "Case"               : "hyperrectangle"
-    },
-    "Case" : {
-        "NRefinementsX"      : 2,
-        "NRefinementsV"      : 2,
-        "PeriodicX"          : true,
-        "PeriodicV"          : true,
-        "NSubdivisionsX"     : {"X" : 1, "Y" : 1, "Z" : 1},
-        "NSubdivisionsV"     : {"X" : 1, "Y" : 1, "Z" : 1}
-    },
-    "Triangulation" : {
-        "Type"               : "fullydistributed",
-        "OutputGrid"         : false
-    },
-    "SpatialDiscretization" : {
-        "DoCollocation"      : false,
-        "MappingX"           : 1,
-        "MappingV"           : 1
-    },
-    "TemporalDiscretization" : {
-        "StartTime"          : 0.0,
-        "FinalTime"          : 20.0,
-        "TimeStep"           : 0.1,
-        "MaxTimeStepNumber"  : 100000000,
-        "CFLNumber"          : 0.3,
-        "OutputTick"         : 0.2
-    },
-    "Matrixfree" : {
-        "DoBuffering"        : false,
-        "GhostFaces"         : true,
-        "UseECL"             : true
-    }
-}
+To view and generate a valid dummy input parameter file, one can write:
+```bash
+./vlasov_poisson --help hyperrectangle
 ```
