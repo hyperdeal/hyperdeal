@@ -1,4 +1,4 @@
-<img align="right" width="324" height="120" src="../../wiki/logo.png">
+<img align="right" width="324" height="120" src="doc/pictures/logo.png">
 
 # hyper.deal
 
