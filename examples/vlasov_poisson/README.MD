@@ -1,8 +1,8 @@
 # Application: Vlasov-Poisson solver
 
-The `vlasov_poisson` application solves the Vlasov-Poisson problem with a low-storage Runge–Kutta scheme. In each Runge-Kutta stage, following 5 steps are performed:
+The `vlasov_poisson` application solves the Vlasov–Poisson problem for electrons in a neutralizing ion background with a low-storage Runge–Kutta scheme. In each Runge–Kutta stage, following 5 steps are performed:
 
-* **step 1 + 2**: Compute the degrees of freedom of the charge density <img src="https://render.githubusercontent.com/render/math?math=\rho"> via integration over the velocity space and compute compute the right-hand side for the Poisson equation:
+* **step 1 + 2**: Compute the degrees of freedom of the charge density <img src="https://render.githubusercontent.com/render/math?math=\rho"> via integration over the velocity space and compute the right-hand side for the Poisson equation:
 <p align="center">
 <img src="https://render.githubusercontent.com/render/math?math=\rho(t,\vec{x})=1-\int f(t,\vec{x},\vec{v})\,\mathrm{d}v">
 </p>
