@@ -13,8 +13,17 @@
 ##
 ## ---------------------------------------------------------------------
 
-SET(TARGET_SRC advection.cc)
+# adopted from https://github.com/kronbichler/adaflo/blob/master/tests/run_test.cmake
 
-ADD_EXECUTABLE( "advection" ${TARGET_SRC})
-DEAL_II_SETUP_TARGET("advection")
-TARGET_LINK_LIBRARIES("advection" "hyperdeal")
+EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND}
+    --build ${BINARY_DIR} --target ${TESTNAME}.diff
+    RESULT_VARIABLE _result_code
+    OUTPUT_VARIABLE _output
+    )
+IF("${_result_code}" STREQUAL "0")
+    MESSAGE("${TESTNAME}: success.")
+ELSE()
+    MESSAGE("*** ${ERROR}: ***")
+    MESSAGE(${_output})
+    MESSAGE(FATAL_ERROR "*** Test aborted.")
+ENDIF()

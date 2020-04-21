@@ -83,3 +83,5 @@ ADD_SUBDIRECTORY(performance)
 # tests
 enable_testing()
 ADD_SUBDIRECTORY(tests)
+ADD_SUBDIRECTORY(examples/advection/tests)
+ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
