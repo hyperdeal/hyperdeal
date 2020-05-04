@@ -215,7 +215,8 @@ print_parameters(const bool print_details, const std::string &label)
   prm.print_parameters(std::cout,
                        print_details ?
                          dealii::ParameterHandler::OutputStyle::JSON :
-                         dealii::ParameterHandler::OutputStyle::ShortJSON);
+                         dealii::ParameterHandler::OutputStyle::ShortJSON |
+                         dealii::ParameterHandler::OutputStyle::KeepDeclarationOrder);
 }
 
 int
