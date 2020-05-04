@@ -195,11 +195,12 @@ print_parameters(const bool print_details, const std::string &label)
     hyperdeal::vp::cases::get<DIM_X, DIM_V, DEGREE, Number>(label);
   initializer->add_parameters(prm);
 
-  prm.print_parameters(std::cout,
-                       print_details ?
-                         dealii::ParameterHandler::OutputStyle::JSON :
-                         dealii::ParameterHandler::OutputStyle::ShortJSON |
-                         dealii::ParameterHandler::OutputStyle::KeepDeclarationOrder);
+  prm.print_parameters(
+    std::cout,
+    print_details ?
+      dealii::ParameterHandler::OutputStyle::JSON :
+      dealii::ParameterHandler::OutputStyle::ShortJSON |
+        dealii::ParameterHandler::OutputStyle::KeepDeclarationOrder);
 }
 
 int
