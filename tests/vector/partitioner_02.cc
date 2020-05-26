@@ -44,7 +44,8 @@ test(const MPI_Comm &comm, const MPI_Comm &comm_sm, const bool do_buffering)
   parallel::fullydistributed::Triangulation<dim> tria(comm);
 
   {
-    dealii::Triangulation<dim> tria_serial;
+    dealii::Triangulation<dim> tria_serial(
+      dealii::Triangulation<dim>::limit_level_difference_at_vertices);
     GridGenerator::subdivided_hyper_cube(tria_serial, 2);
     tria_serial.refine_global(dim == 2 ? 4 : 3);
     dealii::GridTools::partition_triangulation_zorder(

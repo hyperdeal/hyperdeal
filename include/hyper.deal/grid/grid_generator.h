@@ -167,7 +167,9 @@ namespace hyperdeal
             {
               {
                 auto                         comm = tria_x->get_communicator();
-                dealii::Triangulation<dim_x> tria;
+                dealii::Triangulation<dim_x> tria(
+                  dealii::Triangulation<
+                    dim_x>::limit_level_difference_at_vertices);
                 dealii::GridGenerator::subdivided_hyper_rectangle(tria,
                                                                   repetitions_x,
                                                                   left_x,
@@ -182,7 +184,11 @@ namespace hyperdeal
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
-                    create_description_from_triangulation(tria, comm, true);
+                    create_description_from_triangulation(
+                      tria,
+                      comm,
+                      dealii::TriangulationDescription::Settings::
+                        construct_multigrid_hierarchy);
                 triangulation_x->create_triangulation(construction_data);
               }
               if (do_periodic_x)
@@ -194,7 +200,9 @@ namespace hyperdeal
 
               {
                 auto                         comm = tria_v->get_communicator();
-                dealii::Triangulation<dim_v> tria;
+                dealii::Triangulation<dim_v> tria(
+                  dealii::Triangulation<
+                    dim_v>::limit_level_difference_at_vertices);
                 dealii::GridGenerator::subdivided_hyper_rectangle(tria,
                                                                   repetitions_v,
                                                                   left_v,
@@ -212,7 +220,11 @@ namespace hyperdeal
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
-                    create_description_from_triangulation(tria, comm, true);
+                    create_description_from_triangulation(
+                      tria,
+                      comm,
+                      dealii::TriangulationDescription::Settings::
+                        construct_multigrid_hierarchy);
                 triangulation_v->create_triangulation(construction_data);
               }
               if (do_periodic_v)
