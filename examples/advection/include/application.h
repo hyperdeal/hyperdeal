@@ -309,8 +309,8 @@ namespace hyperdeal
         // step 8: set (constant) velocity field
         {
           pcout << "  - advection::velocity_field_view" << std::endl;
-          velocity_field.reset(
-            new VelocityFieldView(initializer->get_transport_direction()));
+          velocity_field = std::make_shared<VelocityFieldView>(
+            initializer->get_transport_direction());
         }
 
         // step 9: initialize advection operator

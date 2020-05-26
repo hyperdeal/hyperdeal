@@ -19,6 +19,7 @@
 #include <hyper.deal/base/config.h>
 
 #include <functional>
+#include <vector>
 
 namespace hyperdeal
 {

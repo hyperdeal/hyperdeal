@@ -161,16 +161,20 @@ test(const bool do_test_multigrid)
 
   if (false)
     {
-      dealii::Triangulation<dim> tria_serial;
+      dealii::Triangulation<dim> tria_serial(
+        dealii::Triangulation<dim>::limit_level_difference_at_vertices);
       create_grid(tria_serial);
 
       dealii::GridTools::partition_triangulation_zorder(
         dealii::Utilities::MPI::n_mpi_processes(comm), tria_serial, false);
       dealii::GridTools::partition_multigrid_levels(tria_serial);
 
-      const auto construction_data =
-        dealii::TriangulationDescription::Utilities::
-          create_description_from_triangulation(tria_serial, comm, true);
+      const auto construction_data = dealii::TriangulationDescription::
+        Utilities::create_description_from_triangulation(
+          tria_serial,
+          comm,
+          dealii::TriangulationDescription::Settings::
+            construct_multigrid_hierarchy);
 
       tria.reset(new parallel::fullydistributed::Triangulation<dim>(comm));
       tria->create_triangulation(construction_data);
