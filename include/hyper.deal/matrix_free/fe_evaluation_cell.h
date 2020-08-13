@@ -211,6 +211,88 @@ namespace hyperdeal
 
 
     /**
+     * Get gradient in x-space
+     */
+    inline DEAL_II_ALWAYS_INLINE //
+      dealii::Tensor<1, dim_x, VectorizedArrayType>
+      get_gradient_x(const VectorizedArrayType *__restrict grad_in,
+                     const unsigned int q,
+                     const unsigned int qx,
+                     const unsigned int qv) const
+    {
+      (void)qv;
+
+      dealii::Tensor<1, dim_x, VectorizedArrayType> result;
+
+      const auto jacobian = phi_x.inverse_jacobian(qx);
+
+      for (auto d = 0u; d < dim_x; d++)
+        {
+          result[d] = jacobian[d][0] * grad_in[q];
+          for (auto e = 1u; e < dim_x; ++e)
+            result[d] +=
+              (jacobian[d][e] * grad_in[q + e * n_q_points_x * n_q_points_v]);
+        }
+
+      return result;
+    }
+
+
+
+    /**
+     * Get gradient in v-space
+     */
+    inline DEAL_II_ALWAYS_INLINE //
+      dealii::Tensor<1, dim_v, VectorizedArrayType>
+      get_gradient_v(const VectorizedArrayType *__restrict grad_in,
+                     const unsigned int q,
+                     const unsigned int qx,
+                     const unsigned int qv) const
+    {
+      (void)qx;
+
+      dealii::Tensor<1, dim_v, VectorizedArrayType> result;
+
+      const auto jacobian = phi_v.inverse_jacobian(qv);
+
+      for (auto d = 0u; d < dim_v; d++)
+        {
+          result[d] =
+            jacobian[d][0][n_vectors_v == 1 ? 0 : this->lane_y] * grad_in[q];
+          for (auto e = 1u; e < dim_v; ++e)
+            result[d] += (jacobian[d][e][n_vectors_v == 1 ? 0 : this->lane_y] *
+                          grad_in[q + e * n_q_points_x * n_q_points_v]);
+        }
+
+      return result;
+    }
+
+
+
+    /**
+     * Submit value for integration along x-v coordinates
+     */
+    template <bool do_add>
+    inline DEAL_II_ALWAYS_INLINE //
+      void
+      submit_value(VectorizedArrayType *__restrict data_ptr_out,
+                   const VectorizedArrayType __restrict values_in,
+                   const unsigned int q,
+                   const unsigned int qx,
+                   const unsigned int qv) const
+    {
+      const auto jxw =
+        phi_x.JxW(qx) * phi_v.JxW(qv)[n_vectors_v == 1 ? 0 : this->lane_y];
+
+      if (do_add)
+        data_ptr_out[q] += values_in * jxw;
+      else
+        data_ptr_out[q] = values_in * jxw;
+    }
+
+
+
+    /**
      * Submit gradient in x-space
      */
     inline DEAL_II_ALWAYS_INLINE //

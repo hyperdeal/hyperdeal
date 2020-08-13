@@ -33,7 +33,7 @@
         "DiagnosticsWarmUpIterations": "0"
     },
     "AdvectionOperation": {
-        "SkewFactor": "0.0"
+        "SkewFactor": "0.5"
     },
     "Matrixfree": {
         "GhostFaces": "true",

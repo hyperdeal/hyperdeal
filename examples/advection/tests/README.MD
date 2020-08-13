@@ -24,6 +24,7 @@ the same prefix `X`.
 Tensor product of two one dimension triangulations and `FE_DGQ<1+1>(3)`.
 
 - hyperrectangle_01: test ECL + PBC
+- hyperrectangle_02: test ECL + PBC + skew-factor = 0.5 
 - hyperrectangle_03: test FCL + PBC
 
 ### adv_2D_2D_k3
