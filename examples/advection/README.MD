@@ -1,6 +1,12 @@
 # Application: advection
 
-The `advection` application performs a scalar transport <img src="https://render.githubusercontent.com/render/math?math=\partial f / \partial t  %2B  \nabla \cdot (\vec{a} f) = 0"> in high dimensions on an arbitrary phase-space domain <img src="https://render.githubusercontent.com/render/math?math=\Omega=\Omega_x \otimes \Omega_v"> for given boundary conditions<img src="https://render.githubusercontent.com/render/math?math=g|_\Gamma"> and a space- and time-independent velocity field <img src="https://render.githubusercontent.com/render/math?math=v">.
+The `advection` application performs a scalar transport 
+
+<p align="center">
+<img src="https://render.githubusercontent.com/render/math?math=\partial f / \partial t  %2B  \nabla \cdot (\vec{a} f) = 0" width="172.5"> 
+</p>
+
+in high dimensions on an arbitrary phase-space domain <img src="https://render.githubusercontent.com/render/math?math=\Omega=\Omega_x \otimes \Omega_v"> for given boundary conditions<img src="https://render.githubusercontent.com/render/math?math=g|_\Gamma"> and a space- and time-independent velocity field <img src="https://render.githubusercontent.com/render/math?math=v">.
 
 **NOTE:** For more detail, we refer readers to Sections 1-5 in [Munch, Kormann, and Kronbichler 2020](../../../../wiki/Publications).
 
