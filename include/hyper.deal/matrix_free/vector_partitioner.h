@@ -704,11 +704,11 @@ namespace hyperdeal
                   AssertThrow(ptr2 != maps_ghost.end(),
                               dealii::ExcMessage("Entry not found!"));
 
-                  std::array<LocalDoFType, 5> v{ptr1->second.first,
-                                                ptr1->second.second,
-                                                face,
-                                                ptr2->second.first,
-                                                ptr2->second.second};
+                  std::array<LocalDoFType, 5> v{{ptr1->second.first,
+                                                 ptr1->second.second,
+                                                 face,
+                                                 ptr2->second.first,
+                                                 ptr2->second.second}};
 
                   ghost_list_shared_precomp.push_back(v);
 
@@ -734,11 +734,11 @@ namespace hyperdeal
                       auto & /*request_buffer*/) {
                     for (unsigned int i = 0; i < buffer_recv.size(); i += 5)
                       maps_ghost_inverse_precomp.push_back(
-                        {buffer_recv[i],
-                         buffer_recv[i + 1],
-                         buffer_recv[i + 2],
-                         buffer_recv[i + 3],
-                         buffer_recv[i + 4]});
+                        {{buffer_recv[i],
+                          buffer_recv[i + 1],
+                          buffer_recv[i + 2],
+                          buffer_recv[i + 3],
+                          buffer_recv[i + 4]}});
                   });
             dealii::Utilities::MPI::ConsensusAlgorithms::Selector<LocalDoFType,
                                                                   LocalDoFType>(
@@ -923,9 +923,9 @@ namespace hyperdeal
                                                    " not found!"));
 
                     temp[i] = std::array<unsigned int, 3>{
-                      ptr->second.first,
-                      (unsigned int)ptr->second.second,
-                      face_no};
+                      {ptr->second.first,
+                       (unsigned int)ptr->second.second,
+                       face_no}};
                   }
                 return temp;
               }();
@@ -1010,9 +1010,8 @@ namespace hyperdeal
                 AssertThrow(sm_rank == t[3],
                             dealii::StandardExceptions::ExcNotImplemented());
                 temp_[t[0]].emplace_back(
-                  std::array<dealii::types::global_dof_index, 3>{t[1],
-                                                                 t[2],
-                                                                 t[4]});
+                  std::array<dealii::types::global_dof_index, 3>{
+                    {t[1], t[2], t[4]}});
               }
 
 
@@ -1053,9 +1052,8 @@ namespace hyperdeal
                 AssertThrow(sm_rank == t[0],
                             dealii::StandardExceptions::ExcNotImplemented());
                 temp_[t[3]].emplace_back(
-                  std::array<dealii::types::global_dof_index, 3>{t[4],
-                                                                 t[2],
-                                                                 t[1]});
+                  std::array<dealii::types::global_dof_index, 3>{
+                    {t[4], t[2], t[1]}});
               }
 
 

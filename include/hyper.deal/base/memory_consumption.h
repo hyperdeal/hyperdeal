@@ -315,11 +315,11 @@ namespace hyperdeal
       dealii::Utilities::System::get_memory_stats(stats);
 
       list.emplace_back(label,
-                        std::array<double, 4>{static_cast<double>(stats.VmPeak),
-                                              static_cast<double>(stats.VmSize),
-                                              static_cast<double>(stats.VmHWM),
-                                              static_cast<double>(
-                                                stats.VmRSS)});
+                        std::array<double, 4>{
+                          {static_cast<double>(stats.VmPeak),
+                           static_cast<double>(stats.VmSize),
+                           static_cast<double>(stats.VmHWM),
+                           static_cast<double>(stats.VmRSS)}});
 
       MPI_Barrier(comm);
     }
@@ -376,9 +376,9 @@ namespace hyperdeal
         collection.size());
 
       for (unsigned int i = 0; i < collection.size(); i++)
-        collection_[i] = {collection[i].first,
-                          std::array<double, 1>{
-                            static_cast<double>(collection[i].second)}};
+        collection_[i] = std::pair<std::string, std::array<double, 1>>{
+          collection[i].first,
+          std::array<double, 1>{{static_cast<double>(collection[i].second)}}};
 
       internal::print(
         stream, comm, collection_, {"Memory consumption [Byte]"}, 0);
