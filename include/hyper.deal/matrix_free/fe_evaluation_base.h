@@ -145,7 +145,7 @@ namespace hyperdeal
     , matrix_free_x(matrix_free.get_matrix_free_x())
     , matrix_free_v(matrix_free.get_matrix_free_v())
   {
-    this->data.resize_fast(static_dofs);
+    this->data.resize(static_dofs);
   }
 
 

@@ -193,8 +193,9 @@ namespace hyperdeal
             quads.push_back(dealii::QGaussLobatto<1>(n_points_x));
           else
             quads.push_back(dealii::QGauss<1>(n_points_x));
-          quads.push_back(dealii::QGauss<1>(degree_x + 1)),
-            quads.push_back(dealii::QGaussLobatto<1>(degree_x + 1));
+
+          quads.push_back(dealii::QGauss<1>(degree_x + 1));
+          quads.push_back(dealii::QGaussLobatto<1>(degree_x + 1));
 
           matrix_free_x.reinit(
             mapping_x, dof_handlers, constraints, quads, additional_data);
