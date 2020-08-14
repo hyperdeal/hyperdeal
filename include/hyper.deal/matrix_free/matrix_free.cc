@@ -652,11 +652,13 @@ namespace hyperdeal
     AssertThrow(this->use_ecl || (/*!this->use_ecl &&*/ this->do_buffering),
                 dealii::ExcMessage("FCL needs buffering!"));
 
-    AssertThrow(additional_data.fe_degree !=
-                  dealii::numbers::invalid_unsigned_int,
-                dealii::ExcMessage("Degree has not been set!"));
+    AssertDimension(matrix_free_x.get_shape_info().n_components, 1);
+    AssertDimension(matrix_free_v.get_shape_info().n_components, 1);
+    AssertDimension(matrix_free_x.get_shape_info().data.front().fe_degree,
+                    matrix_free_v.get_shape_info().data.front().fe_degree);
 
-    this->shape_info.template reinit<dim_x + dim_v>(additional_data.fe_degree);
+    this->shape_info.template reinit<dim_x + dim_v>(
+      matrix_free_x.get_shape_info().data.front().fe_degree);
 
     partitioner =
       std::make_shared<internal::MatrixFreeFunctions::Partitioner<Number>>(

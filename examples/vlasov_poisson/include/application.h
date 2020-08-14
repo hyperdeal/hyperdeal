@@ -326,7 +326,6 @@ namespace hyperdeal
           ad.do_ghost_faces = param.do_ghost_faces;
           ad.do_buffering   = param.do_buffering;
           ad.use_ecl        = param.use_ecl;
-          ad.fe_degree      = degree;
 
           matrix_free.reinit(ad);
         }

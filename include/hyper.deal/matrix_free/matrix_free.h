@@ -67,7 +67,6 @@ namespace hyperdeal
         : do_ghost_faces(true)
         , do_buffering(false)
         , use_ecl(true)
-        , fe_degree(dealii::numbers::invalid_unsigned_int)
       {}
 
       /**
@@ -92,13 +91,6 @@ namespace hyperdeal
        *   time.
        */
       bool use_ecl;
-
-      /**
-       * Degree of the finite element.
-       *
-       * TODO: remove and extract elsewhere!
-       */
-      unsigned int fe_degree;
     };
 
 
