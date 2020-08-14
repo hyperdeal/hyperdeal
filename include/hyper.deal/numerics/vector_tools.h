@@ -180,7 +180,7 @@ namespace hyperdeal
       FEEvaluation<dim_x, dim_v, degree, n_points, Number, VectorizedArrayType>
         phi(matrix_free, dof_no_x, dof_no_v, quad_no_x, quad_no_v);
 
-      std::array<Number, 2> result{0.0, 0.0};
+      std::array<Number, 2> result{{0.0, 0.0}};
 
       int dummy;
 

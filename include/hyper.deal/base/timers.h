@@ -137,8 +137,8 @@ namespace hyperdeal
         {
           list.emplace_back(time.first,
                             std::array<double, 1>{
-                              timers[time.second].get_accumulated_time() /
-                              1000000});
+                              {timers[time.second].get_accumulated_time() /
+                               1000000}});
           list_count.emplace_back(time.first,
                                   timers[time.second].get_counter());
 

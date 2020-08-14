@@ -236,10 +236,12 @@ namespace hyperdeal
 
 
 
-      auto cell_to_gid =
+      const auto cell_to_gid =
         [&](const typename dealii::DoFHandler<dim, dim>::cell_iterator &cell) {
-          dealii::DoFAccessor<dim, dealii::DoFHandler<dim>, true> a(
-            &triangulation, cell->level(), cell->index(), &dof_handler_1);
+          dealii::DoFAccessor<dim, dim, dim, true> a(&triangulation,
+                                                     cell->level(),
+                                                     cell->index(),
+                                                     &dof_handler_1);
 
           std::vector<dealii::types::global_dof_index> indices(1);
           a.get_dof_indices(indices);
