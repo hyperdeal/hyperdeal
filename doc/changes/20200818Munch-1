@@ -1,0 +1,5 @@
+New: We created versions of the functions hyperdeal::MatrixFree::loop() and 
+hyperdeal::MatrixFree::loop_cell_centric() that take std::function(s) as 
+argument(s).
+<br>
+(Peter Munch, 2020/08/18)

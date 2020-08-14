@@ -21,6 +21,8 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 
 #include <hyper.deal/matrix_free/fe_evaluation_base.h>
+#include <hyper.deal/matrix_free/read_write_operation.h>
+#include <hyper.deal/matrix_free/vector_access_internal.h>
 
 namespace hyperdeal
 {
@@ -114,11 +116,16 @@ namespace hyperdeal
     read_dof_values(const dealii::LinearAlgebra::SharedMPI::Vector<Number> &src,
                     VectorizedArrayType *data) const
     {
-      this->matrix_free.get_read_writer()
-        .template read_dof_values_cell_batched<dim,
-                                               degree,
-                                               VectorizedArrayType>(
-          src.other_values(), (Number *)data, this->macro);
+      internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
+        this->matrix_free.get_dof_info(),
+        this->matrix_free.get_face_info(),
+        this->matrix_free.get_shape_info())
+        .template process_cell<dim, degree>(
+          internal::MatrixFreeFunctions::VectorReader<Number,
+                                                      VectorizedArrayType>(),
+          src.other_values(),
+          data,
+          this->macro);
     }
 
 
@@ -140,9 +147,16 @@ namespace hyperdeal
     void
     set_dof_values(dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
     {
-      this->matrix_free.get_read_writer()
-        .template set_dof_values_cell_batched<dim, degree, VectorizedArrayType>(
-          dst.other_values(), (Number *)&this->data[0], this->macro);
+      internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
+        this->matrix_free.get_dof_info(),
+        this->matrix_free.get_face_info(),
+        this->matrix_free.get_shape_info())
+        .template process_cell<dim, degree>(
+          internal::MatrixFreeFunctions::VectorSetter<Number,
+                                                      VectorizedArrayType>(),
+          dst.other_values(),
+          &this->data[0],
+          this->macro);
     }
 
 

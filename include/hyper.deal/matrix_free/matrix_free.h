@@ -18,6 +18,8 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/matrix_free/matrix_free.h>
+
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/timers.h>
 #include <hyper.deal/lac/sm_vector.h>
@@ -25,7 +27,6 @@
 #include <hyper.deal/matrix_free/face_info.h>
 #include <hyper.deal/matrix_free/id.h>
 #include <hyper.deal/matrix_free/shape_info.h>
-#include <hyper.deal/matrix_free/vector_access.h>
 #include <hyper.deal/matrix_free/vector_partitioner.h>
 
 namespace hyperdeal
@@ -123,7 +124,7 @@ namespace hyperdeal
       const InVector &src) const;
 
     /**
-     * Loop over all cell pairs. No communication performed.
+     * The same as above, but without std::function.
      */
     template <typename CLASS, typename OutVector, typename InVector>
     void
@@ -139,6 +140,21 @@ namespace hyperdeal
      * Loop over all cell pairs in an element-centric fashion (ECL). It
      * includes a ghost value update of the source vector.
      */
+    template <typename OutVector, typename InVector>
+    void
+    loop_cell_centric(
+      const std::function<
+        void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+        &                     cell_operation,
+      OutVector &             dst,
+      const InVector &        src,
+      const DataAccessOnFaces src_vector_face_access =
+        DataAccessOnFaces::unspecified,
+      Timers *timers = nullptr) const;
+
+    /**
+     * The same as above, but without std::function.
+     */
     template <typename CLASS, typename OutVector, typename InVector>
     void
     loop_cell_centric(void (CLASS::*cell_operation)(const MatrixFree &,
@@ -152,6 +168,29 @@ namespace hyperdeal
                         DataAccessOnFaces::unspecified,
                       Timers *timers = nullptr) const;
 
+    /**
+     * Loop over all cell pairs in an face-centric fashion (FCL). It
+     * includes a ghost value update of the source vector and a compression
+     * of the destination vector.
+     */
+    template <typename OutVector, typename InVector>
+    void
+    loop(const std::function<
+           void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+           &cell_operation,
+         const std::function<
+           void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+           &face_operation,
+         const std::function<
+           void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+           &                     boundary_operation,
+         OutVector &             dst,
+         const InVector &        src,
+         const DataAccessOnFaces dst_vector_face_access =
+           DataAccessOnFaces::unspecified,
+         const DataAccessOnFaces src_vector_face_access =
+           DataAccessOnFaces::unspecified,
+         Timers *timers = nullptr) const;
 
     /**
      * Loop over all cell pairs in an face-centric fashion (FCL). It
@@ -248,12 +287,6 @@ namespace hyperdeal
     const internal::MatrixFreeFunctions::ShapeInfo<Number> &
     get_shape_info() const;
 
-    /**
-     * Return vector read/writer.
-     */
-    const internal::MatrixFreeFunctions::VectorReaderWriter<Number> &
-    get_read_writer() const;
-
     MemoryConsumption
     memory_consumption() const
     {
@@ -311,13 +344,6 @@ namespace hyperdeal
       partitioner;
 
     /**
-     * Reader/writer to process shared-memory vector.
-     */
-    mutable std::shared_ptr<
-      internal::MatrixFreeFunctions::VectorReaderWriter<Number>>
-      reader_writer;
-
-    /**
      * Cell info.
      */
     mutable internal::MatrixFreeFunctions::DoFInfo dof_info;
@@ -335,6 +361,6 @@ namespace hyperdeal
 
 } // namespace hyperdeal
 
-#include <hyper.deal/matrix_free/matrix_free.cc>
+#include <hyper.deal/matrix_free/matrix_free.templates.h>
 
 #endif
