@@ -315,7 +315,7 @@ namespace hyperdeal
               data_ptr_dst[qx] = sum_v;
             }
 
-          phi_x.set_dof_values(dst);
+          phi_x.distribute_local_to_global(dst);
         },
         dst,
         src);
