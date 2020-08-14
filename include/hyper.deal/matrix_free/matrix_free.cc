@@ -1267,6 +1267,24 @@ namespace hyperdeal
 
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  const internal::MatrixFreeFunctions::DoFInfo &
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_dof_info() const
+  {
+    return dof_info;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  const internal::MatrixFreeFunctions::FaceInfo &
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_face_info() const
+  {
+    return face_info;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
   const internal::MatrixFreeFunctions::ShapeInfo<Number> &
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_shape_info() const
   {
