@@ -239,6 +239,18 @@ namespace hyperdeal
     get_matrix_free_v() const;
 
     /**
+     * Return dof info.
+     */
+    const internal::MatrixFreeFunctions::DoFInfo &
+    get_dof_info() const;
+
+    /**
+     * Return face info.
+     */
+    const internal::MatrixFreeFunctions::FaceInfo &
+    get_face_info() const;
+
+    /**
      * Return shape info.
      */
     const internal::MatrixFreeFunctions::ShapeInfo<Number> &
