@@ -138,8 +138,7 @@ namespace hyperdeal
      * Sum values from the internal buffer into the vector @p dst.
      */
     void
-    distribute_local_to_global(
-      dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
+    set_dof_values(dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
     {
       this->matrix_free.get_read_writer()
         .template set_dof_values_cell_batched<dim, degree, VectorizedArrayType>(

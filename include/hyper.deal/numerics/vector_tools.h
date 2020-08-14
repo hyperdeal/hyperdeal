@@ -144,7 +144,7 @@ namespace hyperdeal
                   }
               }
 
-          phi.distribute_local_to_global(dst);
+          phi.set_dof_values(dst);
         },
         dst,
         dummy);
@@ -315,7 +315,7 @@ namespace hyperdeal
               data_ptr_dst[qx] = sum_v;
             }
 
-          phi_x.distribute_local_to_global(dst);
+          phi_x.set_dof_values(dst);
         },
         dst,
         src);

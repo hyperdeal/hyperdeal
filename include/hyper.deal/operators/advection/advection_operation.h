@@ -426,7 +426,7 @@ namespace hyperdeal
 #endif
 
           // write into global structure back
-          phi.distribute_local_to_global(dst);
+          phi.set_dof_values(dst);
         }
 
         // clang-format on
@@ -492,7 +492,7 @@ namespace hyperdeal
         // clang-format on
 
         // write into global structure back
-        phi_inv.distribute_local_to_global(dst);
+        phi_inv.set_dof_values(dst);
       }
 
 
@@ -605,7 +605,7 @@ namespace hyperdeal
         // clang-format on
 
         // write into global structure back
-        phi.distribute_local_to_global(dst);
+        phi.set_dof_values(dst);
       }
 
 
