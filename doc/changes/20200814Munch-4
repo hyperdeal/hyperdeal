@@ -1,0 +1,5 @@
+Improved: The finite-element degree has not to be passed to hyperdeal::MatrixFree
+anymore. The value is now extracted from the underlying low-dimensional
+dealii::MatrixFree classes.
+<br>
+(Peter Munch, 2020/08/14)
