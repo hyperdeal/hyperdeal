@@ -89,7 +89,7 @@ ADD_SUBDIRECTORY(cmake)
 ADD_SUBDIRECTORY(source)
 
 # target the source files
-TARGET_LINK_LIBRARIES(hyperdeal obj_base obj_grid obj_lac)
+TARGET_LINK_LIBRARIES(hyperdeal obj_base obj_grid)
 
 ADD_SUBDIRECTORY(examples)
 
