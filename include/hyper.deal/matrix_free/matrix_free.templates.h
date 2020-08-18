@@ -1124,7 +1124,10 @@ namespace hyperdeal
 
     // zero out values
     if (zero_out_values)
-      vec.zero_out(true);
+      {
+        vec = 0.0; // TODO
+        vec.update_ghost_values();
+      }
 
     // perform test ghost value update
     if (zero_out_values && do_ghosts)
