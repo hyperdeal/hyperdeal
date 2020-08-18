@@ -18,17 +18,23 @@ namespace hyperdeal
         /**
          * Caches the face number of a macro face.
          *
-         * @note (0) FCL (interior); (1) FCL (exterior)
+         * @note (0) FCL (interior); (1) FCL (exterior);
+         *       (2) empty (ECL - interior); (3) ECL (exterior)
          */
-        std::array<std::vector<unsigned int>, 2> no_faces;
+        std::array<std::vector<unsigned int>, 4> no_faces;
 
         /**
-         * Caches if all faces have the same type when vectorizing.
+         * Caches the face orientations of a macro faces.
          *
-         * @note (0) FCL (interior); (1) FCL (exterior);
-         *       (2) empty (TODO - remove); (3) ECL (exterior)
+         * The values is copied directly from the faces of the low-dimensional
+         * faces. At this place, no distinguish is done if a face is x- or
+         * v-face since this can be done directly in
+         * hyperdeal::FEFaceEvaluation.
+         *
+         * @note (0) FCL (interior); (1) empty (FCL - exterior);
+         *       (2) empty (ECL - interior); (3) ECL (exterior)
          */
-        std::array<std::vector<bool>, 4> face_all;
+        std::array<std::vector<unsigned int>, 4> face_orientations;
 
         /**
          * Stores for each face the type.Type
@@ -37,17 +43,28 @@ namespace hyperdeal
          * cells owned by a process in the same shared memory domain.
          *
          * @note (0) FCL (interior); (1) FCL (exterior);
-         *       (2) empty (TODO - remove); (3) ECL (exterior)
+         *       (2) empty (ECL - interior); (3) ECL (exterior)
          */
         std::array<std::vector<bool>, 4> face_type;
+
+        /**
+         * Caches if all faces have the same type, face number, and face
+         * orientation when vectorizing.
+         *
+         * @note (0) FCL (interior); (1) FCL (exterior);
+         *       (2) empty (ECL - interior); (3) ECL (exterior)
+         */
+        std::array<std::vector<bool>, 4> face_all;
 
 
         std::size_t
         memory_consumption() const
         {
           return dealii::MemoryConsumption::memory_consumption(no_faces) +
-                 dealii::MemoryConsumption::memory_consumption(face_all) +
-                 dealii::MemoryConsumption::memory_consumption(face_type);
+                 dealii::MemoryConsumption::memory_consumption(
+                   face_orientations) +
+                 dealii::MemoryConsumption::memory_consumption(face_type) +
+                 dealii::MemoryConsumption::memory_consumption(face_all);
         }
       };
     } // namespace MatrixFreeFunctions

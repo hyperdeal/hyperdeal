@@ -18,7 +18,11 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/matrix_free/fe_evaluation.h>
+
 #include <hyper.deal/matrix_free/fe_evaluation_base.h>
+#include <hyper.deal/matrix_free/read_write_operation.h>
+#include <hyper.deal/matrix_free/vector_access_internal.h>
 
 namespace hyperdeal
 {
@@ -239,14 +243,41 @@ namespace hyperdeal
     {
       if (this->matrix_free.are_ghost_faces_supported())
         {
-          this->matrix_free.get_read_writer()
-            .template read_dof_values_face_batched<dim,
-                                                   degree,
-                                                   VectorizedArrayType>(
+          // for comments see dealii::FEEvaluation::reinit
+          const unsigned int face_orientation =
+            is_ecl ? 0 :
+                     ((this->is_minus_face ==
+                       (this->matrix_free.get_face_info()
+                          .face_orientations[0][this->macro] >= 8)) ?
+                        (this->matrix_free.get_face_info()
+                           .face_orientations[0][this->macro] %
+                         8) :
+                        0);
+
+          internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
+            this->matrix_free.get_dof_info(),
+            this->matrix_free.get_face_info(),
+            this->matrix_free.get_shape_info())
+            .template process_face<dim_x, dim_v, degree>(
+              internal::MatrixFreeFunctions::
+                VectorReader<Number, VectorizedArrayType>(),
               src.other_values(),
-              (Number *)data,
-              is_ecl ? 2 * dim * this->macro + this->face_no : this->macro,
-              is_ecl ? this->face_no ^ 1 : this->face_no,
+              data,
+              (is_ecl == false || this->is_minus_face) ?
+                &this->face_no :
+                &this->matrix_free.get_face_info()
+                   .no_faces[3][(2 * dim * this->macro + this->face_no) *
+                                n_vectors],
+              (is_ecl == false || this->is_minus_face) ?
+                &face_orientation :
+                &this->matrix_free.get_face_info().face_orientations
+                   [3][(2 * dim * this->macro + this->face_no) * n_vectors],
+              this->type == SpaceType::X ? 0 : 8,
+              this->macro,
+              is_ecl ? 2 : !is_minus_face,
+              (is_ecl == false || this->is_minus_face) ?
+                this->macro :
+                2 * dim * this->macro + this->face_no,
               !is_minus_face + (is_ecl ? 2 : 0));
         }
       else
@@ -293,19 +324,37 @@ namespace hyperdeal
     distribute_local_to_global(
       dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
     {
+      Assert(is_ecl == false, dealii::StandardExceptions::ExcNotImplemented());
+
       if (this->matrix_free.are_ghost_faces_supported())
         {
-          this->matrix_free.get_read_writer()
-            .template distribute_local_to_global_face_batched<
-              dim,
-              degree,
-              VectorizedArrayType>(dst.other_values(),
-                                   (Number *)&this->data[0],
-                                   is_ecl ?
-                                     2 * dim * this->macro + this->face_no :
-                                     this->macro,
-                                   this->face_no,
-                                   !is_minus_face + (is_ecl ? 2 : 0));
+          // for comments see dealii::FEEvaluation::reinit
+          const unsigned int face_orientation =
+            is_ecl ? 0 :
+                     ((this->is_minus_face ==
+                       (this->matrix_free.get_face_info()
+                          .face_orientations[0][this->macro] >= 8)) ?
+                        (this->matrix_free.get_face_info()
+                           .face_orientations[0][this->macro] %
+                         8) :
+                        0);
+
+          internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
+            this->matrix_free.get_dof_info(),
+            this->matrix_free.get_face_info(),
+            this->matrix_free.get_shape_info())
+            .template process_face<dim_x, dim_v, degree>(
+              internal::MatrixFreeFunctions::
+                VectorDistributorLocalToGlobal<Number, VectorizedArrayType>(),
+              dst.other_values(),
+              &this->data[0],
+              &this->face_no,
+              &face_orientation,
+              this->type == SpaceType::X ? 0 : 8,
+              this->macro,
+              !is_minus_face,
+              this->macro,
+              !is_minus_face);
         }
       else
         {
@@ -472,7 +521,7 @@ namespace hyperdeal
     /**
      * Face number < dim * 2.
      */
-    int face_no;
+    unsigned int face_no;
 
     // clang-format off
     dealii::FEEvaluation<dim_x, degree, n_points, 1, Number, typename PARENT::VectorizedArrayTypeX> phi_x;

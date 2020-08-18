@@ -446,6 +446,8 @@ namespace hyperdeal
     void orientated_hyper_cube_impl(dealii::Triangulation<3> &triangulation,
                                     int                       orientation)
     {
+      AssertIndexRange(orientation, 16);
+
       dealii::Point<3> vertices_1[] = {dealii::Point<3>(-1., -1., -1.),
                                        dealii::Point<3>(+1., -1., -1.),
                                        dealii::Point<3>(-1., +1., -1.),

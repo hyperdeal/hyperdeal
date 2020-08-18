@@ -129,6 +129,13 @@ namespace hyperdeal
               "v-space: number of subdivisions in z-direction.");
           prm.leave_subsection();
 
+          prm.add_parameter("OrientationX",
+                            orientation_x,
+                            "x-space: number of global refinements.");
+          prm.add_parameter("OrientationV",
+                            orientation_v,
+                            "v-space: number of global refinements.");
+
           prm.leave_subsection();
         }
 
@@ -150,10 +157,20 @@ namespace hyperdeal
           for (unsigned int i = 0; i < dim_v; i++)
             p2_v[i] = right;
 
-          // clang-format off
+            // clang-format off
+#if true
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
               n_refinements_x, n_subdivisions_x, p1_x, p2_x, do_periodic_x,
               n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v);
+#elif false
+          hyperdeal::GridGenerator::orientated_hyper_cube(tria_x, tria_v, 
+              n_refinements_x, p1_x, p2_x, do_periodic_x, orientation_x,
+              n_refinements_v, p1_v, p2_v, do_periodic_v, orientation_v);
+#else
+          hyperdeal::GridGenerator::subdivided_hyper_ball(tria_x, tria_v, 
+              n_refinements_x, p1_x, p2_x, do_periodic_x,
+              n_refinements_v, p1_v, p2_v, do_periodic_v);
+#endif
           // clang-format on
         }
 
@@ -198,6 +215,9 @@ namespace hyperdeal
 
         std::vector<unsigned int> n_subdivisions_x;
         std::vector<unsigned int> n_subdivisions_v;
+
+        unsigned int orientation_x = 0;
+        unsigned int orientation_v = 0;
       };
     } // namespace hyperrectangle
   }   // namespace advection

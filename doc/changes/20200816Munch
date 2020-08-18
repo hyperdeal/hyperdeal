@@ -1,0 +1,4 @@
+New: The matrix-free classes hyperdeal::MatrixFree and hyperdeal::FEFaceEvaluation
+support now unstructured grids.
+<br>
+(Peter Munch, 2020/08/16)

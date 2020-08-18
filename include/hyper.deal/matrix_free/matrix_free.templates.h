@@ -70,20 +70,27 @@ namespace hyperdeal
 
     struct GlobalCellInfo
     {
+      // general (cached) info
       unsigned int max_batch_size;
       unsigned int n_cell_batches;
 
-      std::vector<CellInfo>     cells_interior;
-      std::vector<CellInfo>     cells_exterior;
-      std::vector<CellInfo>     cells;
-      std::vector<CellInfo>     cells_ecl;
-      std::vector<unsigned int> cells_lid;
+      // cell information
+      std::vector<unsigned char> cells_fill; // for each macro cell
+      std::vector<CellInfo>      cells;      // for each lane
+      std::vector<unsigned int>  cells_lid;  //
 
-      std::vector<unsigned char> cells_fill;
-      std::vector<unsigned char> faces_fill;
+      // face information in context of FCL
+      std::vector<unsigned char> faces_fill;       // for each macro face
+      std::vector<unsigned int>  interior_face_no; //
+      std::vector<unsigned int>  exterior_face_no; //
+      std::vector<unsigned int>  face_orientation; //
+      std::vector<CellInfo>      cells_interior;   // for each lane
+      std::vector<CellInfo>      cells_exterior;   //
 
-      std::vector<unsigned int> interior_face_no;
-      std::vector<unsigned int> exterior_face_no;
+      // face information in context of ECL
+      std::vector<CellInfo>     cells_exterior_ecl;   // for each lane
+      std::vector<unsigned int> exterior_face_no_ecl; //
+      std::vector<unsigned int> face_orientation_ecl; //
 
       unsigned int
       compute_n_cell_batches() const
@@ -124,12 +131,28 @@ namespace hyperdeal
       }
     };
 
+    /**
+     * Helper class to create a list of ghost faces.
+     */
     struct GlobalCellInfoProcessor
     {
+      /**
+       * Constructor.
+       */
       GlobalCellInfoProcessor(const GlobalCellInfo &info)
         : info(info)
       {}
 
+      /**
+       * Compute ghost faces.
+       */
+      std::vector<FaceInfo>
+      get_ghost_faces(const int dim, const bool ecl = false) const
+      {
+        return get_ghost_faces(get_local_range(), dim, ecl);
+      }
+
+    private:
       std::pair<unsigned int, unsigned int>
       get_local_range() const
       {
@@ -165,19 +188,20 @@ namespace hyperdeal
                   {
                     Assert(i * info.max_batch_size * 2 * dim +
                                d * info.max_batch_size + v <
-                             info.cells_ecl.size(),
+                             info.cells_exterior_ecl.size(),
                            dealii::ExcMessage("Out of range!"));
-                    const auto cell_info =
-                      info.cells_ecl[i * info.max_batch_size * 2 * dim +
-                                     d * info.max_batch_size + v];
-                    unsigned int gid = cell_info.gid;
+
+                    const unsigned int index =
+                      i * info.max_batch_size * 2 * dim +
+                      d * info.max_batch_size + v;
+
+                    const auto cell_info   = info.cells_exterior_ecl[index];
+                    const unsigned int gid = cell_info.gid;
                     if (gid == dealii::numbers::invalid_unsigned_int)
                       continue;
                     if (gid < i_min || i_max < gid)
                       ghosts_faces.emplace_back(
-                        gid,
-                        cell_info.rank,
-                        d ^ 1); // TODO: only for structural mesh
+                        gid, cell_info.rank, info.exterior_face_no_ecl[index]);
                   }
           }
         else
@@ -187,7 +211,7 @@ namespace hyperdeal
                 {
                   const auto cell_info =
                     info.cells_interior[i * info.max_batch_size + v];
-                  unsigned int gid = cell_info.gid;
+                  const unsigned int gid = cell_info.gid;
                   if (gid < i_min || i_max < gid)
                     ghosts_faces.emplace_back(gid,
                                               cell_info.rank,
@@ -210,12 +234,6 @@ namespace hyperdeal
         return ghosts_faces;
       }
 
-      std::vector<FaceInfo>
-      get_ghost_faces(const int dim, const bool ecl = false) const
-      {
-        return get_ghost_faces(get_local_range(), dim, ecl);
-      }
-
       const GlobalCellInfo &info;
     };
 
@@ -226,183 +244,300 @@ namespace hyperdeal
       const dealii::MatrixFree<dim, Number, VectorizedArrayType> &data,
       GlobalCellInfo &                                            info)
     {
-      const dealii::Triangulation<dim> &triangulation =
-        data.get_dof_handler().get_triangulation();
-
-      dealii::FE_DGQ<dim> fe_1(0);
+      // 1) create function to be able translate local cell ids to global ones
+      // and get the rank of the owning process
+      //
+      // TODO: replace by global_active_cell_index once
+      // https://github.com/dealii/dealii/pull/10490 is merged
+      dealii::FE_DGQ<dim> fe(0);
       // ... distribute degrees of freedoms
-      dealii::DoFHandler<dim> dof_handler_1(triangulation);
-      dof_handler_1.distribute_dofs(fe_1);
+      dealii::DoFHandler<dim> dof_handler(
+        data.get_dof_handler().get_triangulation());
+      dof_handler.distribute_dofs(fe);
 
+      const auto cell_to_gid = [&](const auto &cell) {
+        typename dealii::DoFHandler<dim>::level_cell_accessor dof_cell(
+          &data.get_dof_handler().get_triangulation(),
+          cell->level(),
+          cell->index(),
+          &dof_handler);
 
+        std::vector<dealii::types::global_dof_index> indices(1);
+        dof_cell.get_dof_indices(indices);
+        return CellInfo(indices[0], dof_cell.subdomain_id());
+      };
 
-      const auto cell_to_gid =
-        [&](const typename dealii::DoFHandler<dim, dim>::cell_iterator &cell) {
-          dealii::DoFAccessor<dim, dim, dim, true> a(&triangulation,
-                                                     cell->level(),
-                                                     cell->index(),
-                                                     &dof_handler_1);
-
-          std::vector<dealii::types::global_dof_index> indices(1);
-          a.get_dof_indices(indices);
-          return CellInfo(indices[0], a.subdomain_id());
-        };
-
+      // 2) allocate memory
       const unsigned int v_len = VectorizedArrayType::size();
 
+      // ... general info
       info.max_batch_size = v_len;
       info.n_cell_batches = data.n_cell_batches();
 
-      // cells
+      // ... cells
       info.cells.resize(v_len *
                         (data.n_cell_batches() + data.n_ghost_cell_batches()));
-      info.cells_ecl.resize(dealii::GeometryInfo<dim>::faces_per_cell * v_len *
-                            data.n_cell_batches());
+      info.cells_exterior_ecl.resize(dealii::GeometryInfo<dim>::faces_per_cell *
+                                       v_len * data.n_cell_batches(),
+                                     {dealii::numbers::invalid_unsigned_int,
+                                      dealii::numbers::invalid_unsigned_int});
       info.cells_lid.resize(
         v_len * (data.n_cell_batches() + data.n_ghost_cell_batches()));
       info.cells_interior.resize(
         v_len * (data.n_inner_face_batches() + data.n_boundary_face_batches()));
       info.cells_exterior.resize(v_len * data.n_inner_face_batches());
 
-
-      // fill
+      // ... fill
       info.cells_fill.resize(data.n_cell_batches() +
                              data.n_ghost_cell_batches());
       info.faces_fill.resize(data.n_inner_face_batches() +
                              data.n_boundary_face_batches());
 
-      // face_no
+      // ... face_no
       info.interior_face_no.resize(data.n_inner_face_batches() +
                                    data.n_boundary_face_batches());
       info.exterior_face_no.resize(data.n_inner_face_batches());
+      info.exterior_face_no_ecl.resize(
+        dealii::GeometryInfo<dim>::faces_per_cell * v_len *
+        data.n_cell_batches());
 
-      // local cells
+      // ... face_orientation
+      info.face_orientation.resize(data.n_inner_face_batches() +
+                                   data.n_boundary_face_batches());
+      info.face_orientation_ecl.resize(
+        dealii::GeometryInfo<dim>::faces_per_cell * v_len *
+        data.n_cell_batches());
+
+      // 3) collect info by looping over local cells and ...
       for (unsigned int cell = 0;
            cell < data.n_cell_batches() + data.n_ghost_cell_batches();
            cell++)
         {
           info.cells_fill[cell] = data.n_components_filled(cell);
 
+          // loop over all cells in macro cells and fill data structures
           unsigned int v = 0;
           for (; v < data.n_components_filled(cell); v++)
             {
-              auto c_it = data.get_cell_iterator(cell, v);
+              const auto c_it = data.get_cell_iterator(cell, v);
 
+              // global id
               info.cells[cell * v_len + v] = cell_to_gid(c_it);
+
+              // local id -> for data access
+              //
+              // warning: we assume that ghost cells have the same number
+              // of unknowns as interior cells
               info.cells_lid[cell * v_len + v] =
                 data.get_dof_info(/*TODO*/)
                   .dof_indices_contiguous[2][cell * v_len + v] /
                 data.get_dofs_per_cell();
 
+              // for interior cells ...
               if (cell < data.n_cell_batches())
-                for (unsigned int d = 0;
-                     d < dealii::GeometryInfo<dim>::faces_per_cell;
-                     d++)
+                // ... loop over all its faces
+                for (unsigned int face_no = 0;
+                     face_no < dealii::GeometryInfo<dim>::faces_per_cell;
+                     face_no++)
                   {
-                    AssertThrow(c_it->has_periodic_neighbor(d) ||
-                                  !c_it->at_boundary(d),
+                    AssertThrow(c_it->has_periodic_neighbor(face_no) ||
+                                  !c_it->at_boundary(face_no),
                                 dealii::ExcMessage(
-                                  "Boundaries are not supported yet.")) info
-                      .cells_ecl[cell * v_len *
-                                   dealii::GeometryInfo<dim>::faces_per_cell +
-                                 v_len * d + v] =
-                      cell_to_gid(c_it->neighbor_or_periodic_neighbor(d));
-                  }
-            }
-          for (; v < v_len; v++)
-            {
-              if (cell < data.n_cell_batches())
-                for (unsigned int d = 0;
-                     d < dealii::GeometryInfo<dim>::faces_per_cell;
-                     d++)
-                  {
-                    info.cells_ecl[cell * v_len *
-                                     dealii::GeometryInfo<dim>::faces_per_cell +
-                                   v_len * d + v] = {
-                      dealii::numbers::invalid_unsigned_int,
-                      dealii::numbers::invalid_unsigned_int};
+                                  "Boundaries are not supported yet."));
+
+                    const unsigned int n_index =
+                      cell * v_len * dealii::GeometryInfo<dim>::faces_per_cell +
+                      v_len * face_no + v;
+
+                    // .. and collect the neighbors for ECL with the following
+                    // information: 1) global id
+                    info.cells_exterior_ecl[n_index] =
+                      cell_to_gid(c_it->neighbor_or_periodic_neighbor(face_no));
+
+                    // 2) face number and face orientation
+                    //
+                    // note: this is a modified copy and merged version of the
+                    // methods dealii::FEFaceEvaluation::compute_face_no_data()
+                    // and dealii::FEFaceEvaluation::compute_face_orientations()
+                    // so that we don't have to use here FEEFaceEvaluation
+                    {
+                      const unsigned int cell_this =
+                        cell * VectorizedArrayType::size() + v;
+
+                      const unsigned int face_index =
+                        data.get_cell_and_face_to_plain_faces()(cell,
+                                                                face_no,
+                                                                v);
+
+                      Assert(face_index !=
+                               dealii::numbers::invalid_unsigned_int,
+                             dealii::StandardExceptions::ExcNotInitialized());
+
+                      const auto &faces = data.get_face_info(
+                        face_index / VectorizedArrayType::size());
+
+                      const auto cell_m =
+                        faces.cells_interior[face_index %
+                                             VectorizedArrayType::size()];
+
+                      const bool is_interior_face =
+                        (cell_m != cell_this) ||
+                        ((cell_m == cell_this) &&
+                         (face_no !=
+                          data
+                            .get_face_info(face_index /
+                                           VectorizedArrayType::size())
+                            .interior_face_no));
+
+                      info.exterior_face_no_ecl[n_index] =
+                        is_interior_face ? faces.interior_face_no :
+                                           faces.exterior_face_no;
+
+                      if (dim == 3)
+                        {
+                          const bool fo_interior_face =
+                            faces.face_orientation >= 8;
+
+                          const unsigned int face_orientation =
+                            faces.face_orientation % 8;
+
+                          static const std::array<unsigned int, 8> table{
+                            {0, 1, 2, 3, 6, 5, 4, 7}};
+
+                          info.face_orientation_ecl[n_index] =
+                            (is_interior_face != fo_interior_face) ?
+                              table[face_orientation] :
+                              face_orientation;
+                        }
+                      else
+                        info.face_orientation_ecl[n_index] = -1;
+                    }
                   }
             }
         }
 
-      // interior faces
+      // ... interior faces (filled lanes, face_no_m/_p, gid_m/_p)
       for (unsigned int face = 0;
            face < data.n_inner_face_batches() + data.n_boundary_face_batches();
-           face++)
+           ++face)
         {
+          // number of filled lanes
           info.faces_fill[face] = data.n_active_entries_per_face_batch(face);
+
+          // face number
           info.interior_face_no[face] =
             data.get_face_info(face).interior_face_no;
+          info.exterior_face_no[face] =
+            data.get_face_info(face).exterior_face_no;
+
+          // face orientation
+          info.face_orientation[face] =
+            data.get_face_info(face).face_orientation;
+
+          // process cells in batch
           for (unsigned int v = 0;
                v < data.n_active_entries_per_face_batch(face);
-               v++)
+               ++v)
             {
-              const auto cell = data.get_face_info(face).cells_interior[v];
-              info.cells_interior[face * v_len + v] =
-                cell_to_gid(data.get_cell_iterator(cell / v_len, cell % v_len));
+              const auto cell_m = data.get_face_info(face).cells_interior[v];
+              info.cells_interior[face * v_len + v] = cell_to_gid(
+                data.get_cell_iterator(cell_m / v_len, cell_m % v_len));
+
+              const auto cell_p = data.get_face_info(face).cells_exterior[v];
+              info.cells_exterior[face * v_len + v] = cell_to_gid(
+                data.get_cell_iterator(cell_p / v_len, cell_p % v_len));
             }
         }
 
-      // exterior faces
-      for (unsigned int face = 0; face < data.n_inner_face_batches(); face++)
+      // ... boundary faces (filled lanes, face_no_m, gid_m)
+      for (unsigned int face = data.n_inner_face_batches();
+           face < data.n_inner_face_batches() + data.n_boundary_face_batches();
+           ++face)
         {
-          info.exterior_face_no[face] =
-            data.get_face_info(face).exterior_face_no;
+          info.faces_fill[face] = data.n_active_entries_per_face_batch(face);
+
+          info.interior_face_no[face] =
+            data.get_face_info(face).interior_face_no;
+
           for (unsigned int v = 0;
                v < data.n_active_entries_per_face_batch(face);
-               v++)
+               ++v)
             {
-              const auto cell = data.get_face_info(face).cells_exterior[v];
-              info.cells_exterior[face * v_len + v] =
-                cell_to_gid(data.get_cell_iterator(cell / v_len, cell % v_len));
+              const auto cell_m = data.get_face_info(face).cells_interior[v];
+              info.cells_interior[face * v_len + v] = cell_to_gid(
+                data.get_cell_iterator(cell_m / v_len, cell_m % v_len));
             }
         }
     }
 
 
-    class Translator2
+    /**
+     * A class to translate the tensor product of global cell ids to a
+     * single global id. Processes are enumerated lexicographically and cells
+     * are enumerated lexicographically and continuously within a process.
+     */
+    class GlobaleCellIDTranslator
     {
     public:
-      Translator2(const GlobalCellInfo &info_x,
-                  const GlobalCellInfo &info_v,
-                  const MPI_Comm        comm_x,
-                  const MPI_Comm        comm_v)
+      /**
+       * Constructor.
+       */
+      GlobaleCellIDTranslator(const GlobalCellInfo &info_x,
+                              const GlobalCellInfo &info_v,
+                              const MPI_Comm        comm_x,
+                              const MPI_Comm        comm_v)
       {
-        n1.resize(dealii::Utilities::MPI::n_mpi_processes(comm_x) + 1);
-        n2.resize(dealii::Utilities::MPI::n_mpi_processes(comm_v) + 1);
-
+        // determine the first cell of each rank in x-space
         {
-          std::vector<unsigned int> n1_temp(n1.size() - 1);
-          unsigned int              n1_local = info_x.compute_n_cells();
-          MPI_Allgather(
-            &n1_local, 1, MPI_UNSIGNED, &n1_temp[0], 1, MPI_UNSIGNED, comm_x);
-          for (unsigned int i = 0; i < n1.size() - 1; i++)
-            n1[i + 1] = n1[i] + n1_temp[i];
+          // allocate memory
+          n1.resize(dealii::Utilities::MPI::n_mpi_processes(comm_x) + 1);
 
-          std::vector<unsigned int> n2_temp(n2.size() - 1);
-          unsigned int              n2_local = info_v.compute_n_cells();
+          // number of locally owned cells
+          const unsigned int n_local = info_x.compute_n_cells();
+
+          // gather the number of cells of all processes
           MPI_Allgather(
-            &n2_local, 1, MPI_UNSIGNED, &n2_temp[0], 1, MPI_UNSIGNED, comm_v);
+            &n_local, 1, MPI_UNSIGNED, n1.data() + 1, 1, MPI_UNSIGNED, comm_x);
+
+          // perform prefix sum
+          for (unsigned int i = 0; i < n1.size() - 1; i++)
+            n1[i + 1] += n1[i];
+        }
+
+        // the same for v-space
+        {
+          n2.resize(dealii::Utilities::MPI::n_mpi_processes(comm_v) + 1);
+          unsigned int local = info_v.compute_n_cells();
+          MPI_Allgather(
+            &local, 1, MPI_UNSIGNED, n2.data() + 1, 1, MPI_UNSIGNED, comm_v);
           for (unsigned int i = 0; i < n2.size() - 1; i++)
-            n2[i + 1] = n2[i] + n2_temp[i];
+            n2[i + 1] += n2[i];
         }
       }
 
+      /**
+       * Translate the tensor product of global cell IDs to a single global ID.
+       */
       CellInfo
-      translate(unsigned int gid1,
-                unsigned int rank1,
-                unsigned int gid2,
-                unsigned int rank2)
+      translate(const CellInfo &id1, const CellInfo &id2) const
       {
-        AssertThrow(rank1 < n1.size(),
-                    dealii::ExcMessage("Size does not match."));
-        AssertThrow(rank2 < n2.size(),
-                    dealii::ExcMessage("Size does not match."));
-        unsigned int lid1 = gid1 - n1[rank1];
-        unsigned int lid2 = gid2 - n2[rank2];
+        // extract needed information
+        const unsigned int gid1  = id1.gid;
+        const unsigned int rank1 = id1.rank;
+        const unsigned int gid2  = id2.gid;
+        const unsigned int rank2 = id2.rank;
 
-        unsigned int lid = lid1 + lid2 * (n1[rank1 + 1] - n1[rank1]);
+        AssertIndexRange(rank1 + 1, n1.size());
+        AssertIndexRange(rank2 + 1, n2.size());
 
+        // 1) determine local IDs
+        const unsigned int lid1 = gid1 - n1[rank1];
+        const unsigned int lid2 = gid2 - n2[rank2];
+
+        // 2) determine local ID by taking taking tensor product
+        const unsigned int lid = lid1 + lid2 * (n1[rank1 + 1] - n1[rank1]);
+
+        // 3) add offset to local ID to get global ID
         return {lid + n1.back() * n2[rank2] +
                   n1[rank1] * (n2[rank2 + 1] - n2[rank2]),
                 rank1 + ((unsigned int)n1.size() - 1) * rank2};
@@ -429,16 +564,19 @@ namespace hyperdeal
       info.n_cell_batches =
         info_x.compute_n_cell_batches() * info_v.compute_n_cells();
 
-      Translator2 t(info_x, info_v, comm_x, comm_v);
+      // helper function to create the global cell id of a tensor-product cell
+      GlobaleCellIDTranslator translator(info_x, info_v, comm_x, comm_v);
 
-      auto process = [&](unsigned int i_x, unsigned int i_v, unsigned int v_v) {
+      // helper function to create the tensor product of cells
+      const auto process = [&](const unsigned int i_x,
+                               const unsigned int i_v,
+                               const unsigned int v_v) {
         unsigned int v_x = 0;
         for (; v_x < info_x.cells_fill[i_x]; v_x++)
           {
             const auto cell_x = info_x.cells[i_x * info_x.max_batch_size + v_x];
             const auto cell_y = info_v.cells[i_v * info_v.max_batch_size + v_v];
-            info.cells.emplace_back(
-              t.translate(cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+            info.cells.emplace_back(translator.translate(cell_x, cell_y));
           }
         for (; v_x < info_x.max_batch_size; v_x++)
           info.cells.emplace_back(-1, -1);
@@ -470,17 +608,25 @@ namespace hyperdeal
                   unsigned int v_x = 0;
                   for (; v_x < info_x.cells_fill[i_x]; v_x++)
                     {
-                      const auto cell_x =
-                        info_x
-                          .cells_ecl[i_x * info_x.max_batch_size * 2 * dim_x +
-                                     d * info_x.max_batch_size + v_x];
+                      const unsigned int index =
+                        i_x * info_x.max_batch_size * 2 * dim_x +
+                        d * info_x.max_batch_size + v_x;
+                      const auto cell_x = info_x.cells_exterior_ecl[index];
                       const auto cell_y =
                         info_v.cells[i_v * info_v.max_batch_size + v_v];
-                      info.cells_ecl.emplace_back(t.translate(
-                        cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+                      info.cells_exterior_ecl.emplace_back(
+                        translator.translate(cell_x, cell_y));
+                      info.exterior_face_no_ecl.emplace_back(
+                        info_x.exterior_face_no_ecl[index]);
+                      info.face_orientation_ecl.emplace_back(
+                        info_x.face_orientation_ecl[index]); // TODO?
                     }
                   for (; v_x < info_x.max_batch_size; v_x++)
-                    info.cells_ecl.emplace_back(-1, -1);
+                    {
+                      info.cells_exterior_ecl.emplace_back(-1, -1);
+                      info.exterior_face_no_ecl.emplace_back(-1);
+                      info.face_orientation_ecl.emplace_back(-1);
+                    }
                 }
 
               for (int d = 0; d < 2 * dim_v; d++)
@@ -490,15 +636,24 @@ namespace hyperdeal
                     {
                       const auto cell_x =
                         info_x.cells[i_x * info_x.max_batch_size + v_x];
-                      const auto cell_y =
-                        info_v
-                          .cells_ecl[i_v * info_v.max_batch_size * 2 * dim_v +
-                                     d * info_v.max_batch_size + v_v];
-                      info.cells_ecl.emplace_back(t.translate(
-                        cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+
+                      const unsigned index =
+                        i_v * info_v.max_batch_size * 2 * dim_v +
+                        d * info_v.max_batch_size + v_v;
+                      const auto cell_y = info_v.cells_exterior_ecl[index];
+                      info.cells_exterior_ecl.emplace_back(
+                        translator.translate(cell_x, cell_y));
+                      info.exterior_face_no_ecl.emplace_back(
+                        info_v.exterior_face_no_ecl[index] + 2 * dim_x);
+                      info.face_orientation_ecl.emplace_back(
+                        info_v.face_orientation_ecl[index]); // TODO?
                     }
                   for (; v_x < info_x.max_batch_size; v_x++)
-                    info.cells_ecl.emplace_back(-1, -1);
+                    {
+                      info.cells_exterior_ecl.emplace_back(-1, -1);
+                      info.exterior_face_no_ecl.emplace_back(-1);
+                      info.face_orientation_ecl.emplace_back(-1);
+                    }
                 }
             }
 
@@ -534,8 +689,8 @@ namespace hyperdeal
                       info_x.cells_interior[i_x * info_x.max_batch_size + v_x];
                     const auto cell_y =
                       info_v.cells[i_v * info_v.max_batch_size + v_v];
-                    info.cells_interior.emplace_back(t.translate(
-                      cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+                    info.cells_interior.emplace_back(
+                      translator.translate(cell_x, cell_y));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
                   info.cells_interior.emplace_back(-1, -1);
@@ -543,6 +698,7 @@ namespace hyperdeal
                 info.faces_fill.push_back(info_x.faces_fill[i_x]);
 
                 info.interior_face_no.push_back(info_x.interior_face_no[i_x]);
+                info.face_orientation.push_back(info_x.face_orientation[i_x]);
               }
 
         // interior faces (cell x face):
@@ -557,8 +713,8 @@ namespace hyperdeal
                       info_x.cells[i_x * info_x.max_batch_size + v_x];
                     const auto cell_y =
                       info_v.cells_interior[i_v * info_v.max_batch_size + v_v];
-                    info.cells_interior.emplace_back(t.translate(
-                      cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+                    info.cells_interior.emplace_back(
+                      translator.translate(cell_x, cell_y));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
                   info.cells_interior.emplace_back(-1, -1);
@@ -567,6 +723,7 @@ namespace hyperdeal
 
                 info.interior_face_no.push_back(info_v.interior_face_no[i_v] +
                                                 2 * dim_x);
+                info.face_orientation.push_back(info_v.face_orientation[i_v]);
               }
       }
 
@@ -586,8 +743,8 @@ namespace hyperdeal
                       info_x.cells_exterior[i_x * info_x.max_batch_size + v_x];
                     const auto cell_y =
                       info_v.cells[i_v * info_v.max_batch_size + v_v];
-                    info.cells_exterior.emplace_back(t.translate(
-                      cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+                    info.cells_exterior.emplace_back(
+                      translator.translate(cell_x, cell_y));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
                   info.cells_exterior.emplace_back(-1, -1);
@@ -607,8 +764,8 @@ namespace hyperdeal
                       info_x.cells[i_x * info_x.max_batch_size + v_x];
                     const auto cell_y =
                       info_v.cells_exterior[i_v * info_v.max_batch_size + v_v];
-                    info.cells_exterior.emplace_back(t.translate(
-                      cell_x.gid, cell_x.rank, cell_y.gid, cell_y.rank));
+                    info.cells_exterior.emplace_back(
+                      translator.translate(cell_x, cell_y));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
                   info.cells_exterior.emplace_back(-1, -1);
@@ -657,18 +814,11 @@ namespace hyperdeal
     AssertDimension(matrix_free_x.get_shape_info().data.front().fe_degree,
                     matrix_free_v.get_shape_info().data.front().fe_degree);
 
-    this->shape_info.template reinit<dim_x + dim_v>(
-      matrix_free_x.get_shape_info().data.front().fe_degree);
-
-    partitioner =
-      std::make_shared<internal::MatrixFreeFunctions::Partitioner<Number>>(
-        shape_info);
-
-    reader_writer = std::make_shared<
-      internal::MatrixFreeFunctions::VectorReaderWriter<Number>>(dof_info,
-                                                                 face_info);
-
     const int dim = dim_x + dim_v;
+
+    // set up shape_info
+    this->shape_info.template reinit<dim_x, dim_v>(
+      matrix_free_x.get_shape_info().data.front().fe_degree);
 
     // collect (global) information of each macro cell in phase space
     const auto info = [&]() {
@@ -682,8 +832,8 @@ namespace hyperdeal
 
       // create tensor product
       internal::combine_global_cell_info(
-        matrix_free_x.get_vector_partitioner(/*TODO*/)->get_mpi_communicator(),
-        matrix_free_v.get_vector_partitioner(/*TODO*/)->get_mpi_communicator(),
+        matrix_free_x.get_task_info().communicator,
+        matrix_free_v.get_task_info().communicator,
         info_x,
         info_v,
         info,
@@ -693,8 +843,15 @@ namespace hyperdeal
       return info;
     }();
 
+    // set up partitioner
+    this->partitioner = [&] {
+      AssertThrow(do_ghost_faces,
+                  dealii::StandardExceptions::ExcNotImplemented());
 
-    {
+      auto partitioner =
+        std::make_shared<internal::MatrixFreeFunctions::Partitioner<Number>>(
+          shape_info);
+
       // create a list of inner cells and ghost faces
       std::vector<dealii::types::global_dof_index> local_list;
       std::vector<
@@ -712,21 +869,27 @@ namespace hyperdeal
 
       // 2) collect ghost faces and group them for each cell
       {
-        const internal::GlobalCellInfoProcessor gcip(info);
-        auto ghost_faces = gcip.get_ghost_faces(dim, this->use_ecl);
+        // a) get ghost faces
+        auto ghost_faces =
+          internal::GlobalCellInfoProcessor(info).get_ghost_faces(
+            dim, this->use_ecl);
 
+        // b) sort them
         std::sort(ghost_faces.begin(),
                   ghost_faces.end(),
                   [](const auto &a, const auto &b) {
+                    // according to global id of corresponding cell ...
                     if (a.gid < b.gid)
                       return true;
 
+                    // ... and face number
                     if (a.gid == b.gid && a.no < b.no)
                       return true;
 
                     return false;
                   });
 
+        // c) group them
         if (ghost_faces.size() > 0)
           {
             auto ptr = ghost_faces.begin();
@@ -746,19 +909,11 @@ namespace hyperdeal
           }
       }
 
-      // setup partitioner
-      if (do_ghost_faces)
-        {
-          // ghost faces only
-          this->partitioner->reinit(
-            local_list, ghost_list, comm, comm_sm, do_buffering);
-        }
-      else
-        {
-          // ghost cells only
-          AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-        }
-    }
+      // actually setup partitioner
+      partitioner->reinit(local_list, ghost_list, comm, comm_sm, do_buffering);
+
+      return partitioner;
+    }();
 
 
     // set up rest of dof_info and face_info (1)
@@ -767,8 +922,9 @@ namespace hyperdeal
         dof_info.n_vectorization_lanes_filled;
       auto &dof_indices_contiguous = dof_info.dof_indices_contiguous;
       auto &no_faces               = face_info.no_faces;
+      auto &face_orientations      = face_info.face_orientations;
 
-      // 3) collect gids according to vectorization
+      // 1) collect gids (dof_indices) according to vectorization
       {
         for (unsigned int i = 0; i < info.interior_face_no.size(); i++)
           for (unsigned int v = 0; v < info.max_batch_size; v++)
@@ -789,13 +945,14 @@ namespace hyperdeal
             for (unsigned int v = 0; v < info.max_batch_size; v++)
               dof_indices_contiguous[3].push_back(
                 info
-                  .cells_ecl[i * info.max_batch_size *
-                               dealii::GeometryInfo<dim>::faces_per_cell +
-                             d * info.max_batch_size + v]
+                  .cells_exterior_ecl
+                    [i * info.max_batch_size *
+                       dealii::GeometryInfo<dim>::faces_per_cell +
+                     d * info.max_batch_size + v]
                   .gid);
       }
 
-      // 4) collect filled lanes
+      // 2) collect filled lanes
       {
         for (unsigned int i = 0; i < info.interior_face_no.size(); i++)
           n_vectorization_lanes_filled[0].push_back(info.faces_fill[i]);
@@ -806,7 +963,8 @@ namespace hyperdeal
         for (unsigned int i = 0; i < info.n_cell_batches; i++)
           n_vectorization_lanes_filled[2].push_back(info.cells_fill[i]);
 
-        if (this->use_ecl) // TODO: why the hack are ECL data structures set up?
+        if (this->use_ecl) // filled only so that the code is more generic
+                           // cleared later on!
           for (unsigned int i = 0; i < info.n_cell_batches; i++)
             for (unsigned int d = 0;
                  d < dealii::GeometryInfo<dim>::faces_per_cell;
@@ -814,10 +972,17 @@ namespace hyperdeal
               n_vectorization_lanes_filled[3].push_back(info.cells_fill[i]);
       }
 
-      // 5) collect face orientations
+      // 3) collect face numbers
       {
         no_faces[0] = info.interior_face_no;
         no_faces[1] = info.exterior_face_no;
+        no_faces[3] = info.exterior_face_no_ecl;
+      }
+
+      // 3) collect face orientations
+      {
+        face_orientations[0] = info.face_orientation;
+        face_orientations[3] = info.face_orientation_ecl;
       }
     }
 
@@ -828,64 +993,65 @@ namespace hyperdeal
       const auto &vectorization_length = dof_info.n_vectorization_lanes_filled;
       const auto &dof_indices_contiguous = dof_info.dof_indices_contiguous;
       const auto &no_faces               = face_info.no_faces;
+      const auto &face_orientations      = face_info.face_orientations;
 
       const auto &maps       = partitioner->get_maps();
       const auto &maps_ghost = partitioner->get_maps_ghost();
+
+      static const int v_len = VectorizedArrayType::size();
 
       // to be computed
       auto &cell_ptrs = dof_info.dof_indices_contiguous_ptr;
       auto &face_type = face_info.face_type;
       auto &face_all  = face_info.face_all;
 
+      // allocate memory
       for (unsigned int i = 0; i < 4; i++)
         cell_ptrs[i].resize(dof_indices_contiguous[i].size());
 
       for (unsigned int i = 0; i < 4; i++)
-        if (i != 2)
-          face_type[i].resize(dof_indices_contiguous[i].size());
+        face_type[i].resize(i == 2 ? 0 : dof_indices_contiguous[i].size());
 
       for (unsigned int i = 0; i < 4; i++)
-        if (i != 2)
-          face_all[i].resize(vectorization_length[i].size());
+        face_all[i].resize(i == 2 ? 0 : vectorization_length[i].size());
 
-      static const int v_len = VectorizedArrayType::size();
-
+      // process faces: cell_ptrs and face_type
       for (unsigned int i = 0; i < 4; i++)
-        if (i != 2)
+        {
+          if (i == 2)
+            continue; // nothing to do for cells - it is done later
+
           for (unsigned int j = 0; j < vectorization_length[i].size(); j++)
-            for (unsigned int k = 0; k < vectorization_length[i][j]; k++)
+            for (unsigned int v = 0; v < vectorization_length[i][j]; v++)
               {
-                unsigned int l = j * v_len + k;
+                const unsigned int l = j * v_len + v;
                 Assert(l < dof_indices_contiguous[i].size(),
                        dealii::StandardExceptions::ExcMessage(
                          "Size of gid does not match."));
-                unsigned int gid_this = dof_indices_contiguous[i][l];
+                const unsigned int gid_this = dof_indices_contiguous[i][l];
 
                 Assert(gid_this != dealii::numbers::invalid_unsigned_int,
                        dealii::StandardExceptions::ExcMessage(
                          "Boundaries are not supported yet."));
 
-                auto ptr1 = maps_ghost.find(
+                const auto ptr1 = maps_ghost.find(
                   {gid_this,
-                   do_ghost_faces ?
-                     (i == 3 ?
-                        (j % (dim * 2)) ^ 1 /*TODO: only for structural mesh*/ :
-                        no_faces[i][j]) :
-                     dealii::numbers::invalid_unsigned_int});
+                   do_ghost_faces ? no_faces[i][i == 3 ? l : j] :
+                                    dealii::numbers::invalid_unsigned_int});
 
                 if (ptr1 != maps_ghost.end())
                   {
                     cell_ptrs[i][l] = {ptr1->second.first, ptr1->second.second};
-                    face_type[i][l] = true;
+                    face_type[i][l] = true; // ghost face
                     continue;
                   }
 
-                auto ptr2 = maps.find(gid_this);
+                const auto ptr2 = maps.find(gid_this);
 
                 if (ptr2 != maps.end())
                   {
                     cell_ptrs[i][l] = {ptr2->second.first, ptr2->second.second};
-                    face_type[i][l] = false;
+                    face_type[i][l] = false; // cell is part of sm
                     continue;
                   }
 
@@ -893,32 +1059,43 @@ namespace hyperdeal
                             dealii::StandardExceptions::ExcMessage(
                               "Cell not found!"));
               }
+        }
 
+      // process faces: face_all
       for (unsigned int i = 0; i < 4; i++)
-        if (i != 2)
+        {
+          if (i == 2)
+            continue; // nothing to do for cells - it is done later
+
           for (unsigned int j = 0; j < vectorization_length[i].size(); j++)
             {
               bool temp = true;
-              for (unsigned int k = 0; k < vectorization_length[i][j]; k++)
-                temp &= face_type[i][j * v_len] && face_type[i][j * v_len + k];
+              for (unsigned int v = 0; v < vectorization_length[i][j]; v++)
+                temp &=
+                  (face_type[i][j * v_len] == face_type[i][j * v_len + v]) &&
+                  (i == 3 ?
+                     ((no_faces[i][j * v_len] == no_faces[i][j * v_len + v]) &&
+                      (face_orientations[i][j * v_len] ==
+                       face_orientations[i][j * v_len + v])) :
+                     true);
               face_all[i][j] = temp;
             }
+        }
 
-      for (unsigned int i = 2; i < 3; i++)
-        for (unsigned int j = 0; j < vectorization_length[i].size(); j++)
-          for (unsigned int k = 0; k < vectorization_length[i][j]; k++)
-            {
-              unsigned int l = j * v_len + k;
+      // process cells
+      for (unsigned int j = 0; j < vectorization_length[2].size(); j++)
+        for (unsigned int v = 0; v < vectorization_length[2][j]; v++)
+          {
+            const unsigned int l        = j * v_len + v;
+            const unsigned int gid_this = dof_indices_contiguous[2][l];
+            const auto         ptr      = maps.find(gid_this);
 
-              unsigned int gid_this = dof_indices_contiguous[i][l];
-              auto         ptr      = maps.find(gid_this);
+            cell_ptrs[2][l] = {ptr->second.first, ptr->second.second};
+          }
 
-              // TODO: why?
-              if (ptr == maps.end())
-                continue;
-
-              cell_ptrs[i][l] = {ptr->second.first, ptr->second.second};
-            }
+      // clear vector since it is not needed anymore, since the values
+      // are the same as for cells
+      dof_info.n_vectorization_lanes_filled[3].clear();
     }
   }
 
@@ -936,7 +1113,7 @@ namespace hyperdeal
                 dealii::ExcMessage(
                   "Only one dof_handler supported at the moment!"));
 
-    AssertThrow((partitioner != nullptr) && (reader_writer != nullptr),
+    AssertThrow((partitioner != nullptr),
                 dealii::ExcMessage("Partitioner has not been initialized!"));
 
     // setup vector
@@ -1032,6 +1209,31 @@ namespace hyperdeal
     const DataAccessOnFaces src_vector_face_access,
     Timers *                timers) const
   {
+    this->template loop_cell_centric<OutVector, InVector>(
+      [&cell_operation, &owning_class](const MatrixFree &mf,
+                                       OutVector &       dst,
+                                       const InVector &  src,
+                                       const ID          id) {
+        (owning_class->*cell_operation)(mf, dst, src, id);
+      },
+      dst,
+      src,
+      src_vector_face_access,
+      timers);
+  }
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  template <typename OutVector, typename InVector>
+  void
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::loop_cell_centric(
+    const std::function<
+      void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+      &                     cell_operation,
+    OutVector &             dst,
+    const InVector &        src,
+    const DataAccessOnFaces src_vector_face_access,
+    Timers *                timers) const
+  {
     if (src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
@@ -1062,10 +1264,7 @@ namespace hyperdeal
              v < matrix_free_v.n_active_entries_per_cell_batch(j);
              v++)
           for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
-            (owning_class->*cell_operation)(*this,
-                                            dst,
-                                            src,
-                                            ID(i, j * v_len + v, i0));
+            cell_operation(*this, dst, src, ID(i, j * v_len + v, i0));
     }
 
     if (!do_buffering)
@@ -1094,6 +1293,53 @@ namespace hyperdeal
                                       const InVector &,
                                       const ID),
     CLASS *                 owning_class,
+    OutVector &             dst,
+    const InVector &        src,
+    const DataAccessOnFaces dst_vector_face_access,
+    const DataAccessOnFaces src_vector_face_access,
+    Timers *                timers) const
+  {
+    this->template loop<OutVector, InVector>(
+      [&cell_operation, &owning_class](const MatrixFree &mf,
+                                       OutVector &       dst,
+                                       const InVector &  src,
+                                       const ID          id) {
+        (owning_class->*cell_operation)(mf, dst, src, id);
+      },
+      [&face_operation, &owning_class](const MatrixFree &mf,
+                                       OutVector &       dst,
+                                       const InVector &  src,
+                                       const ID          id) {
+        (owning_class->*face_operation)(mf, dst, src, id);
+      },
+      [&boundary_operation, &owning_class](const MatrixFree &mf,
+                                           OutVector &       dst,
+                                           const InVector &  src,
+                                           const ID          id) {
+        (owning_class->*boundary_operation)(mf, dst, src, id);
+      },
+      dst,
+      src,
+      dst_vector_face_access,
+      src_vector_face_access,
+      timers);
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  template <typename OutVector, typename InVector>
+  void
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::loop(
+    const std::function<
+      void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+      &cell_operation,
+    const std::function<
+      void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+      &face_operation,
+    const std::function<
+      void(const MatrixFree &, OutVector &, const InVector &, const ID)>
+      &                     boundary_operation,
     OutVector &             dst,
     const InVector &        src,
     const DataAccessOnFaces dst_vector_face_access,
@@ -1147,7 +1393,7 @@ namespace hyperdeal
       for(unsigned int j = 0; j < n_cell_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_cell_batch(j); v++)
           for(unsigned int i = 0; i < n_cell_batches_x; i++)
-            (owning_class->*cell_operation)(*this, dst, src, ID(i, j * v_len + v, i0++));
+            cell_operation(*this, dst, src, ID(i, j * v_len + v, i0++));
     }
   
     // loop over all inner faces ...
@@ -1156,14 +1402,14 @@ namespace hyperdeal
       for(unsigned int j = 0; j < n_cell_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_cell_batch(j); v++)
           for(unsigned int i = 0; i < n_inner_face_batches_x; i++)
-            (owning_class->*face_operation)(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::X));
+            face_operation(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::X));
     }
     for(unsigned int j = 0; j < n_inner_face_batches_v; j++)
     {
       ScopedTimerWrapper timer(timers, "face_loop_v");
       for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_face_batch(j); v++)
         for(unsigned int i = 0; i < n_cell_batches_x; i++)
-          (owning_class->*face_operation)(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::V));
+          face_operation(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::V));
     }
       
     // ... and continue to loop over all boundary faces
@@ -1172,14 +1418,14 @@ namespace hyperdeal
       for(unsigned int j = 0; j < n_cell_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_cell_batch(j); v++)
           for(unsigned int i = n_inner_face_batches_x; i < n_inner_or_boundary_face_batches_x; i++)
-            (owning_class->*boundary_operation)(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::X));
+            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::X));
     }
     {
       ScopedTimerWrapper timer(timers, "boundary_loop_v");
       for(unsigned int j = n_inner_face_batches_v; j < n_inner_or_boundary_face_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_face_batch(j); v++)
           for(unsigned int i = 0; i < n_cell_batches_x; i++)
-            (owning_class->*boundary_operation)(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::V));
+            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::V));
     }
     // clang-format on
 
@@ -1291,15 +1537,6 @@ namespace hyperdeal
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_shape_info() const
   {
     return shape_info;
-  }
-
-
-
-  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
-  const internal::MatrixFreeFunctions::VectorReaderWriter<Number> &
-  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_read_writer() const
-  {
-    return *reader_writer;
   }
 
 } // namespace hyperdeal
