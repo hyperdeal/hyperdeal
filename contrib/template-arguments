@@ -1,0 +1,4 @@
+REAL_SCALARS := { double; float }
+
+DIM_X := { 1; 2; 3 }
+DIM_V := { 1; 2; 3 }

@@ -447,9 +447,7 @@ namespace LinearAlgebra
         data_this[i] = 0.0;
     }
 
-
-
-    template class Vector<double>;
+#include "sm_vector.inst"
 
   } // namespace SharedMPI
 } // namespace LinearAlgebra

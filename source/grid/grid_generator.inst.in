@@ -13,23 +13,11 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef HYPERDEAL_GRID_GRIDGENERATOR
-#define HYPERDEAL_GRID_GRIDGENERATOR
 
-#include <deal.II/distributed/fully_distributed_tria.h>
-#include <deal.II/distributed/tria.h>
 
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/grid_tools.h>
-
-namespace hyperdeal
-{
-  /**
-   * TODO: replace shared_ptr!
-   */
-  namespace GridGenerator
+for (dim_x : DIM_X; dim_v : DIM_V)
   {
-    template <int dim_x, int dim_v>
+    template
     void
     subdivided_hyper_rectangle(
       std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
@@ -45,8 +33,7 @@ namespace hyperdeal
       const dealii::Point<dim_v> &     right_v,
       const bool                       do_periodic_v);
 
-
-    template <int dim_x, int dim_v>
+    template
     void
     hyper_cube(
       std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
@@ -60,18 +47,13 @@ namespace hyperdeal
       const double        right_v,
       const bool          do_periodic_v);
 
-    template <int dim_x, int dim_v>
+    template
     void
     hyper_cube(
       std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
       std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v,
       const bool                                                   do_periodic,
       const unsigned int &n_refinements,
-      const double        left  = 0.0,
-      const double        right = 1.0);
-
-  } // namespace GridGenerator
-
-} // namespace hyperdeal
-
-#endif
+      const double        left  ,
+      const double        right );
+  }

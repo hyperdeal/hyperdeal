@@ -36,14 +36,7 @@ ENDIF()
 
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
-SET( TARGET_SRC 
-    hyperdeal.cc 
-    source/base/function.cc 
-    source/base/mpi.cc 
-    source/base/time_integrators.cc 
-    source/base/time_loop.cc 
-    source/base/utilities.cc 
-    source/lac/sm_vector.cc)
+SET( TARGET_SRC hyperdeal.cc )
 
 # Set the include directory and the name of the project
 INCLUDE_DIRECTORIES(include)
@@ -66,6 +59,15 @@ ADD_CUSTOM_TARGET(release
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
 DEAL_II_SETUP_TARGET(hyperdeal)
+
+# load macros and scripts
+ADD_SUBDIRECTORY(cmake)
+
+# build source files
+ADD_SUBDIRECTORY(source)
+
+# target the source files
+TARGET_LINK_LIBRARIES(hyperdeal obj_base obj_grid obj_lac)
 
 ADD_SUBDIRECTORY(examples)
 
