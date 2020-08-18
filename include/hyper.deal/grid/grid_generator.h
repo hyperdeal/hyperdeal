@@ -25,10 +25,16 @@
 namespace hyperdeal
 {
   /**
+   * This namespace provides a collection of functions for generating
+   * triangulations for some basic tensor-product geometries.
+   *
    * TODO: replace shared_ptr!
    */
   namespace GridGenerator
   {
+    /**
+     * Create two dealii::GridGenerator::subdivided_hyper_rectangle().
+     */
     template <int dim_x, int dim_v>
     void
     subdivided_hyper_rectangle(
@@ -46,6 +52,9 @@ namespace hyperdeal
       const bool                       do_periodic_v);
 
 
+    /**
+     * Create two dealii::GridGenerator::hyper_cube().
+     */
     template <int dim_x, int dim_v>
     void
     hyper_cube(
@@ -60,6 +69,10 @@ namespace hyperdeal
       const double        right_v,
       const bool          do_periodic_v);
 
+    /**
+     * Same as above but that the parameters of x- and v-space triangulation are
+     * chosen the same way.
+     */
     template <int dim_x, int dim_v>
     void
     hyper_cube(
@@ -69,6 +82,53 @@ namespace hyperdeal
       const unsigned int &n_refinements,
       const double        left  = 0.0,
       const double        right = 1.0);
+
+    /**
+     * Same as above but that each coarse cell is subdivided in z-direction.
+     * In contrast to hyperdeal::GridGenerator::subdivided_hyper_rectangle,
+     * one can give the coarse cells different orientations
+     * (0 &ge; orientation_x, orientation_v &lt; 16). This function is
+     * particular useful, since it is the most simple prototype of an
+     * unstrucured grid and enables straight-forward debugging.
+     *
+     * @note Only implemented for dim_x==dim_v==3.
+     */
+    template <int dim_x, int dim_v>
+    void
+    orientated_hyper_cube(
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v,
+      const unsigned int &        n_refinements_x,
+      const dealii::Point<dim_x> &left_x,
+      const dealii::Point<dim_x> &right_x,
+      const bool                  do_periodic_x,
+      const unsigned int &        orientation_x,
+      const unsigned int &        n_refinements_v,
+      const dealii::Point<dim_v> &left_v,
+      const dealii::Point<dim_v> &right_v,
+      const bool                  do_periodic_v,
+      const unsigned int &        orientation_v);
+
+    /**
+     * Create two dealii::GridGenerator::hyper_ball().
+     *
+     * @note Before refinement, we remove the manifolds from geometric entities
+     *   of the triangluations so that the final bounding faces look exactly
+     *   like in the case of hyperdeal::GridGenerator::hyper_cube().
+     */
+    template <int dim_x, int dim_v>
+    void
+    subdivided_hyper_ball(
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v,
+      const unsigned int &        n_refinements_x,
+      const dealii::Point<dim_x> &left_x,
+      const dealii::Point<dim_x> &right_x,
+      const bool                  do_periodic_x,
+      const unsigned int &        n_refinements_v,
+      const dealii::Point<dim_v> &left_v,
+      const dealii::Point<dim_v> &right_v,
+      const bool                  do_periodic_v);
 
   } // namespace GridGenerator
 
