@@ -302,12 +302,6 @@ namespace hyperdeal
         local_size() const;
 
         /**
-         * Return number of ghost elements.
-         */
-        std::size_t
-        ghost_size() const;
-
-        /**
          * Return position of shared cell: cell -> (owner, offset)
          */
         const std::map<dealii::types::global_dof_index,
@@ -344,6 +338,7 @@ namespace hyperdeal
         // II) MPI-communicator related stuff
         MPI_Comm     comm_all;
         MPI_Comm     sm_comm;
+        unsigned int n_mpi_processes_;
         unsigned int sm_size;
         unsigned int sm_rank;
 
@@ -400,6 +395,8 @@ namespace hyperdeal
         (void)communication_channel;
       }
 
+
+
       void
       Partitioner::update_ghost_values_finish(
         double *                       data_this,
@@ -411,6 +408,8 @@ namespace hyperdeal
         (void)buffer;
       }
 
+
+
       void
       Partitioner::update_ghost_values(
         double *                       data_this,
@@ -421,6 +420,8 @@ namespace hyperdeal
         (void)data_others;
         (void)buffer;
       }
+
+
 
       void
       Partitioner::compress_start(
@@ -435,6 +436,8 @@ namespace hyperdeal
         (void)communication_channel;
       }
 
+
+
       void
       Partitioner::compress_finish(double *                       data_this,
                                    std::vector<double *> &        data_others,
@@ -445,6 +448,8 @@ namespace hyperdeal
         (void)buffer;
       }
 
+
+
       void
       Partitioner::compress(double *                       data_this,
                             std::vector<double *> &        data_others,
@@ -454,6 +459,8 @@ namespace hyperdeal
         (void)data_others;
         (void)buffer;
       }
+
+
 
       void
       Partitioner::update_ghost_values_start(
@@ -468,6 +475,8 @@ namespace hyperdeal
         (void)communication_channel;
       }
 
+
+
       void
       Partitioner::update_ghost_values_finish(
         float *                       data_this,
@@ -479,6 +488,8 @@ namespace hyperdeal
         (void)buffer;
       }
 
+
+
       void
       Partitioner::update_ghost_values(
         float *                       data_this,
@@ -489,6 +500,8 @@ namespace hyperdeal
         (void)data_others;
         (void)buffer;
       }
+
+
 
       void
       Partitioner::compress_start(
@@ -503,6 +516,8 @@ namespace hyperdeal
         (void)communication_channel;
       }
 
+
+
       void
       Partitioner::compress_finish(float *                       data_this,
                                    std::vector<float *> &        data_others,
@@ -512,6 +527,8 @@ namespace hyperdeal
         (void)data_others;
         (void)buffer;
       }
+
+
 
       void
       Partitioner::compress(float *                       data_this,
@@ -653,34 +670,39 @@ namespace hyperdeal
                           const dealii::IndexSet &is_locally_ghost,
                           const MPI_Comm &        communicator)
       {
-        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented())
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
 
-          (void) is_locally_owned;
+        (void)is_locally_owned;
         (void)is_locally_ghost;
         (void)communicator;
       }
 
 
+
       std::size_t
       Partitioner::n_ghost_indices() const
       {
-        AssertThrow(false,
-                    dealii::StandardExceptions::ExcNotImplemented()) return 0;
+        return _ghost_size;
       }
+
+
 
       std::size_t
       Partitioner::n_mpi_processes() const
       {
-        AssertThrow(false,
-                    dealii::StandardExceptions::ExcNotImplemented()) return 0;
+        return n_mpi_processes_;
       }
+
+
 
       std::vector<unsigned int>
       Partitioner::get_sm_view() const
       {
-        AssertThrow(false,
-                    dealii::StandardExceptions::ExcNotImplemented()) return {};
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
+        return {};
       }
+
+
 
       void
       Partitioner::reinit(
@@ -692,6 +714,8 @@ namespace hyperdeal
         const MPI_Comm sm_comm,
         const bool     do_buffering)
       {
+        this->n_mpi_processes_ = dealii::Utilities::MPI::n_mpi_processes(comm);
+
         this->do_buffering = do_buffering;
 
         AssertThrow(local_cells.size() > 0,
@@ -1416,14 +1440,6 @@ namespace hyperdeal
       Partitioner::local_size() const
       {
         return _local_size;
-      }
-
-
-
-      std::size_t
-      Partitioner::ghost_size() const
-      {
-        return _ghost_size;
       }
 
 
