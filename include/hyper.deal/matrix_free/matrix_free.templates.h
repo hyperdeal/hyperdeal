@@ -1189,25 +1189,17 @@ namespace hyperdeal
     // zero out values
     if (zero_out_values)
       {
-        vec = 0.0; // TODO
-        vec.update_ghost_values();
+        vec = 0.0;
+        vec.zero_out_ghosts();
       }
 
-    // perform test ghost value update
+    // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
-      {
-        // working for ECL/FCL
-        partitioner->update_ghost_values_start(vec.begin(), vec.other_values());
-        partitioner->update_ghost_values_finish(vec.begin(),
-                                                vec.other_values());
+      partitioner->update_ghost_values(vec.begin(), vec.other_values());
 
-        // working only for FCL
-        if (!use_ecl)
-          {
-            partitioner->compress_start(vec.begin(), vec.other_values());
-            partitioner->compress_finish(vec.begin(), vec.other_values());
-          }
-      }
+    // perform test compression (working for FCL)
+    if (zero_out_values && do_ghosts && !use_ecl)
+      partitioner->compress(vec.begin(), vec.other_values());
   }
 
 
