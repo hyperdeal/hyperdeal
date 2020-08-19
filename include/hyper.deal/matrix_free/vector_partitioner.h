@@ -322,40 +322,11 @@ namespace hyperdeal
         std::size_t
         memory_consumption() const;
 
+        /**
+         * Synchronize.
+         */
         void
-        sync() const
-        {
-          for (unsigned int i = 0; i < sm_targets.size(); i++)
-            {
-              int dummy;
-              MPI_Isend(&dummy,
-                        0,
-                        MPI_INT,
-                        sm_targets[i],
-                        22,
-                        sm_comm,
-                        sm_targets_request.data() + i);
-            }
-
-          for (unsigned int i = 0; i < sm_sources.size(); i++)
-            {
-              int dummy;
-              MPI_Irecv(&dummy,
-                        0,
-                        MPI_INT,
-                        sm_sources[i],
-                        22,
-                        sm_comm,
-                        sm_sources_request.data() + i);
-            }
-
-          MPI_Waitall(sm_sources_request.size(),
-                      sm_sources_request.data(),
-                      MPI_STATUSES_IGNORE);
-          MPI_Waitall(sm_targets_request.size(),
-                      sm_targets_request.data(),
-                      MPI_STATUSES_IGNORE);
-        }
+        sync() const;
 
       private:
         // I) configuration parameters
@@ -544,6 +515,45 @@ namespace hyperdeal
         (void)data_others;
         (void)buffer;
       }
+
+
+
+      void
+      Partitioner::sync() const
+      {
+        for (unsigned int i = 0; i < sm_targets.size(); i++)
+          {
+            int dummy;
+            MPI_Isend(&dummy,
+                      0,
+                      MPI_INT,
+                      sm_targets[i],
+                      22,
+                      sm_comm,
+                      sm_targets_request.data() + i);
+          }
+
+        for (unsigned int i = 0; i < sm_sources.size(); i++)
+          {
+            int dummy;
+            MPI_Irecv(&dummy,
+                      0,
+                      MPI_INT,
+                      sm_sources[i],
+                      22,
+                      sm_comm,
+                      sm_sources_request.data() + i);
+          }
+
+        MPI_Waitall(sm_sources_request.size(),
+                    sm_sources_request.data(),
+                    MPI_STATUSES_IGNORE);
+        MPI_Waitall(sm_targets_request.size(),
+                    sm_targets_request.data(),
+                    MPI_STATUSES_IGNORE);
+      }
+
+
 
       namespace internal
       {
