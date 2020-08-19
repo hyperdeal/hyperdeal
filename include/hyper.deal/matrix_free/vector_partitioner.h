@@ -1458,6 +1458,19 @@ namespace hyperdeal
         dealii::AlignedVector<Number> &send_buffer_data,
         const unsigned int             communication_channel) const
       {
+        if (send_buffer_data.size() == 0)
+          {
+            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
+          }
+        else
+          {
+            AssertThrow(send_buffer_data.size() ==
+                          send_ptr.back() * dofs_per_ghost,
+                        dealii::StandardExceptions::ExcDimensionMismatch(
+                          send_buffer_data.size(),
+                          send_ptr.back() * dofs_per_ghost));
+          }
+
         // 1) notify relevant shared processes that local data is available
         if (sm_size > 1)
           {
@@ -1623,6 +1636,19 @@ namespace hyperdeal
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
+        if (send_buffer_data.size() == 0)
+          {
+            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
+          }
+        else
+          {
+            AssertThrow(send_buffer_data.size() ==
+                          send_ptr.back() * dofs_per_ghost,
+                        dealii::StandardExceptions::ExcDimensionMismatch(
+                          send_buffer_data.size(),
+                          send_ptr.back() * dofs_per_ghost));
+          }
+
         // 1) notify relevant shared processes that data is available
         if (sm_size > 1)
           {
@@ -1682,6 +1708,11 @@ namespace hyperdeal
       {
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
+
+        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+                    dealii::StandardExceptions::ExcDimensionMismatch(
+                      send_buffer_data.size(),
+                      send_ptr.back() * dofs_per_ghost));
 
         // 1) compress for shared faces
         if (do_buffering)
