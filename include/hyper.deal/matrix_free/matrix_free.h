@@ -340,7 +340,7 @@ namespace hyperdeal
     /**
      * Partitioner for ghost_value_update() and compress().
      */
-    mutable std::shared_ptr<dealii::LinearAlgebra::SharedMPI::PartitionerBase>
+    std::shared_ptr<dealii::LinearAlgebra::SharedMPI::PartitionerBase>
       partitioner;
 
     /**
