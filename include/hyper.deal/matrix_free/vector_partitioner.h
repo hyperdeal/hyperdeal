@@ -323,7 +323,7 @@ namespace hyperdeal
         memory_consumption() const;
 
         void
-        sync()
+        sync() const
         {
           for (unsigned int i = 0; i < sm_targets.size(); i++)
             {
