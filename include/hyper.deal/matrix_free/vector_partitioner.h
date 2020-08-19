@@ -216,6 +216,7 @@ namespace hyperdeal
                  std::vector<float *> &        data_others,
                  dealii::AlignedVector<float> &buffer) const override;
 
+      private:
         /**
          * Start and finish ghost value update.
          */
@@ -274,6 +275,7 @@ namespace hyperdeal
                              dealii::VectorOperation::values operation =
                                dealii::VectorOperation::add) const;
 
+      public:
         /**
          * Return global communicator.
          */
