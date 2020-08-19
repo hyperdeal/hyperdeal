@@ -1,0 +1,5 @@
+Deprecated: The class LinearAlgebra::SharedMPI::Vector has been integrated into
+deal.II. As a consequence, the file include/hyper.deal/lac/sm_vector.h has
+been deprecated.
+<br>
+(Peter Munch, 2020/08/19)
