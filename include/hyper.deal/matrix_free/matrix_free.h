@@ -340,7 +340,7 @@ namespace hyperdeal
     /**
      * Partitioner for ghost_value_update() and compress().
      */
-    mutable std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>>
+    mutable std::shared_ptr<internal::MatrixFreeFunctions::Partitioner>
       partitioner;
 
     /**

@@ -29,6 +29,8 @@
 #  include <deal.II/base/mpi_consensus_algorithms.templates.h>
 #endif
 
+#include <deal.II/lac/la_sm_partitioner.h>
+
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/matrix_free/shape_info.h>
 
@@ -46,7 +48,6 @@ namespace hyperdeal
        * Partitioner for discontinuous Galerkin discretizations, exploiting
        * shared memory.
        */
-      template <typename Number>
       class Partitioner
       {
         const dealii::types::global_dof_index         dofs_per_cell;
@@ -62,6 +63,7 @@ namespace hyperdeal
         /**
          * Constructor.
          */
+        template <typename Number>
         Partitioner(
           const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
             &shape_info);
@@ -82,41 +84,46 @@ namespace hyperdeal
         /**
          * Start and finish ghost value update.
          */
+        template <typename Number>
         void
-        update_ghost_values(double *               data_this,
-                            std::vector<double *> &data_others) const;
+        update_ghost_values(Number *               data_this,
+                            std::vector<Number *> &data_others) const;
 
         /**
          * Start ghost value update.
          */
+        template <typename Number>
         void
         update_ghost_values_start(
-          double *               data_this,
-          std::vector<double *> &data_others,
+          Number *               data_this,
+          std::vector<Number *> &data_others,
           const unsigned int     communication_channel = 0) const;
 
         /**
          * Finish ghost value update.
          */
+        template <typename Number>
         void
-        update_ghost_values_finish(double *               data_this,
-                                   std::vector<double *> &data_others) const;
+        update_ghost_values_finish(Number *               data_this,
+                                   std::vector<Number *> &data_others) const;
 
         /**
          * Start and finish compress.
          */
+        template <typename Number>
         void
-        compress(double *                        data_this,
-                 std::vector<double *> &         data_others,
+        compress(Number *                        data_this,
+                 std::vector<Number *> &         data_others,
                  dealii::VectorOperation::values operation =
                    dealii::VectorOperation::add) const;
 
         /**
          * Start compress.
          */
+        template <typename Number>
         void
-        compress_start(double *               data_this,
-                       std::vector<double *> &data_others,
+        compress_start(Number *               data_this,
+                       std::vector<Number *> &data_others,
                        const unsigned int     communication_channel = 0,
                        dealii::VectorOperation::values operation =
                          dealii::VectorOperation::add) const;
@@ -124,9 +131,10 @@ namespace hyperdeal
         /**
          * Finish compress.
          */
+        template <typename Number>
         void
-        compress_finish(double *                        data_this,
-                        std::vector<double *> &         data_others,
+        compress_finish(Number *                        data_this,
+                        std::vector<Number *> &         data_others,
                         dealii::VectorOperation::values operation =
                           dealii::VectorOperation::add) const;
 
@@ -342,7 +350,7 @@ namespace hyperdeal
 
 
       template <typename Number>
-      Partitioner<Number>::Partitioner(
+      Partitioner::Partitioner(
         const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
           &shape_info)
         : dofs_per_cell(shape_info.dofs_per_cell)
@@ -352,9 +360,8 @@ namespace hyperdeal
 
 
 
-      template <typename Number>
       void
-      Partitioner<Number>::reinit(
+      Partitioner::reinit(
         const std::vector<dealii::types::global_dof_index> local_cells,
         const std::vector<
           std::pair<dealii::types::global_dof_index, std::vector<unsigned int>>>
@@ -1083,18 +1090,16 @@ namespace hyperdeal
 
 
 
-      template <typename Number>
       std::size_t
-      Partitioner<Number>::local_size() const
+      Partitioner::local_size() const
       {
         return _local_size;
       }
 
 
 
-      template <typename Number>
       std::size_t
-      Partitioner<Number>::ghost_size() const
+      Partitioner::ghost_size() const
       {
         return _ghost_size;
       }
@@ -1103,9 +1108,8 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::update_ghost_values(
-        double *               data_this,
-        std::vector<double *> &data_others) const
+      Partitioner::update_ghost_values(Number *               data_this,
+                                       std::vector<Number *> &data_others) const
       {
         this->update_ghost_values_start(data_this, data_others, 0);
         this->update_ghost_values_finish(data_this, data_others);
@@ -1115,9 +1119,9 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::update_ghost_values_start(
-        double *data_this,
-        std::vector<double *> & /*data_others*/,
+      Partitioner::update_ghost_values_start(
+        Number *data_this,
+        std::vector<Number *> & /*data_others*/,
         const unsigned int communication_channel) const
       {
         // 1) notify relevant shared processes that local data is available
@@ -1193,9 +1197,9 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::update_ghost_values_finish(
-        double *               data_this,
-        std::vector<double *> &data_others) const
+      Partitioner::update_ghost_values_finish(
+        Number *               data_this,
+        std::vector<Number *> &data_others) const
       {
         // 1) deal with shared faces
         if (do_buffering)
@@ -1255,10 +1259,9 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::compress(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
-        dealii::VectorOperation::values operation) const
+      Partitioner::compress(Number *                        data_this,
+                            std::vector<Number *> &         data_others,
+                            dealii::VectorOperation::values operation) const
       {
         this->compress_start(data_this, data_others, 0, operation);
         this->compress_finish(data_this, data_others, operation);
@@ -1268,9 +1271,9 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::compress_start(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
+      Partitioner::compress_start(
+        Number *                        data_this,
+        std::vector<Number *> &         data_others,
         const unsigned int              communication_channel,
         dealii::VectorOperation::values operation) const
       {
@@ -1331,9 +1334,9 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::compress_finish(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
+      Partitioner::compress_finish(
+        Number *                        data_this,
+        std::vector<Number *> &         data_others,
         dealii::VectorOperation::values operation) const
       {
         AssertThrow(operation == dealii::VectorOperation::add,
@@ -1418,47 +1421,42 @@ namespace hyperdeal
 
 
 
-      template <typename Number>
       MPI_Comm &
-      Partitioner<Number>::get_mpi_communicator()
+      Partitioner::get_mpi_communicator()
       {
         return comm_all;
       }
 
 
 
-      template <typename Number>
       MPI_Comm &
-      Partitioner<Number>::get_mpi_sub_communicator()
+      Partitioner::get_mpi_sub_communicator()
       {
         return sm_comm;
       }
 
 
 
-      template <typename Number>
       const std::map<dealii::types::global_dof_index,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner<Number>::get_maps() const
+      Partitioner::get_maps() const
       {
         return maps;
       }
 
 
 
-      template <typename Number>
       const std::map<std::pair<dealii::types::global_dof_index, unsigned int>,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner<Number>::get_maps_ghost() const
+      Partitioner::get_maps_ghost() const
       {
         return maps_ghost;
       }
 
 
 
-      template <typename Number>
       std::size_t
-      Partitioner<Number>::memory_consumption() const
+      Partitioner::memory_consumption() const
       {
         // [TODO] not counting maps and maps_ghost
 
