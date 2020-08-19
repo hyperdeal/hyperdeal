@@ -913,8 +913,7 @@ namespace hyperdeal
                   dealii::StandardExceptions::ExcNotImplemented());
 
       auto partitioner =
-        std::make_shared<internal::MatrixFreeFunctions::Partitioner>(
-          shape_info);
+        new internal::MatrixFreeFunctions::Partitioner(shape_info);
 
       // create a list of inner cells and ghost faces
       std::vector<dealii::types::global_dof_index> local_list;
@@ -976,7 +975,8 @@ namespace hyperdeal
       // actually setup partitioner
       partitioner->reinit(local_list, ghost_list, comm, comm_sm, do_buffering);
 
-      return partitioner;
+      return std::shared_ptr<dealii::LinearAlgebra::SharedMPI::PartitionerBase>(
+        partitioner);
     }();
 
 
@@ -1059,8 +1059,14 @@ namespace hyperdeal
       const auto &no_faces               = face_info.no_faces;
       const auto &face_orientations      = face_info.face_orientations;
 
-      const auto &maps       = partitioner->get_maps();
-      const auto &maps_ghost = partitioner->get_maps_ghost();
+      const auto &maps =
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->get_maps();
+      const auto &maps_ghost =
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->get_maps_ghost();
 
       static const int v_len = VectorizedArrayType::size();
 
@@ -1181,10 +1187,11 @@ namespace hyperdeal
                 dealii::ExcMessage("Partitioner has not been initialized!"));
 
     // setup vector
-    vec.reinit(comm,
-               comm_sm,
-               partitioner->local_size(),
-               do_ghosts ? partitioner->ghost_size() : 0);
+    const auto dummy =
+      std::make_shared<dealii::Utilities::MPI::Partitioner>(dealii::IndexSet{},
+                                                            dealii::IndexSet{},
+                                                            comm);
+    vec.reinit(dummy, partitioner, do_ghosts);
 
     // zero out values
     if (zero_out_values)
@@ -1195,11 +1202,15 @@ namespace hyperdeal
 
     // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
-      partitioner->update_ghost_values_impl(vec.begin(), vec.other_values());
+      dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+        partitioner.get())
+        ->update_ghost_values_impl(vec.begin(), vec.other_values());
 
     // perform test compression (working for FCL)
     if (zero_out_values && do_ghosts && !use_ecl)
-      partitioner->compress_impl(vec.begin(), vec.other_values());
+      dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+        partitioner.get())
+        ->compress_impl(vec.begin(), vec.other_values());
   }
 
 
@@ -1298,10 +1309,12 @@ namespace hyperdeal
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
         InVector &src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start_impl(src_.begin(),
-                                                    src_.other_values());
-        partitioner->update_ghost_values_finish_impl(src_.begin(),
-                                                     src_.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->update_ghost_values_start_impl(src_.begin(), src_.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->update_ghost_values_finish_impl(src_.begin(), src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1329,7 +1342,9 @@ namespace hyperdeal
     if (!do_buffering)
       {
         ScopedTimerWrapper timer(timers, "barrier");
-        partitioner->sync();
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->sync();
       }
   }
 
@@ -1409,10 +1424,12 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
         InVector &         src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start_impl(src_.begin(),
-                                                    src_.other_values());
-        partitioner->update_ghost_values_finish_impl(src_.begin(),
-                                                     src_.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->update_ghost_values_start_impl(src_.begin(), src_.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->update_ghost_values_finish_impl(src_.begin(), src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1490,8 +1507,12 @@ namespace hyperdeal
     if (dst_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "compress");
-        partitioner->compress_start_impl(dst.begin(), dst.other_values());
-        partitioner->compress_finish_impl(dst.begin(), dst.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->compress_start_impl(dst.begin(), dst.other_values());
+        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
+          partitioner.get())
+          ->compress_finish_impl(dst.begin(), dst.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
