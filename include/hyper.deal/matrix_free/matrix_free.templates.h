@@ -1138,15 +1138,19 @@ namespace hyperdeal
 
     // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
-      dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-        partitioner.get())
-        ->update_ghost_values_impl(vec.begin(), vec.other_values());
+      {
+        dealii::AlignedVector<Number> buffer;
+        partitioner->update_ghost_values(vec.begin(),
+                                         vec.other_values(),
+                                         buffer);
+      }
 
     // perform test compression (working for FCL)
     if (zero_out_values && do_ghosts && !use_ecl)
-      dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-        partitioner.get())
-        ->compress_impl(vec.begin(), vec.other_values());
+      {
+        dealii::AlignedVector<Number> buffer;
+        partitioner->compress(vec.begin(), vec.other_values(), buffer);
+      }
   }
 
 
@@ -1244,13 +1248,15 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        InVector &src_ = const_cast<InVector &>(src);
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->update_ghost_values_start_impl(src_.begin(), src_.other_values());
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->update_ghost_values_finish_impl(src_.begin(), src_.other_values());
+        InVector &                    src_ = const_cast<InVector &>(src);
+        dealii::AlignedVector<Number> buffer;
+
+        partitioner->update_ghost_values_start(src_.begin(),
+                                               src_.other_values(),
+                                               buffer);
+        partitioner->update_ghost_values_finish(src_.begin(),
+                                                src_.other_values(),
+                                                buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1359,13 +1365,16 @@ namespace hyperdeal
     if (src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
-        InVector &         src_ = const_cast<InVector &>(src);
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->update_ghost_values_start_impl(src_.begin(), src_.other_values());
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->update_ghost_values_finish_impl(src_.begin(), src_.other_values());
+
+        InVector &                    src_ = const_cast<InVector &>(src);
+        dealii::AlignedVector<Number> buffer;
+
+        partitioner->update_ghost_values_start(src_.begin(),
+                                               src_.other_values(),
+                                               buffer);
+        partitioner->update_ghost_values_finish(src_.begin(),
+                                                src_.other_values(),
+                                                buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1444,12 +1453,11 @@ namespace hyperdeal
     if (dst_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "compress");
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->compress_start_impl(dst.begin(), dst.other_values());
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->compress_finish_impl(dst.begin(), dst.other_values());
+
+        dealii::AlignedVector<Number> buffer;
+
+        partitioner->compress_start(dst.begin(), dst.other_values(), buffer);
+        partitioner->compress_finish(dst.begin(), dst.other_values(), buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
