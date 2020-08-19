@@ -1195,11 +1195,11 @@ namespace hyperdeal
 
     // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
-      partitioner->update_ghost_values(vec.begin(), vec.other_values());
+      partitioner->update_ghost_values_impl(vec.begin(), vec.other_values());
 
     // perform test compression (working for FCL)
     if (zero_out_values && do_ghosts && !use_ecl)
-      partitioner->compress(vec.begin(), vec.other_values());
+      partitioner->compress_impl(vec.begin(), vec.other_values());
   }
 
 
@@ -1298,10 +1298,10 @@ namespace hyperdeal
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
         InVector &src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values());
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values());
+        partitioner->update_ghost_values_start_impl(src_.begin(),
+                                                    src_.other_values());
+        partitioner->update_ghost_values_finish_impl(src_.begin(),
+                                                     src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1409,10 +1409,10 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
         InVector &         src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values());
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values());
+        partitioner->update_ghost_values_start_impl(src_.begin(),
+                                                    src_.other_values());
+        partitioner->update_ghost_values_finish_impl(src_.begin(),
+                                                     src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1490,8 +1490,8 @@ namespace hyperdeal
     if (dst_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "compress");
-        partitioner->compress_start(dst.begin(), dst.other_values());
-        partitioner->compress_finish(dst.begin(), dst.other_values());
+        partitioner->compress_start_impl(dst.begin(), dst.other_values());
+        partitioner->compress_finish_impl(dst.begin(), dst.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
