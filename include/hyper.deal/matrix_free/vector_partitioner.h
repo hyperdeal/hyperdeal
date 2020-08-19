@@ -235,7 +235,7 @@ namespace hyperdeal
           Number *                       data_this,
           std::vector<Number *> &        data_others,
           dealii::AlignedVector<Number> &buffer,
-          const unsigned int             communication_channel = 0) const;
+          const unsigned int             communication_channel) const;
 
         /**
          * Finish ghost value update.
@@ -255,8 +255,7 @@ namespace hyperdeal
         compress_impl(Number *                        data_this,
                       std::vector<Number *> &         data_others,
                       dealii::AlignedVector<Number> & buffer,
-                      dealii::VectorOperation::values operation =
-                        dealii::VectorOperation::add) const;
+                      dealii::VectorOperation::values operation) const;
 
         /**
          * Start compress.
@@ -266,9 +265,8 @@ namespace hyperdeal
         compress_start_impl(Number *                       data_this,
                             std::vector<Number *> &        data_others,
                             dealii::AlignedVector<Number> &buffer,
-                            const unsigned int communication_channel = 0,
-                            dealii::VectorOperation::values operation =
-                              dealii::VectorOperation::add) const;
+                            const unsigned int communication_channel,
+                            dealii::VectorOperation::values operation) const;
 
         /**
          * Finish compress.
@@ -278,8 +276,7 @@ namespace hyperdeal
         compress_finish_impl(Number *                        data_this,
                              std::vector<Number *> &         data_others,
                              dealii::AlignedVector<Number> & buffer,
-                             dealii::VectorOperation::values operation =
-                               dealii::VectorOperation::add) const;
+                             dealii::VectorOperation::values operation) const;
 
       public:
         /**
@@ -429,7 +426,8 @@ namespace hyperdeal
         this->compress_start_impl(data_this,
                                   data_others,
                                   buffer,
-                                  communication_channel);
+                                  communication_channel,
+                                  dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -439,7 +437,10 @@ namespace hyperdeal
                                    std::vector<double *> &        data_others,
                                    dealii::AlignedVector<double> &buffer) const
       {
-        this->compress_finish_impl(data_this, data_others, buffer);
+        this->compress_finish_impl(data_this,
+                                   data_others,
+                                   buffer,
+                                   dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -449,7 +450,10 @@ namespace hyperdeal
                             std::vector<double *> &        data_others,
                             dealii::AlignedVector<double> &buffer) const
       {
-        this->compress_impl(data_this, data_others, buffer);
+        this->compress_impl(data_this,
+                            data_others,
+                            buffer,
+                            dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -501,7 +505,8 @@ namespace hyperdeal
         this->compress_start_impl(data_this,
                                   data_others,
                                   buffer,
-                                  communication_channel);
+                                  communication_channel,
+                                  dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -511,7 +516,10 @@ namespace hyperdeal
                                    std::vector<float *> &        data_others,
                                    dealii::AlignedVector<float> &buffer) const
       {
-        this->compress_finish_impl(data_this, data_others, buffer);
+        this->compress_finish_impl(data_this,
+                                   data_others,
+                                   buffer,
+                                   dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -521,7 +529,10 @@ namespace hyperdeal
                             std::vector<float *> &        data_others,
                             dealii::AlignedVector<float> &buffer) const
       {
-        this->compress_impl(data_this, data_others, buffer);
+        this->compress_impl(data_this,
+                            data_others,
+                            buffer,
+                            dealii::VectorOperation::add /*TODO*/);
       }
 
 
