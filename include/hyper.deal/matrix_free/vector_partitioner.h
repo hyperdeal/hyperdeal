@@ -65,11 +65,11 @@ namespace hyperdeal
          * Constructor.
          */
         template <typename Number>
-        Partitioner(
-          const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
-            &shape_info);
+        Partitioner(const ShapeInfo<Number> &shape_info);
 
         /**
+         * Constructor.
+         *
          * @note Not implemented. Use the other reinit function.
          */
         void
@@ -651,9 +651,7 @@ namespace hyperdeal
 
 
       template <typename Number>
-      Partitioner::Partitioner(
-        const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
-          &shape_info)
+      Partitioner::Partitioner(const ShapeInfo<Number> &shape_info)
         : dofs_per_cell(shape_info.dofs_per_cell)
         , dofs_per_face(shape_info.dofs_per_face)
         , face_to_cell_index_nodal(shape_info.face_to_cell_index_nodal)
