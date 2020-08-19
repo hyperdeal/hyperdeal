@@ -913,7 +913,7 @@ namespace hyperdeal
                   dealii::StandardExceptions::ExcNotImplemented());
 
       auto partitioner =
-        std::make_shared<internal::MatrixFreeFunctions::Partitioner<Number>>(
+        std::make_shared<internal::MatrixFreeFunctions::Partitioner>(
           shape_info);
 
       // create a list of inner cells and ghost faces
