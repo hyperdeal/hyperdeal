@@ -49,6 +49,7 @@ namespace hyperdeal
        * shared memory.
        */
       class Partitioner
+        : public dealii::LinearAlgebra::SharedMPI::PartitionerBase
       {
         const dealii::types::global_dof_index         dofs_per_cell;
         const dealii::types::global_dof_index         dofs_per_face;
@@ -69,6 +70,32 @@ namespace hyperdeal
             &shape_info);
 
         /**
+         * @note Not implemented. Use the other reinit function.
+         */
+        void
+        reinit(const dealii::IndexSet &is_locally_owned,
+               const dealii::IndexSet &is_locally_ghost,
+               const MPI_Comm &        communicator) override;
+
+        /**
+         * TODO.
+         */
+        std::size_t
+        n_ghost_indices() const override;
+
+        /**
+         * TODO.
+         */
+        std::size_t
+        n_mpi_processes() const override;
+
+        /**
+         * TODO.
+         */
+        std::vector<unsigned int>
+        get_sm_view() const override;
+
+        /**
          * Initialize partitioner with a list of locally owned cells and
          * a list of ghost faces (cell and face no).
          */
@@ -82,19 +109,127 @@ namespace hyperdeal
                const bool     do_buffering);
 
         /**
+         * TODO.
+         */
+        void
+        update_ghost_values_start(
+          double *                       data_this,
+          std::vector<double *> &        data_others,
+          dealii::AlignedVector<double> &buffer,
+          const unsigned int communication_channel = 0) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        update_ghost_values_finish(
+          double *                       data_this,
+          std::vector<double *> &        data_others,
+          dealii::AlignedVector<double> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        update_ghost_values(
+          double *                       data_this,
+          std::vector<double *> &        data_others,
+          dealii::AlignedVector<double> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress_start(
+          double *                       data_this,
+          std::vector<double *> &        data_others,
+          dealii::AlignedVector<double> &buffer,
+          const unsigned int communication_channel = 0) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress_finish(double *                       data_this,
+                        std::vector<double *> &        data_others,
+                        dealii::AlignedVector<double> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress(double *                       data_this,
+                 std::vector<double *> &        data_others,
+                 dealii::AlignedVector<double> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        update_ghost_values_start(
+          float *                       data_this,
+          std::vector<float *> &        data_others,
+          dealii::AlignedVector<float> &buffer,
+          const unsigned int communication_channel = 0) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        update_ghost_values_finish(
+          float *                       data_this,
+          std::vector<float *> &        data_others,
+          dealii::AlignedVector<float> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        update_ghost_values(
+          float *                       data_this,
+          std::vector<float *> &        data_others,
+          dealii::AlignedVector<float> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress_start(
+          float *                       data_this,
+          std::vector<float *> &        data_others,
+          dealii::AlignedVector<float> &buffer,
+          const unsigned int communication_channel = 0) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress_finish(float *                       data_this,
+                        std::vector<float *> &        data_others,
+                        dealii::AlignedVector<float> &buffer) const override;
+
+        /**
+         * TODO.
+         */
+        void
+        compress(float *                       data_this,
+                 std::vector<float *> &        data_others,
+                 dealii::AlignedVector<float> &buffer) const override;
+
+        /**
          * Start and finish ghost value update.
          */
         template <typename Number>
         void
-        update_ghost_values(Number *               data_this,
-                            std::vector<Number *> &data_others) const;
+        update_ghost_values_impl(Number *               data_this,
+                                 std::vector<Number *> &data_others) const;
 
         /**
          * Start ghost value update.
          */
         template <typename Number>
         void
-        update_ghost_values_start(
+        update_ghost_values_start_impl(
           Number *               data_this,
           std::vector<Number *> &data_others,
           const unsigned int     communication_channel = 0) const;
@@ -104,52 +239,53 @@ namespace hyperdeal
          */
         template <typename Number>
         void
-        update_ghost_values_finish(Number *               data_this,
-                                   std::vector<Number *> &data_others) const;
+        update_ghost_values_finish_impl(
+          Number *               data_this,
+          std::vector<Number *> &data_others) const;
 
         /**
          * Start and finish compress.
          */
         template <typename Number>
         void
-        compress(Number *                        data_this,
-                 std::vector<Number *> &         data_others,
-                 dealii::VectorOperation::values operation =
-                   dealii::VectorOperation::add) const;
+        compress_impl(Number *                        data_this,
+                      std::vector<Number *> &         data_others,
+                      dealii::VectorOperation::values operation =
+                        dealii::VectorOperation::add) const;
 
         /**
          * Start compress.
          */
         template <typename Number>
         void
-        compress_start(Number *               data_this,
-                       std::vector<Number *> &data_others,
-                       const unsigned int     communication_channel = 0,
-                       dealii::VectorOperation::values operation =
-                         dealii::VectorOperation::add) const;
+        compress_start_impl(Number *               data_this,
+                            std::vector<Number *> &data_others,
+                            const unsigned int     communication_channel = 0,
+                            dealii::VectorOperation::values operation =
+                              dealii::VectorOperation::add) const;
 
         /**
          * Finish compress.
          */
         template <typename Number>
         void
-        compress_finish(Number *                        data_this,
-                        std::vector<Number *> &         data_others,
-                        dealii::VectorOperation::values operation =
-                          dealii::VectorOperation::add) const;
+        compress_finish_impl(Number *                        data_this,
+                             std::vector<Number *> &         data_others,
+                             dealii::VectorOperation::values operation =
+                               dealii::VectorOperation::add) const;
 
         /**
          * Return global communicator.
          */
-        MPI_Comm &
-        get_mpi_communicator();
+        const MPI_Comm &
+        get_mpi_communicator() const override;
 
 
         /**
          * Return shared-memory communicator.
          */
-        MPI_Comm &
-        get_mpi_sub_communicator();
+        const MPI_Comm &
+        get_sm_mpi_communicator() const override;
 
         /**
          * Return number of local elements.
@@ -273,6 +409,142 @@ namespace hyperdeal
       };
 
 
+      void
+      Partitioner::update_ghost_values_start(
+        double *                       data_this,
+        std::vector<double *> &        data_others,
+        dealii::AlignedVector<double> &buffer,
+        const unsigned int             communication_channel) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+        (void)communication_channel;
+      }
+
+      void
+      Partitioner::update_ghost_values_finish(
+        double *                       data_this,
+        std::vector<double *> &        data_others,
+        dealii::AlignedVector<double> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::update_ghost_values(
+        double *                       data_this,
+        std::vector<double *> &        data_others,
+        dealii::AlignedVector<double> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::compress_start(
+        double *                       data_this,
+        std::vector<double *> &        data_others,
+        dealii::AlignedVector<double> &buffer,
+        const unsigned int             communication_channel) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+        (void)communication_channel;
+      }
+
+      void
+      Partitioner::compress_finish(double *                       data_this,
+                                   std::vector<double *> &        data_others,
+                                   dealii::AlignedVector<double> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::compress(double *                       data_this,
+                            std::vector<double *> &        data_others,
+                            dealii::AlignedVector<double> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::update_ghost_values_start(
+        float *                       data_this,
+        std::vector<float *> &        data_others,
+        dealii::AlignedVector<float> &buffer,
+        const unsigned int            communication_channel) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+        (void)communication_channel;
+      }
+
+      void
+      Partitioner::update_ghost_values_finish(
+        float *                       data_this,
+        std::vector<float *> &        data_others,
+        dealii::AlignedVector<float> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::update_ghost_values(
+        float *                       data_this,
+        std::vector<float *> &        data_others,
+        dealii::AlignedVector<float> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::compress_start(
+        float *                       data_this,
+        std::vector<float *> &        data_others,
+        dealii::AlignedVector<float> &buffer,
+        const unsigned int            communication_channel) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+        (void)communication_channel;
+      }
+
+      void
+      Partitioner::compress_finish(float *                       data_this,
+                                   std::vector<float *> &        data_others,
+                                   dealii::AlignedVector<float> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
+      void
+      Partitioner::compress(float *                       data_this,
+                            std::vector<float *> &        data_others,
+                            dealii::AlignedVector<float> &buffer) const
+      {
+        (void)data_this;
+        (void)data_others;
+        (void)buffer;
+      }
+
       namespace internal
       {
         template <typename T, typename U>
@@ -359,6 +631,39 @@ namespace hyperdeal
       {}
 
 
+      void
+      Partitioner::reinit(const dealii::IndexSet &is_locally_owned,
+                          const dealii::IndexSet &is_locally_ghost,
+                          const MPI_Comm &        communicator)
+      {
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented())
+
+          (void) is_locally_owned;
+        (void)is_locally_ghost;
+        (void)communicator;
+      }
+
+
+      std::size_t
+      Partitioner::n_ghost_indices() const
+      {
+        AssertThrow(false,
+                    dealii::StandardExceptions::ExcNotImplemented()) return 0;
+      }
+
+      std::size_t
+      Partitioner::n_mpi_processes() const
+      {
+        AssertThrow(false,
+                    dealii::StandardExceptions::ExcNotImplemented()) return 0;
+      }
+
+      std::vector<unsigned int>
+      Partitioner::get_sm_view() const
+      {
+        AssertThrow(false,
+                    dealii::StandardExceptions::ExcNotImplemented()) return {};
+      }
 
       void
       Partitioner::reinit(
@@ -1108,18 +1413,19 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::update_ghost_values(Number *               data_this,
-                                       std::vector<Number *> &data_others) const
+      Partitioner::update_ghost_values_impl(
+        Number *               data_this,
+        std::vector<Number *> &data_others) const
       {
-        this->update_ghost_values_start(data_this, data_others, 0);
-        this->update_ghost_values_finish(data_this, data_others);
+        this->update_ghost_values_start_impl(data_this, data_others, 0);
+        this->update_ghost_values_finish_impl(data_this, data_others);
       }
 
 
 
       template <typename Number>
       void
-      Partitioner::update_ghost_values_start(
+      Partitioner::update_ghost_values_start_impl(
         Number *data_this,
         std::vector<Number *> & /*data_others*/,
         const unsigned int communication_channel) const
@@ -1197,7 +1503,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::update_ghost_values_finish(
+      Partitioner::update_ghost_values_finish_impl(
         Number *               data_this,
         std::vector<Number *> &data_others) const
       {
@@ -1259,19 +1565,20 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::compress(Number *                        data_this,
-                            std::vector<Number *> &         data_others,
-                            dealii::VectorOperation::values operation) const
+      Partitioner::compress_impl(
+        Number *                        data_this,
+        std::vector<Number *> &         data_others,
+        dealii::VectorOperation::values operation) const
       {
-        this->compress_start(data_this, data_others, 0, operation);
-        this->compress_finish(data_this, data_others, operation);
+        this->compress_start_impl(data_this, data_others, 0, operation);
+        this->compress_finish_impl(data_this, data_others, operation);
       }
 
 
 
       template <typename Number>
       void
-      Partitioner::compress_start(
+      Partitioner::compress_start_impl(
         Number *                        data_this,
         std::vector<Number *> &         data_others,
         const unsigned int              communication_channel,
@@ -1334,7 +1641,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::compress_finish(
+      Partitioner::compress_finish_impl(
         Number *                        data_this,
         std::vector<Number *> &         data_others,
         dealii::VectorOperation::values operation) const
@@ -1421,16 +1728,16 @@ namespace hyperdeal
 
 
 
-      MPI_Comm &
-      Partitioner::get_mpi_communicator()
+      const MPI_Comm &
+      Partitioner::get_mpi_communicator() const
       {
         return comm_all;
       }
 
 
 
-      MPI_Comm &
-      Partitioner::get_mpi_sub_communicator()
+      const MPI_Comm &
+      Partitioner::get_sm_mpi_communicator() const
       {
         return sm_comm;
       }
