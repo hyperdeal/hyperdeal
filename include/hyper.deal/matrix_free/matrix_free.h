@@ -346,17 +346,17 @@ namespace hyperdeal
     /**
      * Cell info.
      */
-    mutable internal::MatrixFreeFunctions::DoFInfo dof_info;
+    internal::MatrixFreeFunctions::DoFInfo dof_info;
 
     /**
      * Face info.
      */
-    mutable internal::MatrixFreeFunctions::FaceInfo face_info;
+    internal::MatrixFreeFunctions::FaceInfo face_info;
 
     /**
      * Shape info.
      */
-    mutable internal::MatrixFreeFunctions::ShapeInfo<Number> shape_info;
+    internal::MatrixFreeFunctions::ShapeInfo<Number> shape_info;
   };
 
 } // namespace hyperdeal
