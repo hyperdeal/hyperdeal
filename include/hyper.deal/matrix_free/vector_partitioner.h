@@ -389,10 +389,10 @@ namespace hyperdeal
         dealii::AlignedVector<double> &buffer,
         const unsigned int             communication_channel) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
-        (void)communication_channel;
+        this->update_ghost_values_start_impl(data_this,
+                                             data_others,
+                                             buffer,
+                                             communication_channel);
       }
 
 
@@ -403,9 +403,7 @@ namespace hyperdeal
         std::vector<double *> &        data_others,
         dealii::AlignedVector<double> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->update_ghost_values_finish_impl(data_this, data_others, buffer);
       }
 
 
@@ -416,9 +414,7 @@ namespace hyperdeal
         std::vector<double *> &        data_others,
         dealii::AlignedVector<double> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->update_ghost_values_impl(data_this, data_others, buffer);
       }
 
 
@@ -430,10 +426,10 @@ namespace hyperdeal
         dealii::AlignedVector<double> &buffer,
         const unsigned int             communication_channel) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
-        (void)communication_channel;
+        this->compress_start_impl(data_this,
+                                  data_others,
+                                  buffer,
+                                  communication_channel);
       }
 
 
@@ -443,9 +439,7 @@ namespace hyperdeal
                                    std::vector<double *> &        data_others,
                                    dealii::AlignedVector<double> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->compress_finish_impl(data_this, data_others, buffer);
       }
 
 
@@ -455,9 +449,7 @@ namespace hyperdeal
                             std::vector<double *> &        data_others,
                             dealii::AlignedVector<double> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->compress_impl(data_this, data_others, buffer);
       }
 
 
@@ -469,10 +461,10 @@ namespace hyperdeal
         dealii::AlignedVector<float> &buffer,
         const unsigned int            communication_channel) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
-        (void)communication_channel;
+        update_ghost_values_start_impl(data_this,
+                                       data_others,
+                                       buffer,
+                                       communication_channel);
       }
 
 
@@ -483,9 +475,7 @@ namespace hyperdeal
         std::vector<float *> &        data_others,
         dealii::AlignedVector<float> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->update_ghost_values_finish_impl(data_this, data_others, buffer);
       }
 
 
@@ -496,9 +486,7 @@ namespace hyperdeal
         std::vector<float *> &        data_others,
         dealii::AlignedVector<float> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->update_ghost_values_impl(data_this, data_others, buffer);
       }
 
 
@@ -510,10 +498,10 @@ namespace hyperdeal
         dealii::AlignedVector<float> &buffer,
         const unsigned int            communication_channel) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
-        (void)communication_channel;
+        this->compress_start_impl(data_this,
+                                  data_others,
+                                  buffer,
+                                  communication_channel);
       }
 
 
@@ -523,9 +511,7 @@ namespace hyperdeal
                                    std::vector<float *> &        data_others,
                                    dealii::AlignedVector<float> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->compress_finish_impl(data_this, data_others, buffer);
       }
 
 
@@ -535,9 +521,7 @@ namespace hyperdeal
                             std::vector<float *> &        data_others,
                             dealii::AlignedVector<float> &buffer) const
       {
-        (void)data_this;
-        (void)data_others;
-        (void)buffer;
+        this->compress_impl(data_this, data_others, buffer);
       }
 
 
