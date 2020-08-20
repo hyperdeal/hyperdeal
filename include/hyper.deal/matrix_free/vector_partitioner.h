@@ -113,10 +113,10 @@ namespace hyperdeal
          */
         void
         export_to_ghosted_array_start(
+          const unsigned int             communication_channel,
           double *                       data_this,
           std::vector<double *> &        data_others,
-          dealii::AlignedVector<double> &buffer,
-          const unsigned int communication_channel = 0) const override;
+          dealii::AlignedVector<double> &buffer) const override;
 
         /**
          * TODO.
@@ -132,10 +132,11 @@ namespace hyperdeal
          */
         void
         import_from_ghosted_array_start(
-          double *                       data_this,
-          std::vector<double *> &        data_others,
-          dealii::AlignedVector<double> &buffer,
-          const unsigned int communication_channel = 0) const override;
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          double *                              data_this,
+          std::vector<double *> &               data_others,
+          dealii::AlignedVector<double> &       buffer) const override;
 
         /**
          * TODO.
@@ -151,10 +152,10 @@ namespace hyperdeal
          */
         void
         export_to_ghosted_array_start(
+          const unsigned int            communication_channel,
           float *                       data_this,
           std::vector<float *> &        data_others,
-          dealii::AlignedVector<float> &buffer,
-          const unsigned int communication_channel = 0) const override;
+          dealii::AlignedVector<float> &buffer) const override;
 
         /**
          * TODO.
@@ -170,10 +171,11 @@ namespace hyperdeal
          */
         void
         import_from_ghosted_array_start(
-          float *                       data_this,
-          std::vector<float *> &        data_others,
-          dealii::AlignedVector<float> &buffer,
-          const unsigned int communication_channel = 0) const override;
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          float *                               data_this,
+          std::vector<float *> &                data_others,
+          dealii::AlignedVector<float> &        buffer) const override;
 
         /**
          * TODO.
@@ -191,10 +193,10 @@ namespace hyperdeal
         template <typename Number>
         void
         export_to_ghosted_array_start_impl(
+          const unsigned int             communication_channel,
           Number *                       data_this,
           std::vector<Number *> &        data_others,
-          dealii::AlignedVector<Number> &buffer,
-          const unsigned int             communication_channel) const;
+          dealii::AlignedVector<Number> &buffer) const;
 
         /**
          * Finish ghost value update.
@@ -212,11 +214,11 @@ namespace hyperdeal
         template <typename Number>
         void
         import_from_ghosted_array_start_impl(
-          Number *                        data_this,
-          std::vector<Number *> &         data_others,
-          dealii::AlignedVector<Number> & buffer,
-          const unsigned int              communication_channel,
-          dealii::VectorOperation::values operation) const;
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          Number *                              data_this,
+          std::vector<Number *> &               data_others,
+          dealii::AlignedVector<Number> &       buffer) const;
 
         /**
          * Finish compress.
@@ -332,15 +334,15 @@ namespace hyperdeal
 
       void
       Partitioner::export_to_ghosted_array_start(
+        const unsigned int             communication_channel,
         double *                       data_this,
         std::vector<double *> &        data_others,
-        dealii::AlignedVector<double> &buffer,
-        const unsigned int             communication_channel) const
+        dealii::AlignedVector<double> &buffer) const
       {
-        this->export_to_ghosted_array_start_impl(data_this,
+        this->export_to_ghosted_array_start_impl(communication_channel,
+                                                 data_this,
                                                  data_others,
-                                                 buffer,
-                                                 communication_channel);
+                                                 buffer);
       }
 
 
@@ -360,17 +362,14 @@ namespace hyperdeal
 
       void
       Partitioner::import_from_ghosted_array_start(
-        double *                       data_this,
-        std::vector<double *> &        data_others,
-        dealii::AlignedVector<double> &buffer,
-        const unsigned int             communication_channel) const
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        double *                              data_this,
+        std::vector<double *> &               data_others,
+        dealii::AlignedVector<double> &       buffer) const
       {
         this->import_from_ghosted_array_start_impl(
-          data_this,
-          data_others,
-          buffer,
-          communication_channel,
-          dealii::VectorOperation::add /*TODO*/);
+          operation, communication_channel, data_this, data_others, buffer);
       }
 
 
@@ -392,15 +391,15 @@ namespace hyperdeal
 
       void
       Partitioner::export_to_ghosted_array_start(
+        const unsigned int            communication_channel,
         float *                       data_this,
         std::vector<float *> &        data_others,
-        dealii::AlignedVector<float> &buffer,
-        const unsigned int            communication_channel) const
+        dealii::AlignedVector<float> &buffer) const
       {
-        export_to_ghosted_array_start_impl(data_this,
+        export_to_ghosted_array_start_impl(communication_channel,
+                                           data_this,
                                            data_others,
-                                           buffer,
-                                           communication_channel);
+                                           buffer);
       }
 
 
@@ -420,17 +419,14 @@ namespace hyperdeal
 
       void
       Partitioner::import_from_ghosted_array_start(
-        float *                       data_this,
-        std::vector<float *> &        data_others,
-        dealii::AlignedVector<float> &buffer,
-        const unsigned int            communication_channel) const
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        float *                               data_this,
+        std::vector<float *> &                data_others,
+        dealii::AlignedVector<float> &        buffer) const
       {
         this->import_from_ghosted_array_start_impl(
-          data_this,
-          data_others,
-          buffer,
-          communication_channel,
-          dealii::VectorOperation::add /*TODO*/);
+          operation, communication_channel, data_this, data_others, buffer);
       }
 
 
@@ -1353,10 +1349,10 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_start_impl(
-        Number *data_this,
+        const unsigned int communication_channel,
+        Number *           data_this,
         std::vector<Number *> & /*data_others*/,
-        dealii::AlignedVector<Number> &send_buffer_data,
-        const unsigned int             communication_channel) const
+        dealii::AlignedVector<Number> &send_buffer_data) const
       {
         if (send_buffer_data.size() == 0)
           {
@@ -1510,11 +1506,11 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::import_from_ghosted_array_start_impl(
-        Number *                        data_this,
-        std::vector<Number *> &         data_others,
-        dealii::AlignedVector<Number> & send_buffer_data,
-        const unsigned int              communication_channel,
-        dealii::VectorOperation::values operation) const
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        Number *                              data_this,
+        std::vector<Number *> &               data_others,
+        dealii::AlignedVector<Number> &       send_buffer_data) const
       {
         (void)data_others;
         (void)communication_channel;
