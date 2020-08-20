@@ -1187,33 +1187,26 @@ namespace hyperdeal
                 dealii::ExcMessage("Partitioner has not been initialized!"));
 
     // setup vector
-    const auto dummy =
-      std::make_shared<dealii::Utilities::MPI::Partitioner>(dealii::IndexSet{},
-                                                            dealii::IndexSet{},
-                                                            comm);
-    vec.reinit(dummy, partitioner, do_ghosts);
+    vec.reinit(std::make_shared<dealii::Utilities::MPI::Partitioner>(),
+               partitioner,
+               do_ghosts);
 
     // zero out values
     if (zero_out_values)
-      {
-        vec = 0.0;
-        vec.zero_out_ghosts();
-      }
+      vec = 0.0;
 
     // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
       {
-        dealii::AlignedVector<Number> buffer;
-        partitioner->update_ghost_values(vec.begin(),
-                                         vec.other_values(),
-                                         buffer);
+        vec.zero_out_ghosts();
+        vec.update_ghost_values();
+        vec.zero_out_ghosts();
       }
 
     // perform test compression (working for FCL)
     if (zero_out_values && do_ghosts && !use_ecl)
       {
-        dealii::AlignedVector<Number> buffer;
-        partitioner->compress(vec.begin(), vec.other_values(), buffer);
+        vec.compress(dealii::VectorOperation::values::add);
       }
   }
 
@@ -1325,10 +1318,11 @@ namespace hyperdeal
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
 
-    {
-      ScopedTimerWrapper timer(timers, "zero_out_ghosts");
-      dst.zero_out_ghosts();
-    }
+    if (dst.has_ghost_elements())
+      {
+        ScopedTimerWrapper timer(timers, "zero_out_ghosts");
+        dst.zero_out_ghosts();
+      }
 
     {
       ScopedTimerWrapper timer(timers, "loop");
