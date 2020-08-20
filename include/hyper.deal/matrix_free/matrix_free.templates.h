@@ -1249,8 +1249,7 @@ namespace hyperdeal
                                                    src_.other_values(),
                                                    buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
-                                                    src_.other_values(),
-                                                    buffer);
+                                                    src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1369,8 +1368,7 @@ namespace hyperdeal
                                                    src_.other_values(),
                                                    buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
-                                                    src_.other_values(),
-                                                    buffer);
+                                                    src_.other_values());
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1458,9 +1456,11 @@ namespace hyperdeal
           dst.begin(),
           dst.other_values(),
           buffer);
-        partitioner->import_from_ghosted_array_finish(dst.begin(),
-                                                      dst.other_values(),
-                                                      buffer);
+        partitioner->import_from_ghosted_array_finish(
+          dealii::VectorOperation::add,
+          dst.begin(),
+          dst.other_values(),
+          buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
