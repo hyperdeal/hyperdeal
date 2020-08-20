@@ -1244,7 +1244,8 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->export_to_ghosted_array_start(src_.begin(),
+        partitioner->export_to_ghosted_array_start(0 /*TODO*/,
+                                                   src_.begin(),
                                                    src_.other_values(),
                                                    buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
@@ -1363,7 +1364,8 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->export_to_ghosted_array_start(src_.begin(),
+        partitioner->export_to_ghosted_array_start(0 /*TODO*/,
+                                                   src_.begin(),
                                                    src_.other_values(),
                                                    buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
@@ -1450,9 +1452,12 @@ namespace hyperdeal
 
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->import_from_ghosted_array_start(dst.begin(),
-                                                     dst.other_values(),
-                                                     buffer);
+        partitioner->import_from_ghosted_array_start(
+          dealii::VectorOperation::add,
+          0 /*TODO*/,
+          dst.begin(),
+          dst.other_values(),
+          buffer);
         partitioner->import_from_ghosted_array_finish(dst.begin(),
                                                       dst.other_values(),
                                                       buffer);
