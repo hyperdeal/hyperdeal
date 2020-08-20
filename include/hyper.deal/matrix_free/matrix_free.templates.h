@@ -1308,12 +1308,12 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values(),
-                                               buffer);
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values(),
-                                                buffer);
+        partitioner->export_to_ghosted_array_start(src_.begin(),
+                                                   src_.other_values(),
+                                                   buffer);
+        partitioner->export_to_ghosted_array_finish(src_.begin(),
+                                                    src_.other_values(),
+                                                    buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1427,12 +1427,12 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values(),
-                                               buffer);
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values(),
-                                                buffer);
+        partitioner->export_to_ghosted_array_start(src_.begin(),
+                                                   src_.other_values(),
+                                                   buffer);
+        partitioner->export_to_ghosted_array_finish(src_.begin(),
+                                                    src_.other_values(),
+                                                    buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1513,8 +1513,12 @@ namespace hyperdeal
 
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->compress_start(dst.begin(), dst.other_values(), buffer);
-        partitioner->compress_finish(dst.begin(), dst.other_values(), buffer);
+        partitioner->import_from_ghosted_array_start(dst.begin(),
+                                                     dst.other_values(),
+                                                     buffer);
+        partitioner->import_from_ghosted_array_finish(dst.begin(),
+                                                      dst.other_values(),
+                                                      buffer);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
