@@ -15,6 +15,7 @@
 
 #include <deal.II/fe/fe_dgq.h>
 
+#include <hyper.deal/base/mpi_tags.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
 
 namespace hyperdeal
@@ -1308,10 +1309,11 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->export_to_ghosted_array_start(0 /*TODO*/,
-                                                   src_.begin(),
-                                                   src_.other_values(),
-                                                   buffer);
+        partitioner->export_to_ghosted_array_start(
+          mpi::internal::Tags::matrix_free_loop_cell_centric_export,
+          src_.begin(),
+          src_.other_values(),
+          buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
                                                     src_.other_values());
       }
@@ -1427,10 +1429,11 @@ namespace hyperdeal
         InVector &                    src_ = const_cast<InVector &>(src);
         dealii::AlignedVector<Number> buffer;
 
-        partitioner->export_to_ghosted_array_start(0 /*TODO*/,
-                                                   src_.begin(),
-                                                   src_.other_values(),
-                                                   buffer);
+        partitioner->export_to_ghosted_array_start(
+          mpi::internal::Tags::matrix_free_loop_export,
+          src_.begin(),
+          src_.other_values(),
+          buffer);
         partitioner->export_to_ghosted_array_finish(src_.begin(),
                                                     src_.other_values());
       }
@@ -1515,7 +1518,7 @@ namespace hyperdeal
 
         partitioner->import_from_ghosted_array_start(
           dealii::VectorOperation::add,
-          0 /*TODO*/,
+          mpi::internal::Tags::matrix_free_loop_import,
           dst.begin(),
           dst.other_values(),
           buffer);
