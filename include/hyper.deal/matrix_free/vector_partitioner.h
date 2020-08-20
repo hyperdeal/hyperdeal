@@ -112,7 +112,7 @@ namespace hyperdeal
          * TODO.
          */
         void
-        update_ghost_values_start(
+        export_to_ghosted_array_start(
           double *                       data_this,
           std::vector<double *> &        data_others,
           dealii::AlignedVector<double> &buffer,
@@ -122,7 +122,7 @@ namespace hyperdeal
          * TODO.
          */
         void
-        update_ghost_values_finish(
+        export_to_ghosted_array_finish(
           double *                       data_this,
           std::vector<double *> &        data_others,
           dealii::AlignedVector<double> &buffer) const override;
@@ -131,16 +131,7 @@ namespace hyperdeal
          * TODO.
          */
         void
-        update_ghost_values(
-          double *                       data_this,
-          std::vector<double *> &        data_others,
-          dealii::AlignedVector<double> &buffer) const override;
-
-        /**
-         * TODO.
-         */
-        void
-        compress_start(
+        import_from_ghosted_array_start(
           double *                       data_this,
           std::vector<double *> &        data_others,
           dealii::AlignedVector<double> &buffer,
@@ -150,23 +141,16 @@ namespace hyperdeal
          * TODO.
          */
         void
-        compress_finish(double *                       data_this,
-                        std::vector<double *> &        data_others,
-                        dealii::AlignedVector<double> &buffer) const override;
+        import_from_ghosted_array_finish(
+          double *                       data_this,
+          std::vector<double *> &        data_others,
+          dealii::AlignedVector<double> &buffer) const override;
 
         /**
          * TODO.
          */
         void
-        compress(double *                       data_this,
-                 std::vector<double *> &        data_others,
-                 dealii::AlignedVector<double> &buffer) const override;
-
-        /**
-         * TODO.
-         */
-        void
-        update_ghost_values_start(
+        export_to_ghosted_array_start(
           float *                       data_this,
           std::vector<float *> &        data_others,
           dealii::AlignedVector<float> &buffer,
@@ -176,7 +160,7 @@ namespace hyperdeal
          * TODO.
          */
         void
-        update_ghost_values_finish(
+        export_to_ghosted_array_finish(
           float *                       data_this,
           std::vector<float *> &        data_others,
           dealii::AlignedVector<float> &buffer) const override;
@@ -185,16 +169,7 @@ namespace hyperdeal
          * TODO.
          */
         void
-        update_ghost_values(
-          float *                       data_this,
-          std::vector<float *> &        data_others,
-          dealii::AlignedVector<float> &buffer) const override;
-
-        /**
-         * TODO.
-         */
-        void
-        compress_start(
+        import_from_ghosted_array_start(
           float *                       data_this,
           std::vector<float *> &        data_others,
           dealii::AlignedVector<float> &buffer,
@@ -204,34 +179,18 @@ namespace hyperdeal
          * TODO.
          */
         void
-        compress_finish(float *                       data_this,
-                        std::vector<float *> &        data_others,
-                        dealii::AlignedVector<float> &buffer) const override;
-
-        /**
-         * TODO.
-         */
-        void
-        compress(float *                       data_this,
-                 std::vector<float *> &        data_others,
-                 dealii::AlignedVector<float> &buffer) const override;
+        import_from_ghosted_array_finish(
+          float *                       data_this,
+          std::vector<float *> &        data_others,
+          dealii::AlignedVector<float> &buffer) const override;
 
       private:
-        /**
-         * Start and finish ghost value update.
-         */
-        template <typename Number>
-        void
-        update_ghost_values_impl(Number *                       data_this,
-                                 std::vector<Number *> &        data_others,
-                                 dealii::AlignedVector<Number> &buffer) const;
-
         /**
          * Start ghost value update.
          */
         template <typename Number>
         void
-        update_ghost_values_start_impl(
+        export_to_ghosted_array_start_impl(
           Number *                       data_this,
           std::vector<Number *> &        data_others,
           dealii::AlignedVector<Number> &buffer,
@@ -242,41 +201,33 @@ namespace hyperdeal
          */
         template <typename Number>
         void
-        update_ghost_values_finish_impl(
+        export_to_ghosted_array_finish_impl(
           Number *                       data_this,
           std::vector<Number *> &        data_others,
           dealii::AlignedVector<Number> &buffer) const;
-
-        /**
-         * Start and finish compress.
-         */
-        template <typename Number>
-        void
-        compress_impl(Number *                        data_this,
-                      std::vector<Number *> &         data_others,
-                      dealii::AlignedVector<Number> & buffer,
-                      dealii::VectorOperation::values operation) const;
 
         /**
          * Start compress.
          */
         template <typename Number>
         void
-        compress_start_impl(Number *                       data_this,
-                            std::vector<Number *> &        data_others,
-                            dealii::AlignedVector<Number> &buffer,
-                            const unsigned int communication_channel,
-                            dealii::VectorOperation::values operation) const;
+        import_from_ghosted_array_start_impl(
+          Number *                        data_this,
+          std::vector<Number *> &         data_others,
+          dealii::AlignedVector<Number> & buffer,
+          const unsigned int              communication_channel,
+          dealii::VectorOperation::values operation) const;
 
         /**
          * Finish compress.
          */
         template <typename Number>
         void
-        compress_finish_impl(Number *                        data_this,
-                             std::vector<Number *> &         data_others,
-                             dealii::AlignedVector<Number> & buffer,
-                             dealii::VectorOperation::values operation) const;
+        import_from_ghosted_array_finish_impl(
+          Number *                        data_this,
+          std::vector<Number *> &         data_others,
+          dealii::AlignedVector<Number> & buffer,
+          dealii::VectorOperation::values operation) const;
 
       public:
         /**
@@ -380,159 +331,121 @@ namespace hyperdeal
 
 
       void
-      Partitioner::update_ghost_values_start(
+      Partitioner::export_to_ghosted_array_start(
         double *                       data_this,
         std::vector<double *> &        data_others,
         dealii::AlignedVector<double> &buffer,
         const unsigned int             communication_channel) const
       {
-        this->update_ghost_values_start_impl(data_this,
-                                             data_others,
-                                             buffer,
-                                             communication_channel);
+        this->export_to_ghosted_array_start_impl(data_this,
+                                                 data_others,
+                                                 buffer,
+                                                 communication_channel);
       }
 
 
 
       void
-      Partitioner::update_ghost_values_finish(
+      Partitioner::export_to_ghosted_array_finish(
         double *                       data_this,
         std::vector<double *> &        data_others,
         dealii::AlignedVector<double> &buffer) const
       {
-        this->update_ghost_values_finish_impl(data_this, data_others, buffer);
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  buffer);
       }
 
 
 
       void
-      Partitioner::update_ghost_values(
-        double *                       data_this,
-        std::vector<double *> &        data_others,
-        dealii::AlignedVector<double> &buffer) const
-      {
-        this->update_ghost_values_impl(data_this, data_others, buffer);
-      }
-
-
-
-      void
-      Partitioner::compress_start(
+      Partitioner::import_from_ghosted_array_start(
         double *                       data_this,
         std::vector<double *> &        data_others,
         dealii::AlignedVector<double> &buffer,
         const unsigned int             communication_channel) const
       {
-        this->compress_start_impl(data_this,
-                                  data_others,
-                                  buffer,
-                                  communication_channel,
-                                  dealii::VectorOperation::add /*TODO*/);
+        this->import_from_ghosted_array_start_impl(
+          data_this,
+          data_others,
+          buffer,
+          communication_channel,
+          dealii::VectorOperation::add /*TODO*/);
       }
 
 
 
       void
-      Partitioner::compress_finish(double *                       data_this,
-                                   std::vector<double *> &        data_others,
-                                   dealii::AlignedVector<double> &buffer) const
+      Partitioner::import_from_ghosted_array_finish(
+        double *                       data_this,
+        std::vector<double *> &        data_others,
+        dealii::AlignedVector<double> &buffer) const
       {
-        this->compress_finish_impl(data_this,
-                                   data_others,
-                                   buffer,
-                                   dealii::VectorOperation::add /*TODO*/);
+        this->import_from_ghosted_array_finish_impl(
+          data_this,
+          data_others,
+          buffer,
+          dealii::VectorOperation::add /*TODO*/);
       }
 
 
 
       void
-      Partitioner::compress(double *                       data_this,
-                            std::vector<double *> &        data_others,
-                            dealii::AlignedVector<double> &buffer) const
-      {
-        this->compress_impl(data_this,
-                            data_others,
-                            buffer,
-                            dealii::VectorOperation::add /*TODO*/);
-      }
-
-
-
-      void
-      Partitioner::update_ghost_values_start(
+      Partitioner::export_to_ghosted_array_start(
         float *                       data_this,
         std::vector<float *> &        data_others,
         dealii::AlignedVector<float> &buffer,
         const unsigned int            communication_channel) const
       {
-        update_ghost_values_start_impl(data_this,
-                                       data_others,
-                                       buffer,
-                                       communication_channel);
+        export_to_ghosted_array_start_impl(data_this,
+                                           data_others,
+                                           buffer,
+                                           communication_channel);
       }
 
 
 
       void
-      Partitioner::update_ghost_values_finish(
+      Partitioner::export_to_ghosted_array_finish(
         float *                       data_this,
         std::vector<float *> &        data_others,
         dealii::AlignedVector<float> &buffer) const
       {
-        this->update_ghost_values_finish_impl(data_this, data_others, buffer);
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  buffer);
       }
 
 
 
       void
-      Partitioner::update_ghost_values(
-        float *                       data_this,
-        std::vector<float *> &        data_others,
-        dealii::AlignedVector<float> &buffer) const
-      {
-        this->update_ghost_values_impl(data_this, data_others, buffer);
-      }
-
-
-
-      void
-      Partitioner::compress_start(
+      Partitioner::import_from_ghosted_array_start(
         float *                       data_this,
         std::vector<float *> &        data_others,
         dealii::AlignedVector<float> &buffer,
         const unsigned int            communication_channel) const
       {
-        this->compress_start_impl(data_this,
-                                  data_others,
-                                  buffer,
-                                  communication_channel,
-                                  dealii::VectorOperation::add /*TODO*/);
+        this->import_from_ghosted_array_start_impl(
+          data_this,
+          data_others,
+          buffer,
+          communication_channel,
+          dealii::VectorOperation::add /*TODO*/);
       }
 
 
 
       void
-      Partitioner::compress_finish(float *                       data_this,
-                                   std::vector<float *> &        data_others,
-                                   dealii::AlignedVector<float> &buffer) const
+      Partitioner::import_from_ghosted_array_finish(
+        float *                       data_this,
+        std::vector<float *> &        data_others,
+        dealii::AlignedVector<float> &buffer) const
       {
-        this->compress_finish_impl(data_this,
-                                   data_others,
-                                   buffer,
-                                   dealii::VectorOperation::add /*TODO*/);
-      }
-
-
-
-      void
-      Partitioner::compress(float *                       data_this,
-                            std::vector<float *> &        data_others,
-                            dealii::AlignedVector<float> &buffer) const
-      {
-        this->compress_impl(data_this,
-                            data_others,
-                            buffer,
-                            dealii::VectorOperation::add /*TODO*/);
+        this->import_from_ghosted_array_finish_impl(
+          data_this,
+          data_others,
+          buffer,
+          dealii::VectorOperation::add /*TODO*/);
       }
 
 
@@ -1439,20 +1352,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::update_ghost_values_impl(
-        Number *                       data_this,
-        std::vector<Number *> &        data_others,
-        dealii::AlignedVector<Number> &buffer) const
-      {
-        this->update_ghost_values_start_impl(data_this, data_others, buffer, 0);
-        this->update_ghost_values_finish_impl(data_this, data_others, buffer);
-      }
-
-
-
-      template <typename Number>
-      void
-      Partitioner::update_ghost_values_start_impl(
+      Partitioner::export_to_ghosted_array_start_impl(
         Number *data_this,
         std::vector<Number *> & /*data_others*/,
         dealii::AlignedVector<Number> &send_buffer_data,
@@ -1544,7 +1444,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::update_ghost_values_finish_impl(
+      Partitioner::export_to_ghosted_array_finish_impl(
         Number *                       data_this,
         std::vector<Number *> &        data_others,
         dealii::AlignedVector<Number> &buffer) const
@@ -1609,21 +1509,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::compress_impl(
-        Number *                        data_this,
-        std::vector<Number *> &         data_others,
-        dealii::AlignedVector<Number> & buffer,
-        dealii::VectorOperation::values operation) const
-      {
-        this->compress_start_impl(data_this, data_others, buffer, 0, operation);
-        this->compress_finish_impl(data_this, data_others, buffer, operation);
-      }
-
-
-
-      template <typename Number>
-      void
-      Partitioner::compress_start_impl(
+      Partitioner::import_from_ghosted_array_start_impl(
         Number *                        data_this,
         std::vector<Number *> &         data_others,
         dealii::AlignedVector<Number> & send_buffer_data,
@@ -1700,7 +1586,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::compress_finish_impl(
+      Partitioner::import_from_ghosted_array_finish_impl(
         Number *                        data_this,
         std::vector<Number *> &         data_others,
         dealii::AlignedVector<Number> & send_buffer_data,
