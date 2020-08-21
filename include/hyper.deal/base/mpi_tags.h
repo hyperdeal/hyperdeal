@@ -39,6 +39,9 @@ namespace hyperdeal
           // MatrixFree::loop() -> import
           matrix_free_loop_import,
 
+          // Partitioner::sync() -> MPI_Isend/MPI_Irecv
+          partitioner_sync,
+
         };
       }
     } // namespace internal

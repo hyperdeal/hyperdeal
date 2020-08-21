@@ -32,6 +32,7 @@
 #include <deal.II/lac/la_sm_partitioner.h>
 
 #include <hyper.deal/base/mpi.h>
+#include <hyper.deal/base/mpi_tags.h>
 #include <hyper.deal/matrix_free/shape_info.h>
 
 #include <map>
@@ -442,6 +443,8 @@ namespace hyperdeal
       void
       Partitioner::sync() const
       {
+        std::vector<MPI_Request> req(sm_targets.size() + sm_sources.size());
+
         for (unsigned int i = 0; i < sm_targets.size(); i++)
           {
             int dummy;
@@ -449,9 +452,9 @@ namespace hyperdeal
                       0,
                       MPI_INT,
                       sm_targets[i],
-                      22,
+                      mpi::internal::Tags::partitioner_sync,
                       sm_comm,
-                      sm_targets_request.data() + i);
+                      req.data() + i);
           }
 
         for (unsigned int i = 0; i < sm_sources.size(); i++)
@@ -461,17 +464,12 @@ namespace hyperdeal
                       0,
                       MPI_INT,
                       sm_sources[i],
-                      22,
+                      mpi::internal::Tags::partitioner_sync,
                       sm_comm,
-                      sm_sources_request.data() + i);
+                      req.data() + i + sm_targets.size());
           }
 
-        MPI_Waitall(sm_sources_request.size(),
-                    sm_sources_request.data(),
-                    MPI_STATUSES_IGNORE);
-        MPI_Waitall(sm_targets_request.size(),
-                    sm_targets_request.data(),
-                    MPI_STATUSES_IGNORE);
+        MPI_Waitall(req.size(), req.data(), MPI_STATUSES_IGNORE);
       }
 
 
