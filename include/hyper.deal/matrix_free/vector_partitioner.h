@@ -1220,9 +1220,6 @@ namespace hyperdeal
 
               send_ptr.push_back(send_data_id.size());
             }
-
-          // send_buffer_data.resize(send_ptr.back() * dofs_per_ghost); // TODO
-          send_requests.resize(requests_from_relevant_precomp.size());
         }
 
         {
@@ -1237,9 +1234,6 @@ namespace hyperdeal
 
           this->sm_targets = dealii::Utilities::MPI::
             compute_point_to_point_communication_pattern(sm_comm, sm_sources);
-
-          sm_targets_request.resize(sm_targets.size());
-          sm_sources_request.resize(sm_sources.size());
         }
 
         if (do_buffering)
@@ -1280,7 +1274,7 @@ namespace hyperdeal
                 sm_send_ptr.push_back(sm_send_no.size());
               }
 
-            AssertThrow(sm_send_rank.size() == sm_sources_request.size(),
+            AssertThrow(sm_send_rank.size() == sm_sources.size(),
                         dealii::StandardExceptions::ExcNotImplemented());
           }
 
@@ -1357,6 +1351,11 @@ namespace hyperdeal
                           send_buffer_data.size(),
                           send_ptr.back() * dofs_per_ghost));
           }
+
+        sm_targets_request.resize(sm_targets.size());
+        sm_sources_request.resize(sm_sources.size());
+        recv_requests.resize(recv_ranks.size());
+        send_requests.resize(send_ranks.size());
 
         // 1) notify relevant shared processes that local data is available
         if (sm_size > 1)
@@ -1435,6 +1434,11 @@ namespace hyperdeal
         Number *const                data_this,
         const std::vector<Number *> &data_others) const
       {
+        AssertDimension(sm_targets_request.size(), sm_targets.size());
+        AssertDimension(sm_sources_request.size(), sm_sources.size());
+        AssertDimension(recv_requests.size(), recv_ranks.size());
+        AssertDimension(send_requests.size(), send_ranks.size());
+
         // 1) deal with shared faces
         if (do_buffering)
           {
@@ -1519,6 +1523,11 @@ namespace hyperdeal
                           send_ptr.back() * dofs_per_ghost));
           }
 
+        sm_targets_request.resize(sm_targets.size());
+        sm_sources_request.resize(sm_sources.size());
+        recv_requests.resize(recv_ranks.size());
+        send_requests.resize(send_ranks.size());
+
         // 1) notify relevant shared processes that data is available
         if (sm_size > 1)
           {
@@ -1583,6 +1592,11 @@ namespace hyperdeal
                     dealii::StandardExceptions::ExcDimensionMismatch(
                       send_buffer_data.size(),
                       send_ptr.back() * dofs_per_ghost));
+
+        AssertDimension(sm_targets_request.size(), sm_targets.size());
+        AssertDimension(sm_sources_request.size(), sm_sources.size());
+        AssertDimension(recv_requests.size(), recv_ranks.size());
+        AssertDimension(send_requests.size(), send_ranks.size());
 
         // 1) compress for shared faces
         if (do_buffering)
