@@ -301,17 +301,13 @@ namespace hyperdeal
         std::vector<dealii::types::global_dof_index> send_ptr;
         std::vector<dealii::types::global_dof_index> send_data_id;
         std::vector<unsigned int>                    send_data_face_no;
-        mutable std::vector<MPI_Request>             send_requests;
 
         std::vector<unsigned int>                    recv_ranks;
         std::vector<dealii::types::global_dof_index> recv_ptr;
         std::vector<dealii::types::global_dof_index> recv_size;
-        mutable std::vector<MPI_Request>             recv_requests;
 
-        std::vector<unsigned int>        sm_targets;
-        std::vector<unsigned int>        sm_sources;
-        mutable std::vector<MPI_Request> sm_targets_request;
-        mutable std::vector<MPI_Request> sm_sources_request;
+        std::vector<unsigned int> sm_targets;
+        std::vector<unsigned int> sm_sources;
 
 
         std::vector<dealii::types::global_dof_index> sm_send_ptr;
@@ -1193,7 +1189,6 @@ namespace hyperdeal
           recv_ptr.clear();
           recv_size.clear();
           recv_ranks.clear();
-          recv_requests.clear();
 
           for (const auto i : receive_info)
             {
@@ -1201,7 +1196,6 @@ namespace hyperdeal
               recv_size.push_back(i.second.first);
               recv_ptr.push_back(i.second.second);
             }
-          recv_requests.resize(receive_info.size());
         }
 
         {
@@ -1436,8 +1430,9 @@ namespace hyperdeal
         Number *const                data_this,
         const std::vector<Number *> &data_others) const
       {
-        requests.resize(sm_sources.size() + sm_targets.size() +
-                        recv_ranks.size() + send_ranks.size());
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
 
         // 1) deal with shared faces
         if (do_buffering)
@@ -1510,10 +1505,8 @@ namespace hyperdeal
                           send_ptr.back() * dofs_per_ghost));
           }
 
-        sm_targets_request.resize(sm_targets.size());
-        sm_sources_request.resize(sm_sources.size());
-        recv_requests.resize(recv_ranks.size());
-        send_requests.resize(send_ranks.size());
+        requests.resize(sm_sources.size() + sm_targets.size() +
+                        recv_ranks.size() + send_ranks.size());
 
         // 1) notify relevant shared processes that data is available
         if (sm_size > 1)
@@ -1527,7 +1520,7 @@ namespace hyperdeal
                         sm_sources[i],
                         communication_channel + 21,
                         sm_comm,
-                        sm_sources_request.data() + i);
+                        requests.data() + i);
 
             for (unsigned int i = 0; i < sm_targets.size(); i++)
               MPI_Irecv(&dummy,
@@ -1536,7 +1529,7 @@ namespace hyperdeal
                         sm_targets[i],
                         communication_channel + 21,
                         sm_comm,
-                        sm_targets_request.data() + i);
+                        requests.data() + i + sm_sources.size());
           }
 
         // request receive
@@ -1548,7 +1541,8 @@ namespace hyperdeal
                       recv_ranks[i],
                       0,
                       comm_all,
-                      recv_requests.data() + i);
+                      requests.data() + i + sm_sources.size() +
+                        sm_targets.size());
         }
 
         // fill buffers and request send
@@ -1559,7 +1553,8 @@ namespace hyperdeal
                     send_ranks[i],
                     0,
                     comm_all,
-                    send_requests.data() + i);
+                    requests.data() + i + sm_sources.size() +
+                      sm_targets.size() + recv_ranks.size());
       }
 
 
@@ -1580,10 +1575,9 @@ namespace hyperdeal
                       send_buffer_data.size(),
                       send_ptr.back() * dofs_per_ghost));
 
-        AssertDimension(sm_targets_request.size(), sm_targets.size());
-        AssertDimension(sm_sources_request.size(), sm_sources.size());
-        AssertDimension(recv_requests.size(), recv_ranks.size());
-        AssertDimension(send_requests.size(), send_ranks.size());
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
 
         // 1) compress for shared faces
         if (do_buffering)
@@ -1592,10 +1586,11 @@ namespace hyperdeal
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_targets.size(),
-                                              sm_targets_request.data(),
-                                              &i,
-                                              &status);
+                const auto ierr =
+                  MPI_Waitany(sm_targets.size(),
+                              requests.data() + sm_sources.size(),
+                              &i,
+                              &status);
                 AssertThrowMPI(ierr);
 
                 for (unsigned int j = sm_recv_ptr[i]; j < sm_recv_ptr[i + 1];
@@ -1625,7 +1620,11 @@ namespace hyperdeal
             int        r;
             MPI_Status status;
             const auto ierr =
-              MPI_Waitany(send_ranks.size(), send_requests.data(), &r, &status);
+              MPI_Waitany(send_ranks.size(),
+                          requests.data() + sm_sources.size() +
+                            sm_targets.size() + recv_ranks.size(),
+                          &r,
+                          &status);
             AssertThrowMPI(ierr);
 
             auto buffer =
@@ -1650,13 +1649,11 @@ namespace hyperdeal
                 }
           }
 
-        MPI_Waitall(sm_sources.size(),
-                    sm_sources_request.data(),
-                    MPI_STATUSES_IGNORE);
+        MPI_Waitall(sm_sources.size(), requests.data(), MPI_STATUSES_IGNORE);
 
         // 3) make sure data has been sent to remote process
-        MPI_Waitall(recv_ranks.size(),
-                    recv_requests.data(),
+        MPI_Waitall(recv_ranks.size() + sm_sources.size() + sm_targets.size(),
+                    requests.data(),
                     MPI_STATUSES_IGNORE);
       }
 
