@@ -326,6 +326,8 @@ namespace hyperdeal
         std::vector<unsigned int>                    sm_recv_offset_2;
         std::vector<unsigned int>                    sm_recv_no;
 
+        mutable std::vector<MPI_Request> requests;
+
         // IV) Size of vector (queried by the vector)
         std::size_t _local_size;
         std::size_t _ghost_size;
@@ -1352,10 +1354,8 @@ namespace hyperdeal
                           send_ptr.back() * dofs_per_ghost));
           }
 
-        sm_targets_request.resize(sm_targets.size());
-        sm_sources_request.resize(sm_sources.size());
-        recv_requests.resize(recv_ranks.size());
-        send_requests.resize(send_ranks.size());
+        requests.resize(sm_sources.size() + sm_targets.size() +
+                        recv_ranks.size() + send_ranks.size());
 
         // 1) notify relevant shared processes that local data is available
         if (sm_size > 1)
@@ -1368,7 +1368,7 @@ namespace hyperdeal
                         sm_targets[i],
                         communication_channel + 21,
                         sm_comm,
-                        sm_targets_request.data() + i);
+                        requests.data() + i + sm_sources.size());
 
             for (unsigned int i = 0; i < sm_sources.size(); i++)
               MPI_Irecv(&dummy,
@@ -1377,7 +1377,7 @@ namespace hyperdeal
                         sm_sources[i],
                         communication_channel + 21,
                         sm_comm,
-                        sm_sources_request.data() + i);
+                        requests.data() + i);
           }
 
         // 2) start receiving form (remote) processes
@@ -1389,7 +1389,8 @@ namespace hyperdeal
                       recv_ranks[i],
                       communication_channel + 22,
                       comm_all,
-                      recv_requests.data() + i);
+                      requests.data() + i + sm_sources.size() +
+                        sm_targets.size());
         }
 
         // 3) fill buffers and start sending to (remote) processes
@@ -1422,7 +1423,8 @@ namespace hyperdeal
                        send_ranks[c],
                        communication_channel + 22,
                        comm_all,
-                       send_requests.data() + c);
+                       requests.data() + c + sm_sources.size() +
+                         sm_targets.size() + recv_ranks.size());
           }
       }
 
@@ -1434,10 +1436,8 @@ namespace hyperdeal
         Number *const                data_this,
         const std::vector<Number *> &data_others) const
       {
-        AssertDimension(sm_targets_request.size(), sm_targets.size());
-        AssertDimension(sm_sources_request.size(), sm_sources.size());
-        AssertDimension(recv_requests.size(), recv_ranks.size());
-        AssertDimension(send_requests.size(), send_ranks.size());
+        requests.resize(sm_sources.size() + sm_targets.size() +
+                        recv_ranks.size() + send_ranks.size());
 
         // 1) deal with shared faces
         if (do_buffering)
@@ -1447,10 +1447,8 @@ namespace hyperdeal
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_sources.size(),
-                                              sm_sources_request.data(),
-                                              &i,
-                                              &status);
+                const auto ierr =
+                  MPI_Waitany(sm_sources.size(), requests.data(), &i, &status);
                 AssertThrowMPI(ierr);
 
                 for (unsigned int j = sm_send_ptr[i]; j < sm_send_ptr[i + 1];
@@ -1472,25 +1470,14 @@ namespace hyperdeal
                         false, dealii::StandardExceptions::ExcNotImplemented());
                     }
               }
+            MPI_Waitall(requests.size() - sm_sources.size(),
+                        requests.data() + sm_sources.size(),
+                        MPI_STATUSES_IGNORE);
           }
         else
           {
-            MPI_Waitall(sm_sources.size(),
-                        sm_sources_request.data(),
-                        MPI_STATUSES_IGNORE);
+            MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
           }
-
-        MPI_Waitall(sm_targets.size(),
-                    sm_targets_request.data(),
-                    MPI_STATUSES_IGNORE);
-
-        // 2) finish send/recv
-        MPI_Waitall(recv_ranks.size(),
-                    recv_requests.data(),
-                    MPI_STATUSES_IGNORE);
-        MPI_Waitall(send_ranks.size(),
-                    send_requests.data(),
-                    MPI_STATUSES_IGNORE);
       }
 
 
