@@ -117,7 +117,8 @@ namespace hyperdeal
           const unsigned int             communication_channel,
           double *const                  data_this,
           const std::vector<double *> &  data_others,
-          dealii::AlignedVector<double> &buffer) const override;
+          dealii::AlignedVector<double> &buffer,
+          std::vector<MPI_Request> &     requests) const override;
 
         /**
          * TODO.
@@ -125,7 +126,8 @@ namespace hyperdeal
         void
         export_to_ghosted_array_finish(
           double *const                data_this,
-          const std::vector<double *> &data_others) const override;
+          const std::vector<double *> &data_others,
+          std::vector<MPI_Request> &   requests) const override;
 
         /**
          * TODO.
@@ -136,7 +138,8 @@ namespace hyperdeal
           const unsigned int                    communication_channel,
           double *const                         data_this,
           const std::vector<double *> &         data_others,
-          dealii::AlignedVector<double> &       buffer) const override;
+          dealii::AlignedVector<double> &       buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
          * TODO.
@@ -146,7 +149,8 @@ namespace hyperdeal
           const dealii::VectorOperation::values operation,
           double *const                         data_this,
           const std::vector<double *> &         data_others,
-          const dealii::AlignedVector<double> & buffer) const override;
+          const dealii::AlignedVector<double> & buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
          * TODO.
@@ -156,7 +160,8 @@ namespace hyperdeal
           const unsigned int            communication_channel,
           float *const                  data_this,
           const std::vector<float *> &  data_others,
-          dealii::AlignedVector<float> &buffer) const override;
+          dealii::AlignedVector<float> &buffer,
+          std::vector<MPI_Request> &    requests) const override;
 
         /**
          * TODO.
@@ -164,7 +169,8 @@ namespace hyperdeal
         void
         export_to_ghosted_array_finish(
           float *const                data_this,
-          const std::vector<float *> &data_others) const override;
+          const std::vector<float *> &data_others,
+          std::vector<MPI_Request> &  requests) const override;
 
         /**
          * TODO.
@@ -175,7 +181,8 @@ namespace hyperdeal
           const unsigned int                    communication_channel,
           float *const                          data_this,
           const std::vector<float *> &          data_others,
-          dealii::AlignedVector<float> &        buffer) const override;
+          dealii::AlignedVector<float> &        buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
          * TODO.
@@ -185,7 +192,8 @@ namespace hyperdeal
           const dealii::VectorOperation::values operation,
           float *const                          data_this,
           const std::vector<float *> &          data_others,
-          const dealii::AlignedVector<float> &  buffer) const override;
+          const dealii::AlignedVector<float> &  buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
       private:
         /**
@@ -197,7 +205,8 @@ namespace hyperdeal
           const unsigned int             communication_channel,
           Number *const                  data_this,
           const std::vector<Number *> &  data_others,
-          dealii::AlignedVector<Number> &buffer) const;
+          dealii::AlignedVector<Number> &buffer,
+          std::vector<MPI_Request> &     requests) const;
 
         /**
          * Finish ghost value update.
@@ -206,7 +215,8 @@ namespace hyperdeal
         void
         export_to_ghosted_array_finish_impl(
           Number *const                data_this,
-          const std::vector<Number *> &data_others) const;
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
 
         /**
          * Start compress.
@@ -218,7 +228,8 @@ namespace hyperdeal
           const unsigned int                    communication_channel,
           Number *const                         data_this,
           const std::vector<Number *> &         data_others,
-          dealii::AlignedVector<Number> &       buffer) const;
+          dealii::AlignedVector<Number> &       buffer,
+          std::vector<MPI_Request> &            requests) const;
 
         /**
          * Finish compress.
@@ -229,7 +240,8 @@ namespace hyperdeal
           const dealii::VectorOperation::values operation,
           Number *const                         data_this,
           const std::vector<Number *> &         data_others,
-          const dealii::AlignedVector<Number> & buffer) const;
+          const dealii::AlignedVector<Number> & buffer,
+          std::vector<MPI_Request> &            requests) const;
 
       public:
         /**
@@ -322,8 +334,6 @@ namespace hyperdeal
         std::vector<unsigned int>                    sm_recv_offset_2;
         std::vector<unsigned int>                    sm_recv_no;
 
-        mutable std::vector<MPI_Request> requests;
-
         // IV) Size of vector (queried by the vector)
         std::size_t _local_size;
         std::size_t _ghost_size;
@@ -335,12 +345,11 @@ namespace hyperdeal
         const unsigned int             communication_channel,
         double *const                  data_this,
         const std::vector<double *> &  data_others,
-        dealii::AlignedVector<double> &buffer) const
+        dealii::AlignedVector<double> &buffer,
+        std::vector<MPI_Request> &     requests) const
       {
-        this->export_to_ghosted_array_start_impl(communication_channel,
-                                                 data_this,
-                                                 data_others,
-                                                 buffer);
+        this->export_to_ghosted_array_start_impl(
+          communication_channel, data_this, data_others, buffer, requests);
       }
 
 
@@ -348,9 +357,12 @@ namespace hyperdeal
       void
       Partitioner::export_to_ghosted_array_finish(
         double *const                data_this,
-        const std::vector<double *> &data_others) const
+        const std::vector<double *> &data_others,
+        std::vector<MPI_Request> &   requests) const
       {
-        this->export_to_ghosted_array_finish_impl(data_this, data_others);
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  requests);
       }
 
 
@@ -361,10 +373,15 @@ namespace hyperdeal
         const unsigned int                    communication_channel,
         double *const                         data_this,
         const std::vector<double *> &         data_others,
-        dealii::AlignedVector<double> &       buffer) const
+        dealii::AlignedVector<double> &       buffer,
+        std::vector<MPI_Request> &            requests) const
       {
-        this->import_from_ghosted_array_start_impl(
-          operation, communication_channel, data_this, data_others, buffer);
+        this->import_from_ghosted_array_start_impl(operation,
+                                                   communication_channel,
+                                                   data_this,
+                                                   data_others,
+                                                   buffer,
+                                                   requests);
       }
 
 
@@ -374,12 +391,11 @@ namespace hyperdeal
         const dealii::VectorOperation::values operation,
         double *const                         data_this,
         const std::vector<double *> &         data_others,
-        const dealii::AlignedVector<double> & buffer) const
+        const dealii::AlignedVector<double> & buffer,
+        std::vector<MPI_Request> &            requests) const
       {
-        this->import_from_ghosted_array_finish_impl(operation,
-                                                    data_this,
-                                                    data_others,
-                                                    buffer);
+        this->import_from_ghosted_array_finish_impl(
+          operation, data_this, data_others, buffer, requests);
       }
 
 
@@ -389,12 +405,11 @@ namespace hyperdeal
         const unsigned int            communication_channel,
         float *const                  data_this,
         const std::vector<float *> &  data_others,
-        dealii::AlignedVector<float> &buffer) const
+        dealii::AlignedVector<float> &buffer,
+        std::vector<MPI_Request> &    requests) const
       {
-        export_to_ghosted_array_start_impl(communication_channel,
-                                           data_this,
-                                           data_others,
-                                           buffer);
+        export_to_ghosted_array_start_impl(
+          communication_channel, data_this, data_others, buffer, requests);
       }
 
 
@@ -402,9 +417,12 @@ namespace hyperdeal
       void
       Partitioner::export_to_ghosted_array_finish(
         float *const                data_this,
-        const std::vector<float *> &data_others) const
+        const std::vector<float *> &data_others,
+        std::vector<MPI_Request> &  requests) const
       {
-        this->export_to_ghosted_array_finish_impl(data_this, data_others);
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  requests);
       }
 
 
@@ -415,10 +433,15 @@ namespace hyperdeal
         const unsigned int                    communication_channel,
         float *const                          data_this,
         const std::vector<float *> &          data_others,
-        dealii::AlignedVector<float> &        buffer) const
+        dealii::AlignedVector<float> &        buffer,
+        std::vector<MPI_Request> &            requests) const
       {
-        this->import_from_ghosted_array_start_impl(
-          operation, communication_channel, data_this, data_others, buffer);
+        this->import_from_ghosted_array_start_impl(operation,
+                                                   communication_channel,
+                                                   data_this,
+                                                   data_others,
+                                                   buffer,
+                                                   requests);
       }
 
 
@@ -428,12 +451,11 @@ namespace hyperdeal
         const dealii::VectorOperation::values operation,
         float *const                          data_this,
         const std::vector<float *> &          data_others,
-        const dealii::AlignedVector<float> &  buffer) const
+        const dealii::AlignedVector<float> &  buffer,
+        std::vector<MPI_Request> &            requests) const
       {
-        this->import_from_ghosted_array_finish_impl(operation,
-                                                    data_this,
-                                                    data_others,
-                                                    buffer);
+        this->import_from_ghosted_array_finish_impl(
+          operation, data_this, data_others, buffer, requests);
       }
 
 
@@ -1333,7 +1355,8 @@ namespace hyperdeal
         const unsigned int communication_channel,
         Number *const      data_this,
         const std::vector<Number *> & /*data_others*/,
-        dealii::AlignedVector<Number> &send_buffer_data) const
+        dealii::AlignedVector<Number> &send_buffer_data,
+        std::vector<MPI_Request> &     requests) const
       {
         if (send_buffer_data.size() == 0)
           {
@@ -1428,7 +1451,8 @@ namespace hyperdeal
       void
       Partitioner::export_to_ghosted_array_finish_impl(
         Number *const                data_this,
-        const std::vector<Number *> &data_others) const
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
       {
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1484,7 +1508,8 @@ namespace hyperdeal
         const unsigned int                    communication_channel,
         Number *const                         data_this,
         const std::vector<Number *> &         data_others,
-        dealii::AlignedVector<Number> &       send_buffer_data) const
+        dealii::AlignedVector<Number> &       send_buffer_data,
+        std::vector<MPI_Request> &            requests) const
       {
         (void)data_others;
         (void)communication_channel;
@@ -1565,7 +1590,8 @@ namespace hyperdeal
         const dealii::VectorOperation::values operation,
         Number *const                         data_this,
         const std::vector<Number *> &         data_others,
-        const dealii::AlignedVector<Number> & send_buffer_data) const
+        const dealii::AlignedVector<Number> & send_buffer_data,
+        std::vector<MPI_Request> &            requests) const
       {
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
