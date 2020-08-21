@@ -1242,16 +1242,7 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        InVector &                    src_ = const_cast<InVector &>(src);
-        dealii::AlignedVector<Number> buffer;
-
-        partitioner->export_to_ghosted_array_start(
-          mpi::internal::Tags::matrix_free_loop_cell_centric_export,
-          src_.begin(),
-          src_.other_values(),
-          buffer);
-        partitioner->export_to_ghosted_array_finish(src_.begin(),
-                                                    src_.other_values());
+        src.update_ghost_values();
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1362,16 +1353,7 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        InVector &                    src_ = const_cast<InVector &>(src);
-        dealii::AlignedVector<Number> buffer;
-
-        partitioner->export_to_ghosted_array_start(
-          mpi::internal::Tags::matrix_free_loop_export,
-          src_.begin(),
-          src_.other_values(),
-          buffer);
-        partitioner->export_to_ghosted_array_finish(src_.begin(),
-                                                    src_.other_values());
+        src.update_ghost_values();
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1451,19 +1433,7 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "compress");
 
-        dealii::AlignedVector<Number> buffer;
-
-        partitioner->import_from_ghosted_array_start(
-          dealii::VectorOperation::add,
-          mpi::internal::Tags::matrix_free_loop_import,
-          dst.begin(),
-          dst.other_values(),
-          buffer);
-        partitioner->import_from_ghosted_array_finish(
-          dealii::VectorOperation::add,
-          dst.begin(),
-          dst.other_values(),
-          buffer);
+        dst.compress(dealii::VectorOperation::add);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
