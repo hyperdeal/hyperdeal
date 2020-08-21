@@ -1104,7 +1104,7 @@ namespace hyperdeal
                         send_ranks[i],
                         105,
                         comm,
-                        &send_requests[i]);
+                        send_requests.data() + i);
 
               receive_info[send_ranks[i]] = {
                 send_data[i].size() * dofs_per_ghost,
@@ -1322,7 +1322,7 @@ namespace hyperdeal
                 sm_recv_ptr.push_back(sm_recv_no.size());
               }
 
-            AssertThrow(sm_recv_rank.size() == sm_targets_request.size(),
+            AssertThrow(sm_recv_rank.size() == sm_targets.size(),
                         dealii::StandardExceptions::ExcNotImplemented());
           }
       }
@@ -1439,11 +1439,11 @@ namespace hyperdeal
         if (do_buffering)
           {
             // update ghost values of shared cells (if requested)
-            for (unsigned int c = 0; c < sm_sources_request.size(); c++)
+            for (unsigned int c = 0; c < sm_sources.size(); c++)
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_sources_request.size(),
+                const auto ierr = MPI_Waitany(sm_sources.size(),
                                               sm_sources_request.data(),
                                               &i,
                                               &status);
@@ -1471,20 +1471,20 @@ namespace hyperdeal
           }
         else
           {
-            MPI_Waitall(sm_sources_request.size(),
+            MPI_Waitall(sm_sources.size(),
                         sm_sources_request.data(),
                         MPI_STATUSES_IGNORE);
           }
 
-        MPI_Waitall(sm_targets_request.size(),
+        MPI_Waitall(sm_targets.size(),
                     sm_targets_request.data(),
                     MPI_STATUSES_IGNORE);
 
         // 2) finish send/recv
-        MPI_Waitall(recv_requests.size(),
+        MPI_Waitall(recv_ranks.size(),
                     recv_requests.data(),
                     MPI_STATUSES_IGNORE);
-        MPI_Waitall(send_requests.size(),
+        MPI_Waitall(send_ranks.size(),
                     send_requests.data(),
                     MPI_STATUSES_IGNORE);
       }
@@ -1587,11 +1587,11 @@ namespace hyperdeal
         // 1) compress for shared faces
         if (do_buffering)
           {
-            for (unsigned int c = 0; c < sm_targets_request.size(); c++)
+            for (unsigned int c = 0; c < sm_targets.size(); c++)
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_targets_request.size(),
+                const auto ierr = MPI_Waitany(sm_targets.size(),
                                               sm_targets_request.data(),
                                               &i,
                                               &status);
@@ -1623,10 +1623,8 @@ namespace hyperdeal
           {
             int        r;
             MPI_Status status;
-            const auto ierr = MPI_Waitany(send_requests.size(),
-                                          send_requests.data(),
-                                          &r,
-                                          &status);
+            const auto ierr =
+              MPI_Waitany(send_ranks.size(), send_requests.data(), &r, &status);
             AssertThrowMPI(ierr);
 
             auto buffer =
@@ -1651,13 +1649,13 @@ namespace hyperdeal
                 }
           }
 
-        MPI_Waitall(sm_sources_request.size(),
+        MPI_Waitall(sm_sources.size(),
                     sm_sources_request.data(),
                     MPI_STATUSES_IGNORE);
 
         // 3) make sure data has been sent to remote process
-        MPI_Waitall(recv_requests.size(),
-                    &recv_requests[0],
+        MPI_Waitall(recv_ranks.size(),
+                    recv_requests.data(),
                     MPI_STATUSES_IGNORE);
       }
 
@@ -1707,17 +1705,11 @@ namespace hyperdeal
                dealii::MemoryConsumption::memory_consumption(send_data_id) +
                dealii::MemoryConsumption::memory_consumption(
                  send_data_face_no) +
-               dealii::MemoryConsumption::memory_consumption(send_requests) +
                dealii::MemoryConsumption::memory_consumption(recv_ranks) +
                dealii::MemoryConsumption::memory_consumption(recv_ptr) +
                dealii::MemoryConsumption::memory_consumption(recv_size) +
-               dealii::MemoryConsumption::memory_consumption(recv_requests) +
                dealii::MemoryConsumption::memory_consumption(sm_targets) +
                dealii::MemoryConsumption::memory_consumption(sm_sources) +
-               dealii::MemoryConsumption::memory_consumption(
-                 sm_targets_request) +
-               dealii::MemoryConsumption::memory_consumption(
-                 sm_sources_request) +
                dealii::MemoryConsumption::memory_consumption(sm_send_ptr) +
                dealii::MemoryConsumption::memory_consumption(sm_send_rank) +
                dealii::MemoryConsumption::memory_consumption(sm_send_offset_1) +
