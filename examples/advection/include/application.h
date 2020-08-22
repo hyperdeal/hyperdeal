@@ -155,7 +155,7 @@ namespace hyperdeal
 
               if (dealii::Utilities::MPI::this_mpi_process(comm_column) == 0)
                 grid_out.write_mesh_per_processor_as_vtu(*this->triangulation_x,
-                                                         "grid_c");
+                                                         "grid_x");
 
               if (dealii::Utilities::MPI::this_mpi_process(comm_row) == 0)
                 grid_out.write_mesh_per_processor_as_vtu(*this->triangulation_v,
