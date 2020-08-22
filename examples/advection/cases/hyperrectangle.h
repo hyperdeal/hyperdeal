@@ -39,6 +39,12 @@ namespace hyperdeal
             advection[1] = 0.15;
           if (DIM > 2)
             advection[2] = -0.05;
+          if (DIM > 3)
+            advection[3] = -0.10;
+          if (DIM > 4)
+            advection[4] = -0.15;
+          if (DIM > 5)
+            advection[5] = 0.5;
         }
 
         virtual double

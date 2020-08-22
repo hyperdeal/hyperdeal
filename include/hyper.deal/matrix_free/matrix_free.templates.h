@@ -1104,8 +1104,53 @@ namespace hyperdeal
       // are the same as for cells
       dof_info.n_vectorization_lanes_filled[3].clear();
     }
-  }
 
+    // partitions for ECL
+    {
+      partitions.clear();
+      partitions.resize(2);
+
+      unsigned int v_len = VectorizedArrayTypeV::size();
+
+      const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
+      const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
+
+      unsigned int i0 = 0;
+
+      const auto process = [](const auto &cell) {
+        bool flag = true;
+        for (const auto f : cell->face_indices())
+          flag =
+            flag && cell->neighbor_or_periodic_neighbor(f)->is_locally_owned();
+
+        return flag;
+      };
+
+      for (unsigned int j = 0; j < n_cell_batches_v; j++)
+        for (unsigned int j_v = 0;
+             j_v < matrix_free_v.n_active_entries_per_cell_batch(j);
+             j_v++)
+          {
+            const bool flag_v =
+              process(matrix_free_v.get_cell_iterator(j, j_v));
+
+            for (unsigned int i = 0; i < n_cell_batches_x; i++)
+              {
+                bool flag_xv = flag_v;
+
+                for (unsigned int i_v = 0;
+                     i_v < matrix_free_x.n_active_entries_per_cell_batch(i);
+                     i_v++)
+                  flag_xv &= process(matrix_free_x.get_cell_iterator(i, i_v));
+
+                if (flag_xv)
+                  partitions[0].emplace_back(i, j * v_len + j_v, i0);
+                else
+                  partitions[1].emplace_back(i, j * v_len + j_v, i0);
+              }
+          }
+    }
+  }
 
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
@@ -1240,9 +1285,7 @@ namespace hyperdeal
   {
     if (src_vector_face_access == DataAccessOnFaces::values)
       {
-        ScopedTimerWrapper timer(timers, "update_ghost_values");
-
-        src.update_ghost_values();
+        src.update_ghost_values_start();
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1256,16 +1299,13 @@ namespace hyperdeal
     {
       ScopedTimerWrapper timer(timers, "loop");
 
-      const unsigned int v_len            = VectorizedArrayTypeV::size();
-      const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
-      const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
+      for (const auto &id : this->partitions[0])
+        cell_operation(*this, dst, src, id);
 
-      for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
-        for (unsigned int v = 0;
-             v < matrix_free_v.n_active_entries_per_cell_batch(j);
-             v++)
-          for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
-            cell_operation(*this, dst, src, ID(i, j * v_len + v, i0));
+      src.update_ghost_values_finish();
+
+      for (const auto &id : this->partitions[1])
+        cell_operation(*this, dst, src, id);
     }
 
     if (!do_buffering)

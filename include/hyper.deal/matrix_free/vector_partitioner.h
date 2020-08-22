@@ -91,12 +91,6 @@ namespace hyperdeal
         n_mpi_processes() const override;
 
         /**
-         * TODO.
-         */
-        std::vector<unsigned int>
-        get_sm_view() const override;
-
-        /**
          * Initialize partitioner with a list of locally owned cells and
          * a list of ghost faces (cell and face no).
          */
@@ -604,15 +598,6 @@ namespace hyperdeal
       Partitioner::n_mpi_processes() const
       {
         return n_mpi_processes_;
-      }
-
-
-
-      std::vector<unsigned int>
-      Partitioner::get_sm_view() const
-      {
-        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-        return {};
       }
 
 
@@ -1458,8 +1443,7 @@ namespace hyperdeal
                         sm_sources.size() + sm_targets.size() +
                           recv_ranks.size() + send_ranks.size());
 
-        // 1) deal with shared faces
-        if (do_buffering)
+        if (do_buffering) // deal with shared faces if buffering is requested
           {
             // update ghost values of shared cells (if requested)
             for (unsigned int c = 0; c < sm_sources.size(); c++)
@@ -1489,14 +1473,9 @@ namespace hyperdeal
                         false, dealii::StandardExceptions::ExcNotImplemented());
                     }
               }
-            MPI_Waitall(requests.size() - sm_sources.size(),
-                        requests.data() + sm_sources.size(),
-                        MPI_STATUSES_IGNORE);
           }
-        else
-          {
-            MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
-          }
+
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
       }
 
 
@@ -1675,12 +1654,7 @@ namespace hyperdeal
                 }
           }
 
-        MPI_Waitall(sm_sources.size(), requests.data(), MPI_STATUSES_IGNORE);
-
-        // 3) make sure data has been sent to remote process
-        MPI_Waitall(recv_ranks.size() + sm_sources.size() + sm_targets.size(),
-                    requests.data(),
-                    MPI_STATUSES_IGNORE);
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
       }
 
 
