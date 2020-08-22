@@ -368,6 +368,11 @@ namespace hyperdeal
      * Shape info.
      */
     internal::MatrixFreeFunctions::ShapeInfo<Number> shape_info;
+
+    /**
+     * TODO
+     */
+    std::vector<std::vector<ID>> partitions;
   };
 
 } // namespace hyperdeal
