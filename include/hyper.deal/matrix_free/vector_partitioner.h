@@ -166,6 +166,20 @@ namespace hyperdeal
           const std::vector<float *> &data_others,
           std::vector<MPI_Request> &  requests) const override;
 
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_0(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
+
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_1(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
+
         /**
          * TODO.
          */
@@ -1474,6 +1488,77 @@ namespace hyperdeal
                     }
               }
           }
+
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+      }
+
+
+
+      template <typename Number>
+      void
+      Partitioner::export_to_ghosted_array_finish_0(
+        Number *const                data_this,
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
+      {
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
+
+        if (do_buffering) // deal with shared faces if buffering is requested
+          {
+            // update ghost values of shared cells (if requested)
+            for (unsigned int c = 0; c < sm_sources.size(); c++)
+              {
+                int        i;
+                MPI_Status status;
+                const auto ierr =
+                  MPI_Waitany(sm_sources.size(), requests.data(), &i, &status);
+                AssertThrowMPI(ierr);
+
+                for (unsigned int j = sm_send_ptr[i]; j < sm_send_ptr[i + 1];
+                     j++)
+                  if (dofs_per_ghost == dofs_per_face)
+                    {
+                      auto *__restrict dst = data_this + sm_send_offset_1[j];
+                      const auto *__restrict src =
+                        data_others[sm_send_rank[i]] + sm_send_offset_2[j];
+                      const auto *__restrict idx =
+                        face_to_cell_index_nodal[sm_send_no[j]].data();
+
+                      for (unsigned int i = 0; i < dofs_per_face; i++)
+                        dst[i] = src[idx[i]];
+                    }
+                  else if (dofs_per_ghost == dofs_per_cell)
+                    {
+                      AssertThrow(
+                        false, dealii::StandardExceptions::ExcNotImplemented());
+                    }
+              }
+          }
+        else
+          {
+            MPI_Waitall(sm_sources.size(),
+                        requests.data(),
+                        MPI_STATUSES_IGNORE);
+          }
+      }
+
+
+
+      template <typename Number>
+      void
+      Partitioner::export_to_ghosted_array_finish_1(
+        Number *const                data_this,
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
+      {
+        (void)data_this;
+        (void)data_others;
+
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
 
         MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
       }
