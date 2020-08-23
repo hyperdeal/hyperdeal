@@ -370,9 +370,11 @@ namespace hyperdeal
     internal::MatrixFreeFunctions::ShapeInfo<Number> shape_info;
 
     /**
-     * TODO
+     * Partitions for ECL.
+     *
+     * TODO: more details
      */
-    std::vector<std::vector<ID>> partitions;
+    std::array<std::vector<ID>, 3> partitions;
   };
 
 } // namespace hyperdeal
