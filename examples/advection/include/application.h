@@ -274,9 +274,10 @@ namespace hyperdeal
           memory_stat_monitor.monitor("hyperdeal_matrixfree");
           pcout << "  - hyperdeal::MatrixFree" << std::endl;
           typename MF::AdditionalData ad;
-          ad.do_ghost_faces = param.do_ghost_faces;
-          ad.do_buffering   = param.do_buffering;
-          ad.use_ecl        = param.use_ecl;
+          ad.do_ghost_faces    = param.do_ghost_faces;
+          ad.do_buffering      = param.do_buffering;
+          ad.use_ecl           = param.use_ecl;
+          ad.overlapping_level = param.overlapping_level;
 
           matrix_free.reinit(ad);
         }

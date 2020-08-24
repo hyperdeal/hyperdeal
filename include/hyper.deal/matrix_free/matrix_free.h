@@ -68,6 +68,7 @@ namespace hyperdeal
         : do_ghost_faces(true)
         , do_buffering(false)
         , use_ecl(true)
+        , overlapping_level(0 /*no overlapping communication-computation*/)
       {}
 
       /**
@@ -92,6 +93,11 @@ namespace hyperdeal
        *   time.
        */
       bool use_ecl;
+
+      /**
+       * TODO
+       */
+      unsigned int overlapping_level;
     };
 
 
