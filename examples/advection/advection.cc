@@ -25,11 +25,11 @@
 #include "include/application.h"
 
 #ifndef DIM_X
-#  define DIM_X 2
+#  define DIM_X 3
 #endif
 
 #ifndef DIM_V
-#  define DIM_V 2
+#  define DIM_V 3
 #endif
 
 #ifndef DEGREE

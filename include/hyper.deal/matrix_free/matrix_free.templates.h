@@ -1106,59 +1106,61 @@ namespace hyperdeal
     }
 
     // partitions for ECL
-    {
-      for (auto &partition : partitions)
-        partition.clear();
+    if (this->use_ecl)
+      {
+        for (auto &partition : partitions)
+          partition.clear();
 
-      const unsigned int v_len = VectorizedArrayTypeV::size();
-      const auto my_rank       = dealii::Utilities::MPI::this_mpi_process(comm);
-      const auto sm_ranks_vec  = mpi::procs_of_sm(comm, comm_sm);
-      const std::set<unsigned int> sm_ranks(sm_ranks_vec.begin(),
-                                            sm_ranks_vec.end());
+        const unsigned int v_len = VectorizedArrayTypeV::size();
+        const auto my_rank = dealii::Utilities::MPI::this_mpi_process(comm);
+        const auto sm_ranks_vec = mpi::procs_of_sm(comm, comm_sm);
+        const std::set<unsigned int> sm_ranks(sm_ranks_vec.begin(),
+                                              sm_ranks_vec.end());
 
-      const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
-      const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
+        const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
+        const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
 
-      // 0: no overlapping
-      const unsigned int overlapping_level = 2;
+        // 0: no overlapping
+        const unsigned int overlapping_level =
+          additional_data.overlapping_level;
 
-      for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
-        for (unsigned int v = 0;
-             v < matrix_free_v.n_active_entries_per_cell_batch(j);
-             v++)
-          for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
-            {
-              unsigned int flag = 0;
-              for (unsigned int d = 0;
-                   d < dealii::GeometryInfo<dim>::faces_per_cell;
-                   d++)
-                for (unsigned int v = 0;
-                     v < dof_info.n_vectorization_lanes_filled[2][i0];
-                     v++)
-                  {
-                    const auto gid =
-                      info
-                        .cells_exterior_ecl
-                          [i0 * info.max_batch_size *
-                             dealii::GeometryInfo<dim>::faces_per_cell +
-                           d * info.max_batch_size + v]
-                        .rank;
+        for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
+          for (unsigned int v = 0;
+               v < matrix_free_v.n_active_entries_per_cell_batch(j);
+               v++)
+            for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
+              {
+                unsigned int flag = 0;
+                for (unsigned int d = 0;
+                     d < dealii::GeometryInfo<dim>::faces_per_cell;
+                     d++)
+                  for (unsigned int v = 0;
+                       v < dof_info.n_vectorization_lanes_filled[2][i0];
+                       v++)
+                    {
+                      const auto gid =
+                        info
+                          .cells_exterior_ecl
+                            [i0 * info.max_batch_size *
+                               dealii::GeometryInfo<dim>::faces_per_cell +
+                             d * info.max_batch_size + v]
+                          .rank;
 
-                    if (overlapping_level >= 1 && gid == my_rank)
-                      flag = std::max(flag, 0u);
-                    else if (overlapping_level == 2 &&
-                             sm_ranks.find(gid) != sm_ranks.end())
-                      flag = std::max(flag, 1u);
-                    else
-                      flag = std::max(flag, 2u);
-                  }
+                      if (overlapping_level >= 1 && gid == my_rank)
+                        flag = std::max(flag, 0u);
+                      else if (overlapping_level == 2 &&
+                               sm_ranks.find(gid) != sm_ranks.end())
+                        flag = std::max(flag, 1u);
+                      else
+                        flag = std::max(flag, 2u);
+                    }
 
-              partitions[flag].emplace_back(i, j * v_len + v, i0);
-            }
+                partitions[flag].emplace_back(i, j * v_len + v, i0);
+              }
 
-      // std::cout << partitions[0].size() << " " << partitions[1].size() << " "
-      //          << partitions[2].size() << " " << std::endl;
-    }
+        std::cout << partitions[0].size() << " " << partitions[1].size() << " "
+                  << partitions[2].size() << " " << std::endl;
+      }
   }
 
 
@@ -1292,44 +1294,6 @@ namespace hyperdeal
     const DataAccessOnFaces src_vector_face_access,
     Timers *                timers) const
   {
-#if false
-    if (src_vector_face_access == DataAccessOnFaces::values)
-      {
-        src.update_ghost_values();
-      }
-    else
-      AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-
-            if (dst.has_ghost_elements())
-      {
-        ScopedTimerWrapper timer(timers, "zero_out_ghosts");
-              dst.zero_out_ghosts();
-          }
-
-      {
-      ScopedTimerWrapper timer(timers, "loop");
-
-      const unsigned int v_len            = VectorizedArrayTypeV::size();
-      const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
-      const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
-
-      for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
-        for (unsigned int v = 0;
-             v < matrix_free_v.n_active_entries_per_cell_batch(j);
-             v++)
-          for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
-            cell_operation(*this, dst, src, ID(i, j * v_len + v, i0));
-      }
-
-    if (!do_buffering)
-      {
-        ScopedTimerWrapper timer(timers, "barrier");
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
-          ->sync();
-      }
-#else
-
     AssertThrow(src_vector_face_access == DataAccessOnFaces::values,
                 dealii::StandardExceptions::ExcNotImplemented());
 
@@ -1350,6 +1314,9 @@ namespace hyperdeal
           // perform pre-processing step for partition
           if (i == 0)
             {
+              if (timers != nullptr)
+                timers->operator[]("update_ghost_values_0").start();
+
               // perform src.update_ghost_values_start()
               part->export_to_ghosted_array_start(
                 0, src_.begin(), src_.other_values(), buffer, requests);
@@ -1364,6 +1331,12 @@ namespace hyperdeal
               part->export_to_ghosted_array_finish_0(src_.begin(),
                                                      src_.other_values(),
                                                      requests);
+
+              if (timers != nullptr)
+                {
+                  timers->operator[]("update_ghost_values_0").stop();
+                  timers->operator[]("update_ghost_values_1").start();
+                }
             }
           else if (i == 2)
             {
@@ -1371,6 +1344,9 @@ namespace hyperdeal
               part->export_to_ghosted_array_finish_1(src_.begin(),
                                                      src_.other_values(),
                                                      requests);
+
+              if (timers != nullptr)
+                timers->operator[]("update_ghost_values_1").stop();
             }
           else
             {
@@ -1389,7 +1365,6 @@ namespace hyperdeal
         ScopedTimerWrapper timer(timers, "barrier");
         part->sync();
       }
-#endif
   }
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>

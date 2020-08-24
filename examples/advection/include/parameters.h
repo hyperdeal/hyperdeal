@@ -88,6 +88,10 @@ namespace hyperdeal
           "UseECL",
           use_ecl,
           "Use element-centric loops (ECL) or face-centric loops (FCL).");
+        prm.add_parameter(
+          "OverlappingLevel",
+          overlapping_level,
+          "Level of overlapping of communication and computation.");
         prm.leave_subsection();
 
         prm.enter_subsection("General");
@@ -122,9 +126,10 @@ namespace hyperdeal
       unsigned int performance_warm_up_iterations = 0;
 
       // matrix-free
-      bool do_ghost_faces = true;
-      bool do_buffering   = false;
-      bool use_ecl        = true;
+      bool         do_ghost_faces    = true;
+      bool         do_buffering      = false;
+      bool         use_ecl           = true;
+      unsigned int overlapping_level = 0;
 
       bool print_parameter = true;
     };

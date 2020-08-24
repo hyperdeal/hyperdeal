@@ -18,8 +18,8 @@
 
 #define NUMBER_TYPE double
 #define MIN_DEGREE 3
-#define MAX_DEGREE 3
-#define MIN_DIM 6
+#define MAX_DEGREE 5
+#define MIN_DIM 4
 #define MAX_DIM 6
 #define MIN_SIMD_LENGTH 0
 #define MAX_SIMD_LENGTH 0
@@ -260,8 +260,8 @@ test(const MPI_Comm &                    comm_global,
   // clang-format off
   if(p.use_ecl)
   {
-    timer_labels.emplace_back("apply:ECL:update_ghost_values", "apply:withtimers:ECL:update_ghost_values");
-    timer_labels.emplace_back("apply:ECL:zero_out_ghosts"    , "apply:withtimers:ECL:zero_out_ghosts");
+    timer_labels.emplace_back("apply:ECL:update_ghost_values_0", "apply:withtimers:ECL:update_ghost_values_0");
+    timer_labels.emplace_back("apply:ECL:update_ghost_values_1", "apply:withtimers:ECL:update_ghost_values_1");
     timer_labels.emplace_back("apply:ECL:loop"               , "apply:withtimers:ECL:loop");
     timer_labels.emplace_back("apply:ECL:barrier"            , "apply:withtimers:ECL:barrier");
   }
