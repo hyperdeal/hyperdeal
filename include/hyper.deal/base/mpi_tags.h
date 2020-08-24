@@ -30,15 +30,6 @@ namespace hyperdeal
       {
         enum enumeration : std::uint16_t
         {
-          // MatrixFree::loop_cell_centric() -> export
-          matrix_free_loop_cell_centric_export,
-
-          // MatrixFree::loop() -> export
-          matrix_free_loop_export,
-
-          // MatrixFree::loop() -> import
-          matrix_free_loop_import,
-
           // Partitioner::sync() -> MPI_Isend/MPI_Irecv
           partitioner_sync,
 
