@@ -246,6 +246,17 @@ namespace hyperdeal
     get_boundary_id(const ID macro_face) const;
 
     /**
+     * Return boundary id of face of cell.
+     *
+     * @note In constrast to dealii::MatrixFree::get_faces_by_cells_boundary_id()
+     *   we only return a single number since we require that the cells
+     *   of a macro cell all have the same type of boundary faces.
+     */
+    dealii::types::boundary_id
+    get_faces_by_cells_boundary_id(const TensorID &   macro_cell,
+                                   const unsigned int face_number) const;
+
+    /**
      * Is ECL supported?
      */
     bool

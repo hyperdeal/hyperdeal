@@ -337,17 +337,23 @@ namespace hyperdeal
           }
         }
 
-        // 2) advection: faces (TODO: boundary not supported)
+        // 2) advection: faces
         for (auto face = 0u; face < dim * 2; face++)
           {
             this->velocity_field->reinit_face(cell, face);
 
             // load negative side from buffer
             phi_m.reinit(cell, face);
-
+            
+            const auto bid = data.get_faces_by_cells_boundary_id(cell, face);
+            
             // load positive side from global structure
-            phi_p.reinit(cell, face);
-            phi_p.read_dof_values(src);
+            if(bid == dealii::numbers::internal_face_boundary_id)
+            {
+              phi_p.reinit(cell, face);
+              phi_p.read_dof_values(src);
+            }
+
 #ifndef COLLOCATION
             const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
             if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, true, n_points>(data_ptr1, data_ptr_inv, weights); else
@@ -366,31 +372,89 @@ namespace hyperdeal
             phi_m.read_dof_values_from_buffer(this->phi_cell_inv->get_data_ptr());
 #endif
 
-            if (face < dim_x * 2)
+            if(bid == dealii::numbers::internal_face_boundary_id)
               {
-                for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
-                  for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
-                    {
-                      const VectorizedArrayType u_minus                = data_ptr1[q];
-                      const VectorizedArrayType u_plus                 = data_ptr2[q];
-                      const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
-                      const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-    
-                      phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
-                    }
+                if (face < dim_x * 2)
+                  {
+                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
+                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
+                        {
+                          const VectorizedArrayType u_minus                = data_ptr1[q];
+                          const VectorizedArrayType u_plus                 = data_ptr2[q];
+                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+        
+                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
+                        }
+                  }
+                else
+                  {
+                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v - 1); ++qv)
+                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
+                        {
+                          const VectorizedArrayType u_minus                = data_ptr1[q];
+                          const VectorizedArrayType u_plus                 = data_ptr2[q];
+                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+        
+                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
+                        }
+                  }
               }
             else
               {
-                for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v - 1); ++qv)
-                  for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
-                    {
-                      const VectorizedArrayType u_minus                = data_ptr1[q];
-                      const VectorizedArrayType u_plus                 = data_ptr2[q];
-                      const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
-                      const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-    
-                      phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
-                    }
+                const auto boundary_pair = boundary_descriptor->get_boundary(bid);
+                
+                Assert(boundary_pair.first == BoundaryType::DirichletInhomogenous, dealii::StandardExceptions::ExcNotImplemented ());
+                    
+                if (face < dim_x * 2)
+                  {
+                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
+                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
+                        {
+                          const VectorizedArrayType u_minus = data_ptr1[q];
+                          VectorizedArrayType u_plus  = 0.0;
+                          
+                          const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv);
+                          
+                          for(unsigned int v = 0; v < phi.n_vectorization_lanes_filled(); ++v)
+                          {
+                            dealii::Point<dim_x + dim_v> p;
+                            for(unsigned int d = 0; d < dim_x + dim_v; ++d)
+                              p[d] = q_point[d][v];
+                            u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
+                          }
+                          
+                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+        
+                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
+                        }
+                  }
+                else
+                  {
+                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v - 1); ++qv)
+                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
+                        {
+                          const VectorizedArrayType u_minus = data_ptr1[q];
+                          VectorizedArrayType u_plus        = 0.0;
+                          
+                          const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv);
+                          
+                          for(unsigned int v = 0; v < phi.n_vectorization_lanes_filled(); ++v)
+                          {
+                            dealii::Point<dim_x + dim_v> p;
+                            for(unsigned int d = 0; d < dim_x + dim_v; ++d)
+                              p[d] = q_point[d][v];
+                            u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
+                          }
+                          
+                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+        
+                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
+                        }
+                  }
               }
 
 #ifndef COLLOCATION
@@ -738,11 +802,104 @@ namespace hyperdeal
         const VectorType &                                           src,
         const ID                                                     face)
       {
-        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
         (void)data;
-        (void)dst;
-        (void)src;
-        (void)face;
+
+        const auto bid = data.get_boundary_id(face);
+
+        Assert(bid != dealii::numbers::internal_face_boundary_id,
+               dealii::StandardExceptions::ExcInternalError());
+
+        const auto boundary_pair = boundary_descriptor->get_boundary(bid);
+
+        auto &phi_m = *this->phi_face_m;
+
+        const dealii::internal::EvaluatorTensorProduct<tensorproduct,
+                                                       dim - 1,
+                                                       degree + 1,
+                                                       n_points,
+                                                       VNumber>
+          eval1(*phi_m.get_shape_values(),
+                *phi_m.get_shape_gradients(),
+                *phi_m.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+
+        this->velocity_field->reinit_face(face);
+
+        // get data and scratch
+        VNumber *data_ptr1 = phi_m.get_data_ptr();
+
+        // load from global structure
+        phi_m.reinit(face);
+
+        // clang-format off
+
+        phi_m.read_dof_values(src);
+#ifndef COLLOCATION
+        if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
+        if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
+        if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
+        if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
+        if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+#endif
+
+        if (face.type == ID::SpaceType::X)
+          {
+            for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
+              for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
+                {
+                  const VectorizedArrayType u_minus = data_ptr1[q];
+                  VectorizedArrayType u_plus        = 0.0;
+                          
+                  const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv);
+
+                  for(unsigned int v = 0; v < phi_m.n_vectorization_lanes_filled(); ++v)
+                  {
+                    dealii::Point<dim_x + dim_v> p;
+                    for(unsigned int d = 0; d < dim_x + dim_v; ++d)
+                      p[d] = q_point[d][v];
+                    u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
+                  }
+                  
+                  const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                  const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+
+                  phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
+                }
+          }
+        else
+          {
+            for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v - 1); ++qv)
+              for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
+                {
+                  const VectorizedArrayType u_minus = data_ptr1[q];
+                  VectorizedArrayType u_plus        = 0.0;
+                          
+                  const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv);
+
+                  for(unsigned int v = 0; v < phi_m.n_vectorization_lanes_filled(); ++v)
+                  {
+                    dealii::Point<dim_x + dim_v> p;
+                    for(unsigned int d = 0; d < dim_x + dim_v; ++d)
+                      p[d] = q_point[d][v];
+                    u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
+                  }
+                  
+                  const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                  const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+
+                  phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
+                }
+          }
+
+#ifndef COLLOCATION
+        if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
+        if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
+        if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
+        if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
+        if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+#endif
+
+        // write into global structure back
+        phi_m.distribute_local_to_global(dst);
       }
 
       const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &data;

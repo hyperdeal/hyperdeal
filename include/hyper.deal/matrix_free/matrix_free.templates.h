@@ -206,12 +206,16 @@ namespace hyperdeal
           }
         else
           {
-            for (unsigned int i = 0; i < info.exterior_face_no.size(); i++)
+            for (unsigned int i = 0; i < info.interior_face_no.size(); i++)
               for (unsigned int v = 0; v < info.faces_fill[i]; v++)
                 {
                   const auto cell_info =
                     info.cells_interior[i * info.max_batch_size + v];
-                  const unsigned int gid = cell_info.gid;
+                  const auto gid = cell_info.gid;
+
+                  Assert(gid != dealii::numbers::invalid_dof_index,
+                         dealii::StandardExceptions::ExcInternalError());
+
                   if (gid < i_min || i_max < gid)
                     ghosts_faces.emplace_back(gid,
                                               cell_info.rank,
@@ -223,7 +227,11 @@ namespace hyperdeal
                 {
                   const auto cell_info =
                     info.cells_exterior[i * info.max_batch_size + v];
-                  unsigned int gid = cell_info.gid;
+                  const auto gid = cell_info.gid;
+
+                  Assert(gid != dealii::numbers::invalid_dof_index,
+                         dealii::StandardExceptions::ExcInternalError());
+
                   if (gid < i_min || i_max < gid)
                     ghosts_faces.emplace_back(gid,
                                               cell_info.rank,
@@ -340,14 +348,21 @@ namespace hyperdeal
                      face_no < dealii::GeometryInfo<dim>::faces_per_cell;
                      face_no++)
                   {
-                    AssertThrow(c_it->has_periodic_neighbor(face_no) ||
-                                  !c_it->at_boundary(face_no),
-                                dealii::ExcMessage(
-                                  "Boundaries are not supported yet."));
-
                     const unsigned int n_index =
                       cell * v_len * dealii::GeometryInfo<dim>::faces_per_cell +
                       v_len * face_no + v;
+
+                    // on boundary faces: nothing to do so fill with invalid
+                    // values
+                    if (!c_it->has_periodic_neighbor(face_no) &&
+                        c_it->at_boundary(face_no))
+                      {
+                        info.cells_exterior_ecl[n_index].gid  = -1;
+                        info.cells_exterior_ecl[n_index].rank = -1;
+                        info.exterior_face_no_ecl[n_index]    = -1;
+                        info.face_orientation_ecl[n_index]    = -1;
+                        continue;
+                      }
 
                     // .. and collect the neighbors for ECL with the following
                     // information: 1) global id
@@ -417,9 +432,7 @@ namespace hyperdeal
         }
 
       // ... interior faces (filled lanes, face_no_m/_p, gid_m/_p)
-      for (unsigned int face = 0;
-           face < data.n_inner_face_batches() + data.n_boundary_face_batches();
-           ++face)
+      for (unsigned int face = 0; face < data.n_inner_face_batches(); ++face)
         {
           // number of filled lanes
           info.faces_fill[face] = data.n_active_entries_per_face_batch(face);
@@ -527,6 +540,11 @@ namespace hyperdeal
         const unsigned int gid2  = id2.gid;
         const unsigned int rank2 = id2.rank;
 
+        Assert(rank1 != static_cast<unsigned int>(-1),
+               dealii::StandardExceptions::ExcNotImplemented());
+        Assert(rank2 != static_cast<unsigned int>(-1),
+               dealii::StandardExceptions::ExcNotImplemented());
+
         AssertIndexRange(rank1 + 1, n1.size());
         AssertIndexRange(rank2 + 1, n2.size());
 
@@ -614,6 +632,18 @@ namespace hyperdeal
                       const auto cell_x = info_x.cells_exterior_ecl[index];
                       const auto cell_y =
                         info_v.cells[i_v * info_v.max_batch_size + v_v];
+
+                      // on boundary faces: nothing to do so fill with invalid
+                      // values
+                      if (cell_x.gid == static_cast<decltype(cell_x.gid)>(-1) ||
+                          cell_y.gid == static_cast<decltype(cell_y.gid)>(-1))
+                        {
+                          info.cells_exterior_ecl.emplace_back(-1, -1);
+                          info.exterior_face_no_ecl.emplace_back(-1);
+                          info.face_orientation_ecl.emplace_back(-1);
+                          continue;
+                        }
+
                       info.cells_exterior_ecl.emplace_back(
                         translator.translate(cell_x, cell_y));
                       info.exterior_face_no_ecl.emplace_back(
@@ -634,13 +664,24 @@ namespace hyperdeal
                   unsigned int v_x = 0;
                   for (; v_x < info_x.cells_fill[i_x]; v_x++)
                     {
-                      const auto cell_x =
-                        info_x.cells[i_x * info_x.max_batch_size + v_x];
-
                       const unsigned index =
                         i_v * info_v.max_batch_size * 2 * dim_v +
                         d * info_v.max_batch_size + v_v;
+                      const auto cell_x =
+                        info_x.cells[i_x * info_x.max_batch_size + v_x];
                       const auto cell_y = info_v.cells_exterior_ecl[index];
+
+                      // on boundary faces: nothing to do so fill with invalid
+                      // values
+                      if (cell_x.gid == static_cast<decltype(cell_x.gid)>(-1) ||
+                          cell_y.gid == static_cast<decltype(cell_y.gid)>(-1))
+                        {
+                          info.cells_exterior_ecl.emplace_back(-1, -1);
+                          info.exterior_face_no_ecl.emplace_back(-1);
+                          info.face_orientation_ecl.emplace_back(-1);
+                          continue;
+                        }
+
                       info.cells_exterior_ecl.emplace_back(
                         translator.translate(cell_x, cell_y));
                       info.exterior_face_no_ecl.emplace_back(
@@ -675,8 +716,13 @@ namespace hyperdeal
 
       // internal faces
       {
-        const unsigned int n_face_batches_x = info_x.interior_face_no.size();
-        const unsigned int n_face_batches_v = info_v.interior_face_no.size();
+        const unsigned int n_face_batches_x = info_x.exterior_face_no.size();
+        const unsigned int n_face_batches_v = info_v.exterior_face_no.size();
+
+        const unsigned int n_face_batches_x_all =
+          info_x.interior_face_no.size();
+        const unsigned int n_face_batches_v_all =
+          info_v.interior_face_no.size();
         // interior faces (face x cell):
         for (unsigned int i_v = 0; i_v < n_cell_batches_v; i_v++)
           for (unsigned int v_v = 0; v_v < info_v.cells_fill[i_v]; v_v++)
@@ -703,6 +749,57 @@ namespace hyperdeal
 
         // interior faces (cell x face):
         for (unsigned int i_v = 0; i_v < n_face_batches_v; i_v++)
+          for (unsigned int v_v = 0; v_v < info_v.faces_fill[i_v]; v_v++)
+            for (unsigned int i_x = 0; i_x < n_cell_batches_x; i_x++)
+              {
+                unsigned int v_x = 0;
+                for (; v_x < info_x.cells_fill[i_x]; v_x++)
+                  {
+                    const auto cell_x =
+                      info_x.cells[i_x * info_x.max_batch_size + v_x];
+                    const auto cell_y =
+                      info_v.cells_interior[i_v * info_v.max_batch_size + v_v];
+                    info.cells_interior.emplace_back(
+                      translator.translate(cell_x, cell_y));
+                  }
+                for (; v_x < info_x.max_batch_size; v_x++)
+                  info.cells_interior.emplace_back(-1, -1);
+
+                info.faces_fill.push_back(info_x.cells_fill[i_x]);
+
+                info.interior_face_no.push_back(info_v.interior_face_no[i_v] +
+                                                2 * dim_x);
+                info.face_orientation.push_back(info_v.face_orientation[i_v]);
+              }
+
+        for (unsigned int i_v = 0; i_v < n_cell_batches_v; i_v++)
+          for (unsigned int v_v = 0; v_v < info_v.cells_fill[i_v]; v_v++)
+            for (unsigned int i_x = n_face_batches_x;
+                 i_x < n_face_batches_x_all;
+                 i_x++)
+              {
+                unsigned int v_x = 0;
+                for (; v_x < info_x.faces_fill[i_x]; v_x++)
+                  {
+                    const auto cell_x =
+                      info_x.cells_interior[i_x * info_x.max_batch_size + v_x];
+                    const auto cell_y =
+                      info_v.cells[i_v * info_v.max_batch_size + v_v];
+                    info.cells_interior.emplace_back(
+                      translator.translate(cell_x, cell_y));
+                  }
+                for (; v_x < info_x.max_batch_size; v_x++)
+                  info.cells_interior.emplace_back(-1, -1);
+
+                info.faces_fill.push_back(info_x.faces_fill[i_x]);
+
+                info.interior_face_no.push_back(info_x.interior_face_no[i_x]);
+                info.face_orientation.push_back(info_x.face_orientation[i_x]);
+              }
+
+        // interior faces (cell x face):
+        for (unsigned int i_v = n_face_batches_v; i_v < n_face_batches_v_all;
+             i_v++)
           for (unsigned int v_v = 0; v_v < info_v.faces_fill[i_v]; v_v++)
             for (unsigned int i_x = 0; i_x < n_cell_batches_x; i_x++)
               {
@@ -1030,9 +1127,9 @@ namespace hyperdeal
                          "Size of gid does not match."));
                 const unsigned int gid_this = dof_indices_contiguous[i][l];
 
-                Assert(gid_this != dealii::numbers::invalid_unsigned_int,
-                       dealii::StandardExceptions::ExcMessage(
-                         "Boundaries are not supported yet."));
+                // for boundary faces nothing has to be done
+                if (gid_this == dealii::numbers::invalid_unsigned_int)
+                  continue;
 
                 const auto ptr1 = maps_ghost.find(
                   {gid_this,
@@ -1383,7 +1480,6 @@ namespace hyperdeal
 
     unsigned int i0 = 0;
     unsigned int i1 = 0;
-    unsigned int i2 = 0;
 
     // clang-format off
   
@@ -1418,14 +1514,14 @@ namespace hyperdeal
       for(unsigned int j = 0; j < n_cell_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_cell_batch(j); v++)
           for(unsigned int i = n_inner_face_batches_x; i < n_inner_or_boundary_face_batches_x; i++)
-            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::X));
+            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::X));
     }
     {
       ScopedTimerWrapper timer(timers, "boundary_loop_v");
       for(unsigned int j = n_inner_face_batches_v; j < n_inner_or_boundary_face_batches_v; j++)
         for(unsigned int v = 0; v < matrix_free_v.n_active_entries_per_face_batch(j); v++)
           for(unsigned int i = 0; i < n_cell_batches_x; i++)
-            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i2++, ID::SpaceType::V));
+            boundary_operation(*this, dst, src, ID(i, j * v_len + v, i1++, ID::SpaceType::V));
     }
     // clang-format on
 
@@ -1456,12 +1552,59 @@ namespace hyperdeal
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_boundary_id(
     const ID macro_face) const
   {
-    unsigned int v_len = VectorizedArrayTypeV::size();
-
-    if (macro_face.type == ID::SpaceType::X)
+    if (macro_face.type == TensorID::SpaceType::X)
       return matrix_free_x.get_boundary_id(macro_face.x);
-    else
-      return matrix_free_v.get_boundary_id(macro_face.v / v_len);
+    else if (macro_face.type == TensorID::SpaceType::V)
+      return matrix_free_v.get_boundary_id(macro_face.v /
+                                           VectorizedArrayTypeV::size());
+
+    Assert(false, dealii::StandardExceptions::ExcInternalError());
+
+    return -1;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  dealii::types::boundary_id
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::
+    get_faces_by_cells_boundary_id(const TensorID &   macro_cell,
+                                   const unsigned int face_number) const
+  {
+    if (face_number < 2 * dim_x)
+      {
+        const auto bids =
+          matrix_free_x.get_faces_by_cells_boundary_id(macro_cell.x,
+                                                       face_number);
+
+#ifdef DEBUG
+        for (unsigned int v = 0;
+             v < matrix_free_x.n_active_entries_per_cell_batch(macro_cell.x);
+             ++v)
+          AssertDimension(bids[0], bids[v]);
+#endif
+
+        return bids[0];
+      }
+    else if (face_number < 2 * dim_x + 2 * dim_v)
+      {
+        const auto bids =
+          matrix_free_v.get_faces_by_cells_boundary_id(macro_cell.v,
+                                                       face_number - dim_x * 2);
+
+#ifdef DEBUG
+        for (unsigned int v = 0;
+             v < matrix_free_v.n_active_entries_per_cell_batch(macro_cell.v);
+             ++v)
+          AssertDimension(bids[0], bids[v]);
+#endif
+
+        return bids[0];
+      }
+
+    Assert(false, dealii::StandardExceptions::ExcInternalError());
+
+    return -1;
   }
 
 
