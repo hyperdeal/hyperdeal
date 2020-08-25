@@ -1,0 +1,39 @@
+name: Test suite
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup
+      run: |
+         git remote -v
+         git branch -a
+         echo ${{ github.event_path }}
+         echo ${{ github.workflow }}
+         echo ${{ github.job }}
+         echo ${{ github.run_id }}
+         echo ${{ github.run_number }}
+         echo ${{ github.actor }}
+         echo ${{ github.repository }}
+         echo ${{ github.repository_owner }}
+         echo ${{ github.event_name }}
+         echo ${{ github.sha }}
+         echo ${{ github.ref }}
+         echo ${{ github.head_ref }}
+         echo ${{ github.base_ref }}
+         echo ${{ github.token }}
+         echo ${{ github.workspace }}
+         echo ${{ github.action }}
+         echo ${{ github.action_path }}
+
+         docker pull dealii/dependencies:latest
+         docker run -t dealii/dependencies:latest /bin/sh -c "git clone https://github.com/${{ github.repository }} && cd hyperdeal && git fetch origin ${{ github.head_ref }} && git checkout FETCH_HEAD && mkdir build && cd build && cmake .. && make -j2 && ctest";
