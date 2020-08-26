@@ -106,6 +106,28 @@ namespace dealii
         additional_data.mapping_update_flags_boundary_faces;
     }
 
+
+    template <int dim, typename VectorizedArrayType>
+    VectorizedArrayType
+    evaluate_scalar_function(
+      const dealii::Point<dim, VectorizedArrayType> &                point,
+      const Function<dim, typename VectorizedArrayType::value_type> &function,
+      const unsigned int                                             n_lanes)
+    {
+      VectorizedArrayType result;
+
+      for (unsigned int v = 0; v < n_lanes; ++v)
+        {
+          dealii::Point<dim> p;
+          for (unsigned int d = 0; d < dim; ++d)
+            p[d] = point[d][v];
+          result[v] = function.value(p);
+        }
+
+      return result;
+    }
+
+
   } // namespace MatrixFreeTools
 
 
