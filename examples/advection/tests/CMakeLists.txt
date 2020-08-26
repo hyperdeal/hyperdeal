@@ -115,7 +115,7 @@ FOREACH(_testexe ${_testexes})
           COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${_test}.out time_history_diagnostic.out.ref
           COMMAND echo pwd
           COMMAND pwd
-          COMMAND mpirun -np ${_mpi_count} ../${_testexe} ${TEST_ABS} > screen-output
+          COMMAND mpirun -np ${_mpi_count} --oversubscribe ../${_testexe} ${TEST_ABS} > screen-output
           DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_test}.json ${_testdepends} ${_testexe}
           )
 
