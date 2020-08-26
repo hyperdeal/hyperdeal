@@ -220,7 +220,7 @@ namespace hyperdeal
                 // case 1: read from buffers
                 for (unsigned int i = 0; i < n_dofs_per_face; ++i)
                   {
-                    const unsigned int i_ = ((dim_x <= 2) && (dim_v <= 2) ||
+                    const unsigned int i_ = (((dim_x <= 2) && (dim_v <= 2)) ||
                                              face_orientation[0] == 0) ?
                                               i :
                                               face_orientations_[i];
@@ -234,7 +234,7 @@ namespace hyperdeal
                 // case 2: read from shared memory
                 for (unsigned int i = 0; i < n_dofs_per_face; ++i)
                   {
-                    const unsigned int i_ = ((dim_x <= 2) && (dim_v <= 2) ||
+                    const unsigned int i_ = (((dim_x <= 2) && (dim_v <= 2)) ||
                                              face_orientation[0] == 0) ?
                                               i :
                                               face_orientations_[i];
@@ -263,7 +263,7 @@ namespace hyperdeal
                   for (unsigned int i = 0; i < n_dofs_per_face; ++i)
                     {
                       const unsigned int i_ =
-                        ((dim_x <= 2) && (dim_v <= 2) ||
+                        (((dim_x <= 2) && (dim_v <= 2)) ||
                          face_orientation[face_side == 3 ? v : 0] == 0) ?
                           i :
                           face_orientations_[i];
@@ -277,7 +277,7 @@ namespace hyperdeal
                   for (unsigned int i = 0; i < n_dofs_per_face; ++i)
                     {
                       const unsigned int i_ =
-                        ((dim_x <= 2) && (dim_v <= 2) ||
+                        (((dim_x <= 2) && (dim_v <= 2)) ||
                          face_orientation[face_side == 3 ? v : 0] == 0) ?
                           i :
                           face_orientations_[i];
