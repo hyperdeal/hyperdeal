@@ -497,6 +497,40 @@ namespace hyperdeal
       return temp;
     }
 
+
+    /**
+     * Return coordinate of quadrature point (@p qx, @p qv).
+     */
+    template <SpaceType stype>
+    inline dealii::Point<dim, VectorizedArrayType>
+    get_quadrature_point(const unsigned int qx, const unsigned int qv) const
+    {
+      Assert(stype == this->type, dealii::ExcMessage("Types do not match!"));
+
+      dealii::Point<dim, VectorizedArrayType> temp;
+
+      if (stype == SpaceType::X)
+        {
+          const auto t1 = this->phi_face_x.quadrature_point(qx);
+          for (int i = 0; i < dim_x; i++)
+            temp[i] = t1[i];
+          const auto t2 = this->phi_v.quadrature_point(qv);
+          for (int i = 0; i < dim_v; i++)
+            temp[i + dim_x] = t2[i][n_vectors_v == 1 ? 0 : this->lane_y];
+        }
+      else
+        {
+          const auto t1 = this->phi_x.quadrature_point(qx);
+          for (int i = 0; i < dim_x; i++)
+            temp[i] = t1[i];
+          const auto t2 = this->phi_face_v.quadrature_point(qv);
+          for (int i = 0; i < dim_v; i++)
+            temp[i + dim_x] = t2[i][n_vectors_v == 1 ? 0 : this->lane_y];
+        }
+
+      return temp;
+    }
+
   private:
     /**
      * Interior or exterior face.

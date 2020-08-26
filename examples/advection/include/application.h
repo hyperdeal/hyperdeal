@@ -30,6 +30,7 @@
 #include <hyper.deal/base/timers.h>
 #include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
+#include <hyper.deal/matrix_free/tools.h>
 #include <hyper.deal/numerics/vector_tools.h>
 #include <hyper.deal/operators/advection/advection_operation.h>
 #include <hyper.deal/operators/advection/cfl.h>
@@ -218,6 +219,11 @@ namespace hyperdeal
             quads.push_back(dealii::QGauss<1>(degree_x + 1));
             quads.push_back(dealii::QGaussLobatto<1>(degree_x + 1));
 
+            // ensure that inner and boundary faces are not mixed in the
+            // same macro cell
+            dealii::MatrixFreeTools::categorize_accoring_boundary_ids_for_ecl(
+              *triangulation_x, additional_data);
+
             matrix_free_x.reinit(
               mapping_x, dof_handlers, constraints, quads, additional_data);
           }
@@ -252,6 +258,11 @@ namespace hyperdeal
 
             quads.push_back(dealii::QGauss<1>(degree_v + 1));
             quads.push_back(dealii::QGaussLobatto<1>(degree_v + 1));
+
+            // ensure that inner and boundary faces are not mixed in the
+            // same macro cell
+            dealii::MatrixFreeTools::categorize_accoring_boundary_ids_for_ecl(
+              *triangulation_v, additional_data);
 
             matrix_free_v.reinit(
               mapping_v, dof_handlers, constraints, quads, additional_data);
