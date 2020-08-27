@@ -294,8 +294,8 @@ namespace hyperdeal
     void
     read_dof_values_from_buffer(const VectorizedArrayType *src)
     {
-      const auto &index_array =
-        this->matrix_free.get_shape_info()[this->face_no];
+      const auto &index_array = this->matrix_free.get_shape_info()
+                                  .face_to_cell_index_nodal[this->face_no];
 
       for (unsigned int i = 0; i < static_dofs_per_face; ++i)
         this->data[i] = src[index_array[i]];
@@ -309,8 +309,8 @@ namespace hyperdeal
     void
     distribute_to_buffer(VectorizedArrayType *dst) const
     {
-      const auto &index_array =
-        this->matrix_free.get_shape_info()[this->face_no];
+      const auto &index_array = this->matrix_free.get_shape_info()
+                                  .face_to_cell_index_nodal[this->face_no];
 
       for (unsigned int i = 0; i < static_dofs_per_face; ++i)
         dst[index_array[i]] += this->data[i];

@@ -113,6 +113,7 @@ namespace hyperdeal
         , table(table)
         , shi_get(dealii::QGaussLobatto<1>(n_points),
                   dealii::FE_DGQArbitraryNodes<1>(dealii::QGauss<1>(n_points)))
+        , do_collocation(false)
       {}
 
       /**
@@ -122,14 +123,16 @@ namespace hyperdeal
       void
       reinit(
         std::shared_ptr<BoundaryDescriptor<dim, Number>> boundary_descriptor,
-        std::shared_ptr<VelocityField>                   velocity_field)
+        std::shared_ptr<VelocityField>                   velocity_field,
+        const bool                                       do_collocation)
       {
         this->boundary_descriptor = boundary_descriptor;
         this->velocity_field      = velocity_field;
+        this->do_collocation      = do_collocation;
 
         // clang-format off
         phi_cell.reset(new FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
-        phi_cell_inv.reset(new FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>(data,0,0, 1, 1));
+        phi_cell_inv.reset(new FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>(data,0, 0, do_collocation ? 0 : 1, do_collocation ? 0 : 1));
         phi_face_m.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, true, 0, 0, 0, 0));
         phi_face_p.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, false, 0, 0, 0, 0));
         // clang-format on
@@ -284,14 +287,15 @@ namespace hyperdeal
           phi.reinit(cell);
           phi.read_dof_values(src);
 
-#ifndef COLLOCATION
-          if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
-          if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
-          if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
-          if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
-          if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
-          if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
-#endif
+          if(do_collocation == false)
+            {
+              if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
+              if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
+              if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
+              if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
+              if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
+              if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+            }
 
           // copy quadrature values into buffer
           VNumber *buffer = phi_cell_inv->get_data_ptr();
@@ -354,23 +358,26 @@ namespace hyperdeal
               phi_p.read_dof_values(src);
             }
 
-#ifndef COLLOCATION
-            const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
-            if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-            if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-            if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-            if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-            if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-            if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, true, n_points>(data_ptr1, data_ptr_inv, weights);
-
-            if (dim >= 2) eval_face.template values<0, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 3) eval_face.template values<1, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 4) eval_face.template values<2, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 5) eval_face.template values<3, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 6) eval_face.template values<4, true, false>(data_ptr2, data_ptr2);
-#else
-            phi_m.read_dof_values_from_buffer(this->phi_cell_inv->get_data_ptr());
-#endif
+            if(do_collocation == false)
+              {
+                const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
+                if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, true, n_points>(data_ptr1, data_ptr_inv, weights); else
+                if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, true, n_points>(data_ptr1, data_ptr_inv, weights); else
+                if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, true, n_points>(data_ptr1, data_ptr_inv, weights); else
+                if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, true, n_points>(data_ptr1, data_ptr_inv, weights); else
+                if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, true, n_points>(data_ptr1, data_ptr_inv, weights); else
+                if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, true, n_points>(data_ptr1, data_ptr_inv, weights);
+    
+                if (dim >= 2) eval_face.template values<0, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 3) eval_face.template values<1, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 4) eval_face.template values<2, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 5) eval_face.template values<3, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 6) eval_face.template values<4, true, false>(data_ptr2, data_ptr2);
+              }
+            else
+              {
+                phi_m.read_dof_values_from_buffer(this->phi_cell_inv->get_data_ptr());
+              }
 
             if(bid == dealii::numbers::internal_face_boundary_id)
               {
@@ -457,19 +464,20 @@ namespace hyperdeal
                   }
               }
 
-#ifndef COLLOCATION
-            {
-              const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
-              if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, false, n_points>(data_ptr, data_ptr1, weights); else
-              if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, false, n_points>(data_ptr, data_ptr1, weights); else
-              if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, false, n_points>(data_ptr, data_ptr1, weights); else
-              if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, false, n_points>(data_ptr, data_ptr1, weights); else
-              if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, false, n_points>(data_ptr, data_ptr1, weights); else
-              if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, false, n_points>(data_ptr, data_ptr1, weights);
-            }
-#else
-            phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
-#endif
+            if(do_collocation == false)
+              {
+                const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
+                if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, false, n_points>(data_ptr, data_ptr1, weights); else
+                if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, false, n_points>(data_ptr, data_ptr1, weights); else
+                if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, false, n_points>(data_ptr, data_ptr1, weights); else
+                if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, false, n_points>(data_ptr, data_ptr1, weights); else
+                if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, false, n_points>(data_ptr, data_ptr1, weights); else
+                if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, false, n_points>(data_ptr, data_ptr1, weights);
+              }
+            else
+              { 
+                phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
+              }
           }
 
         // 3) inverse mass matrix
@@ -480,14 +488,15 @@ namespace hyperdeal
             for (auto qx = 0u; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
               phi_inv.submit_inv(data_ptr, q, qx, qv);
 
-#ifndef COLLOCATION
-          if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
-          if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
-          if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
-          if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
-          if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
-          if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
-#endif
+          if(do_collocation == false)
+            {
+              if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
+              if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
+              if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
+              if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
+              if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
+              if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
+            }
 
           // write into global structure back
           phi.set_dof_values(dst);
@@ -531,27 +540,29 @@ namespace hyperdeal
 
         // clang-format off
         
-#ifndef COLLOCATION
-        if (dim >= 1) eval_inv.template hessians<0, true, false>(data_ptr, data_ptr);
-        if (dim >= 2) eval_inv.template hessians<1, true, false>(data_ptr, data_ptr);
-        if (dim >= 3) eval_inv.template hessians<2, true, false>(data_ptr, data_ptr);
-        if (dim >= 4) eval_inv.template hessians<3, true, false>(data_ptr, data_ptr);
-        if (dim >= 5) eval_inv.template hessians<4, true, false>(data_ptr, data_ptr);
-        if (dim >= 6) eval_inv.template hessians<5, true, false>(data_ptr, data_ptr);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 1) eval_inv.template hessians<0, true, false>(data_ptr, data_ptr);
+            if (dim >= 2) eval_inv.template hessians<1, true, false>(data_ptr, data_ptr);
+            if (dim >= 3) eval_inv.template hessians<2, true, false>(data_ptr, data_ptr);
+            if (dim >= 4) eval_inv.template hessians<3, true, false>(data_ptr, data_ptr);
+            if (dim >= 5) eval_inv.template hessians<4, true, false>(data_ptr, data_ptr);
+            if (dim >= 6) eval_inv.template hessians<5, true, false>(data_ptr, data_ptr);
+          }
 
         for (auto qv = 0u, q = 0u; qv < dealii::Utilities::pow<unsigned int>(degree + 1, dim_v); ++qv)
           for (auto qx = 0u; qx < dealii::Utilities::pow<unsigned int>(degree + 1, dim_x); ++qx, ++q)
             phi_inv.submit_inv(data_ptr, q, qx, qv);
 
-#ifndef COLLOCATION
-        if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
-        if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
-        if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
-        if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
-        if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
-        if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
+            if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
+            if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
+            if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
+            if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
+            if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
+          }
 
         // clang-format on
 
@@ -605,14 +616,15 @@ namespace hyperdeal
         phi.reinit(cell);
         phi.read_dof_values(src);
 
-#ifndef COLLOCATION
-        if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
-        if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
-        if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
-        if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
-        if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
-        if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
+            if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
+            if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
+            if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
+            if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
+            if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+          }
 
         // copy quadrature values into buffer
         VNumber *buffer = phi_cell_inv->get_data_ptr();
@@ -657,14 +669,15 @@ namespace hyperdeal
           if (dim_v >= 3) eval_.template gradients<2 + dim_x, false, true>(tempp + dealii::Utilities::pow(n_points, dim) * 2, data_ptr);
         }
 
-#ifndef COLLOCATION
-        if(dim >= 6) eval.template values<5, false, false>(data_ptr, data_ptr);
-        if(dim >= 5) eval.template values<4, false, false>(data_ptr, data_ptr);
-        if(dim >= 4) eval.template values<3, false, false>(data_ptr, data_ptr);
-        if(dim >= 3) eval.template values<2, false, false>(data_ptr, data_ptr);
-        if(dim >= 2) eval.template values<1, false, false>(data_ptr, data_ptr);
-        if(dim >= 1) eval.template values<0, false, false>(data_ptr, data_ptr);
-#endif
+        if(do_collocation == false)
+          {
+            if(dim >= 6) eval.template values<5, false, false>(data_ptr, data_ptr);
+            if(dim >= 5) eval.template values<4, false, false>(data_ptr, data_ptr);
+            if(dim >= 4) eval.template values<3, false, false>(data_ptr, data_ptr);
+            if(dim >= 3) eval.template values<2, false, false>(data_ptr, data_ptr);
+            if(dim >= 2) eval.template values<1, false, false>(data_ptr, data_ptr);
+            if(dim >= 1) eval.template values<0, false, false>(data_ptr, data_ptr);
+          }
 
         // clang-format on
 
@@ -719,22 +732,26 @@ namespace hyperdeal
         // clang-format off
 
         phi_m.read_dof_values(src);
-#ifndef COLLOCATION
-        if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
-#endif
+        
+        if(do_collocation == false)
+          {
+            if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+          }
 
         phi_p.read_dof_values(src);
-#ifndef COLLOCATION
-        if (dim >= 2) eval2.template values<0, true, false>(data_ptr2, data_ptr2);
-        if (dim >= 3) eval2.template values<1, true, false>(data_ptr2, data_ptr2);
-        if (dim >= 4) eval2.template values<2, true, false>(data_ptr2, data_ptr2);
-        if (dim >= 5) eval2.template values<3, true, false>(data_ptr2, data_ptr2);
-        if (dim >= 6) eval2.template values<4, true, false>(data_ptr2, data_ptr2);
-#endif
+        
+        if(do_collocation == false)
+          {
+            if (dim >= 2) eval2.template values<0, true, false>(data_ptr2, data_ptr2);
+            if (dim >= 3) eval2.template values<1, true, false>(data_ptr2, data_ptr2);
+            if (dim >= 4) eval2.template values<2, true, false>(data_ptr2, data_ptr2);
+            if (dim >= 5) eval2.template values<3, true, false>(data_ptr2, data_ptr2);
+            if (dim >= 6) eval2.template values<4, true, false>(data_ptr2, data_ptr2);
+          }
 
         if (face.type == ID::SpaceType::X)
           {
@@ -763,24 +780,26 @@ namespace hyperdeal
                 }
           }
 
-#ifndef COLLOCATION
-        if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+          }
 
         // write into global structure back
         phi_m.distribute_local_to_global(dst);
 
-#ifndef COLLOCATION
-        if (dim >= 6) eval2.template values<4, false, false>(data_ptr2, data_ptr2);
-        if (dim >= 5) eval2.template values<3, false, false>(data_ptr2, data_ptr2);
-        if (dim >= 4) eval2.template values<2, false, false>(data_ptr2, data_ptr2);
-        if (dim >= 3) eval2.template values<1, false, false>(data_ptr2, data_ptr2);
-        if (dim >= 2) eval2.template values<0, false, false>(data_ptr2, data_ptr2);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 6) eval2.template values<4, false, false>(data_ptr2, data_ptr2);
+            if (dim >= 5) eval2.template values<3, false, false>(data_ptr2, data_ptr2);
+            if (dim >= 4) eval2.template values<2, false, false>(data_ptr2, data_ptr2);
+            if (dim >= 3) eval2.template values<1, false, false>(data_ptr2, data_ptr2);
+            if (dim >= 2) eval2.template values<0, false, false>(data_ptr2, data_ptr2);
+          }
 
         // clang-format on
 
@@ -833,13 +852,15 @@ namespace hyperdeal
         // clang-format off
 
         phi_m.read_dof_values(src);
-#ifndef COLLOCATION
-        if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
-        if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
-#endif
+        
+        if(do_collocation == false)
+          {
+            if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
+            if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+          }
 
         if (face.type == ID::SpaceType::X)
           {
@@ -890,13 +911,14 @@ namespace hyperdeal
                 }
           }
 
-#ifndef COLLOCATION
-        if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
-        if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
-#endif
+        if(do_collocation == false)
+          {
+            if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
+            if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+          }
 
         // write into global structure back
         phi_m.distribute_local_to_global(dst);
@@ -917,6 +939,8 @@ namespace hyperdeal
 
       std::shared_ptr<BoundaryDescriptor<dim, Number>> boundary_descriptor;
       std::shared_ptr<VelocityField>                   velocity_field;
+
+      bool do_collocation;
 
       const double alpha = 1.0;
     };
