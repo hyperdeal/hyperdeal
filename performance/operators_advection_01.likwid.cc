@@ -181,9 +181,7 @@ test(const MPI_Comm &                    comm_global,
   auto velocity_field =
     std::make_shared<VelocityFieldView>(dealii::Tensor<1, dim_x + dim_v>());
 
-  advection_operation.reinit(boundary_descriptor,
-                             velocity_field,
-                             false /*TODO*/);
+  advection_operation.reinit(boundary_descriptor, velocity_field);
 
   VectorType vec_src, vec_dst;
   matrix_free.initialize_dof_vector(vec_src, 0, true, true);

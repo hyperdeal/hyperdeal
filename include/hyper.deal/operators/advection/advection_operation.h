@@ -19,6 +19,7 @@
 #include <hyper.deal/base/config.h>
 
 #include <hyper.deal/base/dynamic_convergence_table.h>
+#include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell_inverse.h>
 #include <hyper.deal/matrix_free/fe_evaluation_face.h>
@@ -29,42 +30,6 @@ namespace hyperdeal
 {
   namespace advection
   {
-    /**
-     * Interpolate values at quadrature point to faces and transposed
-     * operation.
-     */
-    template <unsigned int DIM,
-              unsigned int points,
-              unsigned int d,
-              bool         forward,
-              int          stride,
-              typename Number>
-    void
-    interpolate_to_face(Number *      output,
-                        const Number *input,
-                        const Number *weights)
-    {
-      for (auto i = 0u, e = 0u; i < dealii::Utilities::pow(points, DIM - d - 1);
-           i++)
-        for (auto j = 0u; j < dealii::Utilities::pow(points, d); j++, e++)
-          {
-            if (forward)
-              output[e] = 0;
-
-            for (auto k = 0u; k < points; k++)
-              if (forward)
-                output[e] += input[i * dealii::Utilities::pow(points, d + 1) +
-                                   k * dealii::Utilities::pow(points, d) + j] *
-                             weights[k * stride];
-              else
-                output[i * dealii::Utilities::pow(points, d + 1) +
-                       k * dealii::Utilities::pow(points, d) + j] +=
-                  input[e] * weights[k * stride];
-          }
-    }
-
-
-
     /**
      * Advection operator. It is defined by a velocity field and by boundary
      * conditions.
@@ -111,8 +76,6 @@ namespace hyperdeal
         DynamicConvergenceTable &                                    table)
         : data(data)
         , table(table)
-        , shi_get(dealii::QGaussLobatto<1>(n_points),
-                  dealii::FE_DGQArbitraryNodes<1>(dealii::QGauss<1>(n_points)))
         , do_collocation(false)
       {}
 
@@ -123,12 +86,33 @@ namespace hyperdeal
       void
       reinit(
         std::shared_ptr<BoundaryDescriptor<dim, Number>> boundary_descriptor,
-        std::shared_ptr<VelocityField>                   velocity_field,
-        const bool                                       do_collocation)
+        std::shared_ptr<VelocityField>                   velocity_field)
       {
         this->boundary_descriptor = boundary_descriptor;
         this->velocity_field      = velocity_field;
-        this->do_collocation      = do_collocation;
+
+        AssertDimension(
+          (data.get_matrix_free_x().get_shape_info(0, 0).data[0].element_type ==
+           dealii::internal::MatrixFreeFunctions::ElementType::
+             tensor_symmetric_collocation),
+          (data.get_matrix_free_v().get_shape_info(0, 0).data[0].element_type ==
+           dealii::internal::MatrixFreeFunctions::ElementType::
+             tensor_symmetric_collocation))
+
+          const bool do_collocation =
+            data.get_matrix_free_x()
+              .get_shape_info(0, 0)
+              .data[0]
+              .element_type == dealii::internal::MatrixFreeFunctions::
+                                 ElementType::tensor_symmetric_collocation;
+
+        this->do_collocation = do_collocation;
+
+        // TODO move to deal.II (ShapeInfo/UnivariateShapeData)
+        this->shi_get.reinit(
+          dealii::QGaussLobatto<1>(2),
+          dealii::FE_DGQArbitraryNodes<1>(
+            data.get_matrix_free_x().get_shape_info(0, 0).data[0].quadrature));
 
         // clang-format off
         phi_cell.reset(new FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
@@ -360,13 +344,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
-                if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-                if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-                if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-                if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-                if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, true, n_points>(data_ptr1, data_ptr_inv, weights); else
-                if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, true, n_points>(data_ptr1, data_ptr_inv, weights);
+                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(shi_get).template interpolate<true>(data_ptr1, data_ptr_inv, face);
     
                 if (dim >= 2) eval_face.template values<0, true, false>(data_ptr2, data_ptr2);
                 if (dim >= 3) eval_face.template values<1, true, false>(data_ptr2, data_ptr2);
@@ -465,19 +443,9 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              {
-                const auto weights = &shi_get.data[0].shape_values[face % 2 == 0 ? 0 : (n_points - 1)];
-                if (dim >= 1 && face / 2 == 0) interpolate_to_face<dim, n_points, 0, false, n_points>(data_ptr, data_ptr1, weights); else
-                if (dim >= 2 && face / 2 == 1) interpolate_to_face<dim, n_points, 1, false, n_points>(data_ptr, data_ptr1, weights); else
-                if (dim >= 3 && face / 2 == 2) interpolate_to_face<dim, n_points, 2, false, n_points>(data_ptr, data_ptr1, weights); else
-                if (dim >= 4 && face / 2 == 3) interpolate_to_face<dim, n_points, 3, false, n_points>(data_ptr, data_ptr1, weights); else
-                if (dim >= 5 && face / 2 == 4) interpolate_to_face<dim, n_points, 4, false, n_points>(data_ptr, data_ptr1, weights); else
-                if (dim >= 6 && face / 2 == 5) interpolate_to_face<dim, n_points, 5, false, n_points>(data_ptr, data_ptr1, weights);
-              }
+              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(shi_get).template interpolate<false>(data_ptr, data_ptr1, face);
             else
-              { 
-                phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
-              }
+              phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
           }
 
         // 3) inverse mass matrix
