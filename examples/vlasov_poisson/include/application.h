@@ -381,9 +381,7 @@ namespace hyperdeal
         // step 9: initialize advection operator
         {
           pcout << "  - advection::operator" << std::endl;
-          advection_operation.reinit(boundary_descriptor,
-                                     velocity_field,
-                                     param.do_collocation);
+          advection_operation.reinit(boundary_descriptor, velocity_field);
         }
 
         // step 10: time loop
