@@ -731,19 +731,25 @@ namespace hyperdeal
                 unsigned int v_x = 0;
                 for (; v_x < info_x.faces_fill[i_x]; v_x++)
                   {
-                    const auto cell_x =
-                      info_x.cells_interior[i_x * info_x.max_batch_size + v_x];
                     const auto cell_y =
                       info_v.cells[i_v * info_v.max_batch_size + v_v];
-                    info.cells_interior.emplace_back(
-                      translator.translate(cell_x, cell_y));
+                    info.cells_interior.emplace_back(translator.translate(
+                      info_x.cells_interior[i_x * info_x.max_batch_size + v_x],
+                      cell_y));
+                    info.cells_exterior.emplace_back(translator.translate(
+                      info_x.cells_exterior[i_x * info_x.max_batch_size + v_x],
+                      cell_y));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
-                  info.cells_interior.emplace_back(-1, -1);
+                  {
+                    info.cells_interior.emplace_back(-1, -1);
+                    info.cells_exterior.emplace_back(-1, -1);
+                  }
 
                 info.faces_fill.push_back(info_x.faces_fill[i_x]);
 
                 info.interior_face_no.push_back(info_x.interior_face_no[i_x]);
+                info.exterior_face_no.push_back(info_x.exterior_face_no[i_x]);
                 info.face_orientation.push_back(info_x.face_orientation[i_x]);
               }
 
@@ -757,17 +763,26 @@ namespace hyperdeal
                   {
                     const auto cell_x =
                       info_x.cells[i_x * info_x.max_batch_size + v_x];
-                    const auto cell_y =
-                      info_v.cells_interior[i_v * info_v.max_batch_size + v_v];
-                    info.cells_interior.emplace_back(
-                      translator.translate(cell_x, cell_y));
+                    info.cells_interior.emplace_back(translator.translate(
+                      cell_x,
+                      info_v
+                        .cells_interior[i_v * info_v.max_batch_size + v_v]));
+                    info.cells_exterior.emplace_back(translator.translate(
+                      cell_x,
+                      info_v
+                        .cells_exterior[i_v * info_v.max_batch_size + v_v]));
                   }
                 for (; v_x < info_x.max_batch_size; v_x++)
-                  info.cells_interior.emplace_back(-1, -1);
+                  {
+                    info.cells_interior.emplace_back(-1, -1);
+                    info.cells_exterior.emplace_back(-1, -1);
+                  }
 
                 info.faces_fill.push_back(info_x.cells_fill[i_x]);
 
                 info.interior_face_no.push_back(info_v.interior_face_no[i_v] +
+                                                2 * dim_x);
+                info.exterior_face_no.push_back(info_v.exterior_face_no[i_v] +
                                                 2 * dim_x);
                 info.face_orientation.push_back(info_v.face_orientation[i_v]);
               }
@@ -821,54 +836,6 @@ namespace hyperdeal
                 info.interior_face_no.push_back(info_v.interior_face_no[i_v] +
                                                 2 * dim_x);
                 info.face_orientation.push_back(info_v.face_orientation[i_v]);
-              }
-      }
-
-      // external faces
-      {
-        const unsigned int n_face_batches_x = info_x.exterior_face_no.size();
-        const unsigned int n_face_batches_v = info_v.exterior_face_no.size();
-        // exterior faces (face x cell):
-        for (unsigned int i_v = 0; i_v < n_cell_batches_v; i_v++)
-          for (unsigned int v_v = 0; v_v < info_v.cells_fill[i_v]; v_v++)
-            for (unsigned int i_x = 0; i_x < n_face_batches_x; i_x++)
-              {
-                unsigned int v_x = 0;
-                for (; v_x < info_x.faces_fill[i_x]; v_x++)
-                  {
-                    const auto cell_x =
-                      info_x.cells_exterior[i_x * info_x.max_batch_size + v_x];
-                    const auto cell_y =
-                      info_v.cells[i_v * info_v.max_batch_size + v_v];
-                    info.cells_exterior.emplace_back(
-                      translator.translate(cell_x, cell_y));
-                  }
-                for (; v_x < info_x.max_batch_size; v_x++)
-                  info.cells_exterior.emplace_back(-1, -1);
-
-                info.exterior_face_no.push_back(info_x.exterior_face_no[i_x]);
-              }
-
-        // exterior faces (cell x face):
-        for (unsigned int i_v = 0; i_v < n_face_batches_v; i_v++)
-          for (unsigned int v_v = 0; v_v < info_v.faces_fill[i_v]; v_v++)
-            for (unsigned int i_x = 0; i_x < n_cell_batches_x; i_x++)
-              {
-                unsigned int v_x = 0;
-                for (; v_x < info_x.cells_fill[i_x]; v_x++)
-                  {
-                    const auto cell_x =
-                      info_x.cells[i_x * info_x.max_batch_size + v_x];
-                    const auto cell_y =
-                      info_v.cells_exterior[i_v * info_v.max_batch_size + v_v];
-                    info.cells_exterior.emplace_back(
-                      translator.translate(cell_x, cell_y));
-                  }
-                for (; v_x < info_x.max_batch_size; v_x++)
-                  info.cells_exterior.emplace_back(-1, -1);
-
-                info.exterior_face_no.push_back(info_v.exterior_face_no[i_v] +
-                                                2 * dim_x);
               }
       }
     }
