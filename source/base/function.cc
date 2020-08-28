@@ -24,4 +24,11 @@ template class Function<4, double>;
 template class Function<5, double>;
 template class Function<6, double>;
 
+namespace Functions
+{
+  template class ZeroFunction<4, double>;
+  template class ZeroFunction<5, double>;
+  template class ZeroFunction<6, double>;
+} // namespace Functions
+
 DEAL_II_NAMESPACE_CLOSE

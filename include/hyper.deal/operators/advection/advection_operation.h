@@ -24,6 +24,7 @@
 #include <hyper.deal/matrix_free/fe_evaluation_cell_inverse.h>
 #include <hyper.deal/matrix_free/fe_evaluation_face.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
+#include <hyper.deal/matrix_free/tools.h>
 #include <hyper.deal/operators/advection/boundary_descriptor.h>
 
 namespace hyperdeal
@@ -389,8 +390,6 @@ namespace hyperdeal
             else
               {
                 const auto boundary_pair = boundary_descriptor->get_boundary(bid);
-                
-                Assert(boundary_pair.first == BoundaryType::DirichletInhomogenous, dealii::StandardExceptions::ExcNotImplemented ());
                     
                 if (face < dim_x * 2)
                   {
@@ -398,17 +397,9 @@ namespace hyperdeal
                       for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
                         {
                           const VectorizedArrayType u_minus = data_ptr1[q];
-                          VectorizedArrayType u_plus  = 0.0;
-                          
-                          const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv);
-                          
-                          for(unsigned int v = 0; v < phi.n_vectorization_lanes_filled(); ++v)
-                          {
-                            dealii::Point<dim_x + dim_v> p;
-                            for(unsigned int d = 0; d < dim_x + dim_v; ++d)
-                              p[d] = q_point[d][v];
-                            u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
-                          }
+                          const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
+                              (-u_minus) : 
+                              (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
                           const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
                           const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -422,17 +413,9 @@ namespace hyperdeal
                       for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
                         {
                           const VectorizedArrayType u_minus = data_ptr1[q];
-                          VectorizedArrayType u_plus        = 0.0;
-                          
-                          const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv);
-                          
-                          for(unsigned int v = 0; v < phi.n_vectorization_lanes_filled(); ++v)
-                          {
-                            dealii::Point<dim_x + dim_v> p;
-                            for(unsigned int d = 0; d < dim_x + dim_v; ++d)
-                              p[d] = q_point[d][v];
-                            u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
-                          }
+                          const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
+                              (-u_minus) : 
+                              (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
                           const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
                           const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -836,17 +819,9 @@ namespace hyperdeal
               for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
                 {
                   const VectorizedArrayType u_minus = data_ptr1[q];
-                  VectorizedArrayType u_plus        = 0.0;
-                          
-                  const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv);
-
-                  for(unsigned int v = 0; v < phi_m.n_vectorization_lanes_filled(); ++v)
-                  {
-                    dealii::Point<dim_x + dim_v> p;
-                    for(unsigned int d = 0; d < dim_x + dim_v; ++d)
-                      p[d] = q_point[d][v];
-                    u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
-                  }
+                  const VectorizedArrayType u_plus = (boundary_pair.first == BoundaryType::DirichletHomogenous) ? 
+                      (-u_minus) : 
+                      (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
                   const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
                   const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -860,17 +835,9 @@ namespace hyperdeal
               for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
                 {
                   const VectorizedArrayType u_minus = data_ptr1[q];
-                  VectorizedArrayType u_plus        = 0.0;
-                          
-                  const auto q_point = phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv);
-
-                  for(unsigned int v = 0; v < phi_m.n_vectorization_lanes_filled(); ++v)
-                  {
-                    dealii::Point<dim_x + dim_v> p;
-                    for(unsigned int d = 0; d < dim_x + dim_v; ++d)
-                      p[d] = q_point[d][v];
-                    u_plus[v] = -u_minus[v] + 2 * boundary_pair.second->value(p);
-                  }
+                  const VectorizedArrayType u_plus = (boundary_pair.first == BoundaryType::DirichletHomogenous) ? 
+                      (-u_minus) : 
+                      (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
                   const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
                   const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;

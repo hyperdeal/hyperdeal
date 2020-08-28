@@ -32,6 +32,7 @@ namespace hyperdeal
     {
       Undefined,
       DirichletInhomogenous,
+      DirichletHomogenous,
     };
 
     /**
@@ -47,6 +48,8 @@ namespace hyperdeal
                std::shared_ptr<dealii::Function<dim, Number>>>
         dirichlet_bc;
 
+      std::set<dealii::types::boundary_id> homogeneous_dirichlet_bc;
+
       /**
        * Return boundary type.
        */
@@ -55,6 +58,10 @@ namespace hyperdeal
         get_boundary_type(dealii::types::boundary_id const &boundary_id) const
       {
         if (this->dirichlet_bc.find(boundary_id) != this->dirichlet_bc.end())
+          return BoundaryType::DirichletInhomogenous;
+
+        if (this->homogeneous_dirichlet_bc.find(boundary_id) !=
+            this->homogeneous_dirichlet_bc.end())
           return BoundaryType::DirichletInhomogenous;
 
         AssertThrow(false,
@@ -71,11 +78,20 @@ namespace hyperdeal
         std::pair<BoundaryType, std::shared_ptr<dealii::Function<dim, Number>>>
         get_boundary(dealii::types::boundary_id const &boundary_id) const
       {
-        // process direchlet bc
+        // process inhomogeneous Dirichlet BC
         {
           auto res = this->dirichlet_bc.find(boundary_id);
           if (res != this->dirichlet_bc.end())
             return {BoundaryType::DirichletInhomogenous, res->second};
+        }
+
+        // process homogeneous Dirichlet BC
+        {
+          auto res = this->homogeneous_dirichlet_bc.find(boundary_id);
+          if (res != this->homogeneous_dirichlet_bc.end())
+            return {BoundaryType::DirichletHomogenous,
+                    std::shared_ptr<dealii::Function<dim, Number>>(
+                      new dealii::Functions::ZeroFunction<dim, Number>())};
         }
 
         AssertThrow(false,
