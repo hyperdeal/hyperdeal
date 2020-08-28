@@ -20,6 +20,7 @@
 
 #include <deal.II/base/function.h>
 
+#include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
 
@@ -60,28 +61,16 @@ namespace hyperdeal
         phi.reinit(cell);
         phi.read_dof_values(src);
 
-        // interpolate cell values onto gauss quadrature points
-        const dealii::internal::EvaluatorTensorProduct<tensorproduct,
-                                                       dim,
-                                                       degree + 1,
-                                                       n_points,
-                                                       VectorizedArrayType>
-          eval(*phi.get_shape_values(),
-               *phi.get_shape_gradients(),
-               *phi.get_shape_gradients());
-
-        if (dim >= 1)
-          eval.template values<0, true, false>(data_ptr, data_ptr);
-        if (dim >= 2)
-          eval.template values<1, true, false>(data_ptr, data_ptr);
-        if (dim >= 3)
-          eval.template values<2, true, false>(data_ptr, data_ptr);
-        if (dim >= 4)
-          eval.template values<3, true, false>(data_ptr, data_ptr);
-        if (dim >= 5)
-          eval.template values<4, true, false>(data_ptr, data_ptr);
-        if (dim >= 6)
-          eval.template values<5, true, false>(data_ptr, data_ptr);
+        hyperdeal::internal::FEEvaluationImplBasisChange<
+          tensorproduct,
+          dim,
+          degree + 1,
+          n_points,
+          1,
+          VectorizedArrayType,
+          VectorizedArrayType>::do_forward(*phi.get_shape_values(),
+                                           data_ptr,
+                                           data_ptr);
 
         return data_ptr;
       }

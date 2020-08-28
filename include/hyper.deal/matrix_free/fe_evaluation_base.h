@@ -36,9 +36,6 @@ namespace hyperdeal
   public:
     static const int dim = dim_x + dim_v;
 
-    static_assert(degree + 1 == n_points,
-                  "Currently, no over-integration is supported!");
-
     using NUMBER_     = Number;
     using VEC_NUMBER_ = VectorizedArrayType;
     using MF          = MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>;
