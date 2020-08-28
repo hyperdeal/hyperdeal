@@ -30,22 +30,19 @@ namespace hyperdeal
   template <int dim_x,
             int dim_v,
             int degree,
+            int n_points,
             typename Number,
             typename VectorizedArrayType>
   class FEEvaluationInverse : public FEEvaluation<dim_x,
                                                   dim_v,
                                                   degree,
-                                                  degree + 1,
+                                                  n_points,
                                                   Number,
                                                   VectorizedArrayType>
   {
   public:
-    using PARENT = FEEvaluation<dim_x,
-                                dim_v,
-                                degree,
-                                degree + 1,
-                                Number,
-                                VectorizedArrayType>;
+    using PARENT =
+      FEEvaluation<dim_x, dim_v, degree, n_points, Number, VectorizedArrayType>;
 
     /**
      * Constructor.
@@ -82,8 +79,13 @@ namespace hyperdeal
 
 
 
-  template <int dim_x, int dim_v, int degree, typename Number, typename VNumber>
-  FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>::
+  template <int dim_x,
+            int dim_v,
+            int degree,
+            int n_points,
+            typename Number,
+            typename VNumber>
+  FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>::
     FEEvaluationInverse(
       const MatrixFree<dim_x, dim_v, Number, VNumber> &matrix_free,
       const unsigned int                               dof_no_x,
@@ -97,9 +99,14 @@ namespace hyperdeal
 
 
 
-  template <int dim_x, int dim_v, int degree, typename Number, typename VNumber>
+  template <int dim_x,
+            int dim_v,
+            int degree,
+            int n_points,
+            typename Number,
+            typename VNumber>
   const dealii::AlignedVector<VNumber> *
-  FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>::
+  FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>::
     get_inverse_shape() const
   {
     return &inverse_shape;
@@ -107,14 +114,19 @@ namespace hyperdeal
 
 
 
-  template <int dim_x, int dim_v, int degree, typename Number, typename VNumber>
+  template <int dim_x,
+            int dim_v,
+            int degree,
+            int n_points,
+            typename Number,
+            typename VNumber>
   inline DEAL_II_ALWAYS_INLINE //
     void
-    FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>::submit_inv(
-      VNumber *__restrict data_ptr,
-      const unsigned int q,
-      const unsigned int q1,
-      const unsigned int q2)
+    FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>::
+      submit_inv(VNumber *__restrict data_ptr,
+                 const unsigned int q,
+                 const unsigned int q1,
+                 const unsigned int q2)
   {
     data_ptr[q] /=
       this->phi_x.JxW(q1) *

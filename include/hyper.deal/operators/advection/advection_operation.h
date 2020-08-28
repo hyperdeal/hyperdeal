@@ -66,7 +66,7 @@ namespace hyperdeal
       using FEFaceEval =
         FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>;
       using FECellEval_inv =
-        FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>;
+        FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>;
 
 
       /**
@@ -117,7 +117,8 @@ namespace hyperdeal
 
         // clang-format off
         phi_cell.reset(new FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
-        phi_cell_inv.reset(new FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>(data,0, 0, do_collocation ? 0 : 1, do_collocation ? 0 : 1));
+        phi_cell_inv.reset(new FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
+        phi_cell_inv_co.reset(new FEEvaluationInverse<dim_x, dim_v, degree, degree + 1, Number, VNumber>(data, 0, 0, do_collocation ? 0 : 1, do_collocation ? 0 : 1));
         phi_face_m.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, true, 0, 0, 0, 0));
         phi_face_p.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, false, 0, 0, 0, 0));
         // clang-format on
@@ -232,8 +233,8 @@ namespace hyperdeal
                                                        n_points,
                                                        VNumber>
           eval(*phi.get_shape_values(),
-               *phi.get_shape_gradients(),
-               *phi.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+               dealii::AlignedVector<VNumber>(),
+               dealii::AlignedVector<VNumber>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
@@ -241,26 +242,29 @@ namespace hyperdeal
                                                        n_points,
                                                        VNumber>
           eval_face(*phi.get_shape_values(),
-                    *phi.get_shape_gradients(),
-                    *phi.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                    dealii::AlignedVector<VNumber>(),
+                    dealii::AlignedVector<VNumber>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
                                                        VNumber>
-          eval_(*phi.get_shape_values(),
+          eval_(dealii::AlignedVector<VNumber>(),
                 *phi.get_shape_gradients(),
-                *phi.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                dealii::AlignedVector<VNumber>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        degree + 1,
-                                                       degree + 1,
+                                                       n_points,
                                                        VNumber>
-          eval_inv(*phi_inv.get_inverse_shape(),
-                   *phi_inv.get_inverse_shape(),
-                   *phi_inv.get_inverse_shape() /*DUMMY VALUE -> TODO*/);
+          eval_inv(dealii::AlignedVector<VNumber>(),
+                   dealii::AlignedVector<VNumber>(),
+                   data.get_matrix_free_x()
+                     .get_shape_info()
+                     .data[0]
+                     .inverse_shape_values_eo);
 
         // clang-format off
 
@@ -274,12 +278,28 @@ namespace hyperdeal
 
           if(do_collocation == false)
             {
-              if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
-              if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
-              if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
-              if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
-              if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
-              if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+              if(degree + 1 == n_points)
+                {
+                  if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
+                  if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
+                  if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
+                  if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
+                  if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
+                  if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+                } 
+              else
+                {
+                  internal::FEEvaluationImplBasisChange<tensorproduct,
+                                              dim,
+                                              degree + 1,
+                                              n_points,
+                                              1,
+                                              VNumber,
+                                              VNumber>::
+                    do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                              data_ptr, 
+                              data_ptr);   
+                }
             }
 
           // copy quadrature values into buffer
@@ -347,11 +367,27 @@ namespace hyperdeal
               {
                 internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(shi_get).template interpolate<true>(data_ptr1, data_ptr_inv, face);
     
-                if (dim >= 2) eval_face.template values<0, true, false>(data_ptr2, data_ptr2);
-                if (dim >= 3) eval_face.template values<1, true, false>(data_ptr2, data_ptr2);
-                if (dim >= 4) eval_face.template values<2, true, false>(data_ptr2, data_ptr2);
-                if (dim >= 5) eval_face.template values<3, true, false>(data_ptr2, data_ptr2);
-                if (dim >= 6) eval_face.template values<4, true, false>(data_ptr2, data_ptr2);
+                if(degree + 1 == n_points)
+                  {
+                    if (dim >= 2) eval_face.template values<0, true, false>(data_ptr2, data_ptr2);
+                    if (dim >= 3) eval_face.template values<1, true, false>(data_ptr2, data_ptr2);
+                    if (dim >= 4) eval_face.template values<2, true, false>(data_ptr2, data_ptr2);
+                    if (dim >= 5) eval_face.template values<3, true, false>(data_ptr2, data_ptr2);
+                    if (dim >= 6) eval_face.template values<4, true, false>(data_ptr2, data_ptr2);
+                  }
+                  else
+                  {
+                    internal::FEEvaluationImplBasisChange<tensorproduct,
+                                                dim - 1,
+                                                degree + 1,
+                                                n_points,
+                                                1,
+                                                VNumber,
+                                                VNumber>::
+                      do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                                 data_ptr2, 
+                                 data_ptr2);   
+                  }
               }
             else
               {
@@ -441,12 +477,29 @@ namespace hyperdeal
 
           if(do_collocation == false)
             {
-              if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
-              if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
-              if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
-              if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
-              if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
-              if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
+              if(degree + 1 == n_points)
+                {
+                  if (dim >= 6) eval_inv.template hessians<5, false, false>(data_ptr, data_ptr);
+                  if (dim >= 5) eval_inv.template hessians<4, false, false>(data_ptr, data_ptr);
+                  if (dim >= 4) eval_inv.template hessians<3, false, false>(data_ptr, data_ptr);
+                  if (dim >= 3) eval_inv.template hessians<2, false, false>(data_ptr, data_ptr);
+                  if (dim >= 2) eval_inv.template hessians<1, false, false>(data_ptr, data_ptr);
+                  if (dim >= 1) eval_inv.template hessians<0, false, false>(data_ptr, data_ptr);
+                }
+              else
+                {
+                  internal::FEEvaluationImplBasisChange<tensorproduct,
+                                              dim,
+                                              degree + 1,
+                                              n_points,
+                                              1,
+                                              VNumber,
+                                              VNumber>::
+                    do_backward_hessians(data.get_matrix_free_x().get_shape_info().data.front().inverse_shape_values_eo,  
+                                false,
+                                data_ptr, 
+                                data_ptr);   
+                }
             }
 
           // write into global structure back
@@ -470,7 +523,7 @@ namespace hyperdeal
       {
         (void)data;
 
-        auto &phi_inv = *this->phi_cell_inv;
+        auto &phi_inv = *this->phi_cell_inv_co;
 
         // get data and scratch
         VectorizedArrayType *data_ptr = phi_inv.get_data_ptr();
@@ -485,9 +538,9 @@ namespace hyperdeal
                                                        degree + 1,
                                                        degree + 1,
                                                        VectorizedArrayType>
-          eval_inv(*phi_inv.get_inverse_shape(),
-                   *phi_inv.get_inverse_shape(),
-                   *phi_inv.get_inverse_shape() /*DUMMY VALUE -> TODO*/);
+          eval_inv(dealii::AlignedVector<VNumber>(),
+                   dealii::AlignedVector<VNumber>(),
+                   *phi_inv.get_inverse_shape());
 
         // clang-format off
         
@@ -547,17 +600,17 @@ namespace hyperdeal
                                                        n_points,
                                                        VNumber>
           eval(*phi.get_shape_values(),
-               *phi.get_shape_gradients(),
-               *phi.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+               dealii::AlignedVector<VNumber>(),
+               dealii::AlignedVector<VNumber>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
                                                        VNumber>
-          eval_(*phi.get_shape_values(),
+          eval_(dealii::AlignedVector<VNumber>(),
                 *phi.get_shape_gradients(),
-                *phi.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                dealii::AlignedVector<VNumber>());
 
         // clang-format off
 
@@ -569,12 +622,28 @@ namespace hyperdeal
 
         if(do_collocation == false)
           {
-            if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
-            if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
-            if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
-            if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
-            if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
-            if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 1) eval.template values<0, true, false>(data_ptr, data_ptr);
+                if (dim >= 2) eval.template values<1, true, false>(data_ptr, data_ptr);
+                if (dim >= 3) eval.template values<2, true, false>(data_ptr, data_ptr);
+                if (dim >= 4) eval.template values<3, true, false>(data_ptr, data_ptr);
+                if (dim >= 5) eval.template values<4, true, false>(data_ptr, data_ptr);
+                if (dim >= 6) eval.template values<5, true, false>(data_ptr, data_ptr);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                             data_ptr, 
+                             data_ptr);   
+              }
           }
 
         // copy quadrature values into buffer
@@ -622,12 +691,29 @@ namespace hyperdeal
 
         if(do_collocation == false)
           {
-            if(dim >= 6) eval.template values<5, false, false>(data_ptr, data_ptr);
-            if(dim >= 5) eval.template values<4, false, false>(data_ptr, data_ptr);
-            if(dim >= 4) eval.template values<3, false, false>(data_ptr, data_ptr);
-            if(dim >= 3) eval.template values<2, false, false>(data_ptr, data_ptr);
-            if(dim >= 2) eval.template values<1, false, false>(data_ptr, data_ptr);
-            if(dim >= 1) eval.template values<0, false, false>(data_ptr, data_ptr);
+            if(degree + 1 == n_points)
+              {
+                if(dim >= 6) eval.template values<5, false, false>(data_ptr, data_ptr);
+                if(dim >= 5) eval.template values<4, false, false>(data_ptr, data_ptr);
+                if(dim >= 4) eval.template values<3, false, false>(data_ptr, data_ptr);
+                if(dim >= 3) eval.template values<2, false, false>(data_ptr, data_ptr);
+                if(dim >= 2) eval.template values<1, false, false>(data_ptr, data_ptr);
+                if(dim >= 1) eval.template values<0, false, false>(data_ptr, data_ptr);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
+                             false,
+                             data_ptr, 
+                             data_ptr);   
+              }
           }
 
         // clang-format on
@@ -659,16 +745,16 @@ namespace hyperdeal
                                                        n_points,
                                                        VNumber>
           eval1(*phi_m.get_shape_values(),
-                *phi_m.get_shape_gradients(),
-                *phi_m.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                dealii::AlignedVector<VNumber>(),
+                dealii::AlignedVector<VNumber>());
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
                                                        VNumber>
           eval2(*phi_p.get_shape_values(),
-                *phi_p.get_shape_gradients(),
-                *phi_p.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                dealii::AlignedVector<VNumber>(),
+                dealii::AlignedVector<VNumber>());
 
         this->velocity_field->reinit_face(face);
 
@@ -686,22 +772,54 @@ namespace hyperdeal
         
         if(do_collocation == false)
           {
-            if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                             data_ptr1, 
+                             data_ptr1);   
+              }
           }
 
         phi_p.read_dof_values(src);
         
         if(do_collocation == false)
           {
-            if (dim >= 2) eval2.template values<0, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 3) eval2.template values<1, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 4) eval2.template values<2, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 5) eval2.template values<3, true, false>(data_ptr2, data_ptr2);
-            if (dim >= 6) eval2.template values<4, true, false>(data_ptr2, data_ptr2);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 2) eval2.template values<0, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 3) eval2.template values<1, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 4) eval2.template values<2, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 5) eval2.template values<3, true, false>(data_ptr2, data_ptr2);
+                if (dim >= 6) eval2.template values<4, true, false>(data_ptr2, data_ptr2);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                             data_ptr2, 
+                             data_ptr2);   
+              }
           }
 
         if (face.type == ID::SpaceType::X)
@@ -733,11 +851,27 @@ namespace hyperdeal
 
         if(do_collocation == false)
           {
-            if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
+                             data_ptr1, 
+                             data_ptr1);   
+              }
           }
 
         // write into global structure back
@@ -745,11 +879,27 @@ namespace hyperdeal
 
         if(do_collocation == false)
           {
-            if (dim >= 6) eval2.template values<4, false, false>(data_ptr2, data_ptr2);
-            if (dim >= 5) eval2.template values<3, false, false>(data_ptr2, data_ptr2);
-            if (dim >= 4) eval2.template values<2, false, false>(data_ptr2, data_ptr2);
-            if (dim >= 3) eval2.template values<1, false, false>(data_ptr2, data_ptr2);
-            if (dim >= 2) eval2.template values<0, false, false>(data_ptr2, data_ptr2);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 6) eval2.template values<4, false, false>(data_ptr2, data_ptr2);
+                if (dim >= 5) eval2.template values<3, false, false>(data_ptr2, data_ptr2);
+                if (dim >= 4) eval2.template values<2, false, false>(data_ptr2, data_ptr2);
+                if (dim >= 3) eval2.template values<1, false, false>(data_ptr2, data_ptr2);
+                if (dim >= 2) eval2.template values<0, false, false>(data_ptr2, data_ptr2);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
+                             data_ptr2, 
+                             data_ptr2);   
+              }
           }
 
         // clang-format on
@@ -789,8 +939,8 @@ namespace hyperdeal
                                                        n_points,
                                                        VNumber>
           eval1(*phi_m.get_shape_values(),
-                *phi_m.get_shape_gradients(),
-                *phi_m.get_shape_gradients() /*DUMMY VALUE -> TODO*/);
+                dealii::AlignedVector<VNumber>(),
+                dealii::AlignedVector<VNumber>());
 
         this->velocity_field->reinit_face(face);
 
@@ -806,11 +956,27 @@ namespace hyperdeal
         
         if(do_collocation == false)
           {
-            if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
-            if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 2) eval1.template values<0, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 3) eval1.template values<1, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 4) eval1.template values<2, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 5) eval1.template values<3, true, false>(data_ptr1, data_ptr1);
+                if (dim >= 6) eval1.template values<4, true, false>(data_ptr1, data_ptr1);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                             data_ptr1, 
+                             data_ptr1);   
+              }
           }
 
         if (face.type == ID::SpaceType::X)
@@ -848,11 +1014,28 @@ namespace hyperdeal
 
         if(do_collocation == false)
           {
-            if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
-            if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+            if(degree + 1 == n_points)
+              {
+                if (dim >= 6) eval1.template values<4, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 5) eval1.template values<3, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 4) eval1.template values<2, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 3) eval1.template values<1, false, false>(data_ptr1, data_ptr1);
+                if (dim >= 2) eval1.template values<0, false, false>(data_ptr1, data_ptr1);
+              }
+              else
+              {
+                internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dim - 1,
+                                            degree + 1,
+                                            n_points,
+                                            1,
+                                            VNumber,
+                                            VNumber>::
+                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
+                             false,
+                             data_ptr1, 
+                             data_ptr1);   
+              }
           }
 
         // write into global structure back
@@ -867,7 +1050,8 @@ namespace hyperdeal
 
       // clang-format off
       std::shared_ptr<FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>> phi_cell;
-      std::shared_ptr<FEEvaluationInverse<dim_x, dim_v, degree, Number, VNumber>> phi_cell_inv;
+      std::shared_ptr<FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>> phi_cell_inv;
+      std::shared_ptr<FEEvaluationInverse<dim_x, dim_v, degree, degree + 1, Number, VNumber>> phi_cell_inv_co;
       std::shared_ptr<FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>> phi_face_m;
       std::shared_ptr<FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>> phi_face_p;
       // clang-format on
