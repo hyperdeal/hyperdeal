@@ -142,11 +142,13 @@ FOREACH(_testexe ${_testexes})
               else
                 mv ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff
                    ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff.failed \;
-                echo "******* Error during diffing output results for ${_test}/${_test}" \;
-                echo "******* Results are stored in ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff.failed" \;
-                echo "******* Check: ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test} ${CMAKE_CURRENT_SOURCE_DIR}/${_test}/${_test}" \;
-                echo "******* Diffs are:" \;
-                cat ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff.failed \;
+                echo "${_test}: BUILD successful." \;
+                echo "${_test}: RUN successful." \;
+                echo "${_test}: DIFF failed. ------ Source: ${CMAKE_CURRENT_SOURCE_DIR}/${_test}.out" \;
+                echo "${_test}: DIFF failed. ------ Result: ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/time_history_diagnostic.out" \;
+                echo "${_test}: DIFF failed. ------ Diff:   ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff.failed" \;
+                echo "${_test}: DIFF failed. ------ First 20 lines of numdiff output:" \;
+                head -n 20 ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/${_test}.diff.failed \;
                 false \;
               fi
           DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/time_history_diagnostic.out ${CMAKE_CURRENT_BINARY_DIR}/output-${_test}/time_history_diagnostic.out.ref
