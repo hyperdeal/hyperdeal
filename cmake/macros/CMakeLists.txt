@@ -13,17 +13,6 @@
 ##
 ## ---------------------------------------------------------------------
 
-# adopted from https://github.com/kronbichler/adaflo/blob/master/tests/run_test.cmake
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
-EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND}
-    --build ${BINARY_DIR} --target ${TESTNAME}.diff
-    RESULT_VARIABLE _result_code
-    OUTPUT_VARIABLE _output
-    )
-IF("${_result_code}" STREQUAL "0")
-    MESSAGE("${TESTNAME}: success.")
-ELSE()
-    MESSAGE("*** ${ERROR}: ***")
-    MESSAGE(${_output})
-    MESSAGE(FATAL_ERROR "*** Test aborted.")
-ENDIF()
+INCLUDE(macro_hyper_deal_pickup_tests.cmake)
