@@ -95,7 +95,7 @@ FOREACH(_testexe ${_testexes})
 
 
 
-  FILE(GLOB _tests ${_testexe}*.json)
+  FILE(GLOB _tests ${_testexe}.*.json)
     LIST (SORT _tests)
     FOREACH(_test ${_tests})
 
@@ -103,7 +103,7 @@ FOREACH(_testexe ${_testexes})
 
         GET_MPI_COUNT(${_test})
 
-        GET_FILENAME_COMPONENT(_test ${_test} NAME_WE)
+        GET_FILENAME_COMPONENT(_test ${_test} NAME_WLE)
 
         MATH(EXPR _n_tests "${_n_tests} + 1")
 
