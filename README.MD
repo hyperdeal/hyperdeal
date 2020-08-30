@@ -35,6 +35,8 @@ We provide following useful resources:
 
 For getting started, check out the [following side](../../wiki/Getting-started).
 
+[![Build Status](https://travis-ci.org/hyperdeal/hyperdeal.svg?branch=master)](https://travis-ci.org/hyperdeal/hyperdeal)
+
 ## Authors
 
 The principal developers are (in alphabetical order):
