@@ -54,6 +54,6 @@ The principal developers are (in alphabetical order):
 
 The library `hyper.deal` is dedicated explicitly only to algorithms for high-dimensional finite-element methods. However, the close ties to `deal.II` enable us to use general-purpose FEM features from there. In particular, we are contributing to the `deal.II` project functionalities that have been developed with high-dimensions in mind, but are also useful for lower dimensions. 
 
-Via `deal.II`, we optionally also have access to other third-party libraries like `Trilinos`, `p4est`, `Metis`, or `PETSc`.
+Via `deal.II`, we optionally also have access to other third-party libraries like `Trilinos`, `p4est`, `Metis`, or `PETSc`. Furthermore, a large variety of efficient off-the-shelf matrix-free physical solvers from the `deal.II`-based [ExaDG](https://github.com/exadg/exadg) project could be used to solve low-dimensional sub-problems and coupled to modules provided by `hyper.deal`.
 
 The library `hyper.deal` is a community development project. Contributions by new developers are more than welcome! In the case of questions, please contact any of the principal developers listed above. 
