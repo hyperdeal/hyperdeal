@@ -1,0 +1,21 @@
+name: Indent
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup
+      run: |
+         ./contrib/utilities/download_clang_format
+    - name: build
+      run: |
+         ./contrib/utilities/check_indentation.sh
