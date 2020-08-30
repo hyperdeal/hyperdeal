@@ -1,5 +1,0 @@
-New: The class advection::AdvectionOperation now also support homogeneous 
-Dirichlet boundary conditions.In contrast to normal DBCs, it exploits some
-optimizations.
-<br>
-(Peter Munch, 2020/08/26)

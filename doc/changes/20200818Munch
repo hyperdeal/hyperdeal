@@ -1,4 +1,0 @@
-New: The grid-generator functions orientated_hyper_cube() and 
-subdivided_hyper_ball() have been added to generate simple unstructured meshes.
-<br>
-(Peter Munch, 2020/08/18)

@@ -1,4 +1,0 @@
-New: The method MatrixFree::get_faces_by_cells_boundary_id() has been added. This
-function enable to retrieve the boundary id of faces in the context of ECL.
-<br>
-(Peter Munch, 2020/08/26)

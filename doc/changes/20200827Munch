@@ -1,6 +1,0 @@
-Fix: The parameter files of the examples contained the parameter 
-SpatialDiscretization::DoCollocation. However, this parameter has not been used
-in the code. This has been fixed, s.t., now a collocation approach can be enabled
-at run time.
-<br>
-(Peter Munch, 2020/08/27)
