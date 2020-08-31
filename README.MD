@@ -29,7 +29,7 @@ The full list of publications using or related to `hyper.deal` can be found
 
 We provide following useful resources:
 - a WIKI (see [here](../../wiki/home))
-- an online Doxgen documentation (see [here](https://hyperdeal.github.io/hyperdeal/))
+- an online Doxygen documentation (see [here](https://hyperdeal.github.io/hyperdeal/))
 - example programs presenting features of `hyper.deal` in the  folder [examples](examples)
 
 
