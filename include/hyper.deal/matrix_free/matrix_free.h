@@ -304,17 +304,19 @@ namespace hyperdeal
     const internal::MatrixFreeFunctions::ShapeInfo<Number> &
     get_shape_info() const;
 
+    /**
+     * Return an estimate for the memory consumption, in bytes, of this object.
+     */
     MemoryConsumption
-    memory_consumption() const
-    {
-      MemoryConsumption mem("matrix_free");
-      mem.insert("partitioner", partitioner->memory_consumption());
-      mem.insert("dof_info", dof_info.memory_consumption());
-      mem.insert("face_info", face_info.memory_consumption());
-      mem.insert("shape_info", shape_info.memory_consumption());
+    memory_consumption() const;
 
-      return mem;
-    }
+    /**
+     * Return partitioner of the vectors.
+     */
+    const std::shared_ptr<
+      const dealii::LinearAlgebra::SharedMPI::PartitionerBase> &
+    get_vector_partitioner() const;
+
 
   private:
     /**
@@ -357,7 +359,7 @@ namespace hyperdeal
     /**
      * Partitioner for ghost_value_update() and compress().
      */
-    std::shared_ptr<dealii::LinearAlgebra::SharedMPI::PartitionerBase>
+    std::shared_ptr<const dealii::LinearAlgebra::SharedMPI::PartitionerBase>
       partitioner;
 
     /**

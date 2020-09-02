@@ -229,8 +229,10 @@ test(const MPI_Comm &                    comm_global,
   }
 
   table.set("info->size [DoFs]", matrixfree_wrapper.n_dofs());
-  table.set("info->ghost_size [DoFs]",
-            Utilities::MPI::sum(vec_src.n_ghost_entries(), comm_global));
+  table.set(
+    "info->ghost_size [DoFs]",
+    Utilities::MPI::sum(matrix_free.get_vector_partitioner()->n_ghost_indices(),
+                        comm_global));
 
   table.set("info->dim_x", dim_x);
   table.set("info->dim_v", dim_v);

@@ -1737,4 +1737,31 @@ namespace hyperdeal
     return shape_info;
   }
 
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  MemoryConsumption
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::memory_consumption()
+    const
+  {
+    MemoryConsumption mem("matrix_free");
+    mem.insert("partitioner", partitioner->memory_consumption());
+    mem.insert("dof_info", dof_info.memory_consumption());
+    mem.insert("face_info", face_info.memory_consumption());
+    mem.insert("shape_info", shape_info.memory_consumption());
+
+    return mem;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  const std::shared_ptr<const dealii::LinearAlgebra::SharedMPI::PartitionerBase>
+    &
+    MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::
+      get_vector_partitioner() const
+  {
+    return partitioner;
+  }
+
 } // namespace hyperdeal
