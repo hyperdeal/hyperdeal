@@ -79,18 +79,6 @@ namespace hyperdeal
                const MPI_Comm &        communicator) override;
 
         /**
-         * TODO.
-         */
-        std::size_t
-        n_ghost_indices() const override;
-
-        /**
-         * TODO.
-         */
-        std::size_t
-        n_mpi_processes() const override;
-
-        /**
          * Initialize partitioner with a list of locally owned cells and
          * a list of ghost faces (cell and face no).
          */
@@ -100,7 +88,7 @@ namespace hyperdeal
                                            std::vector<unsigned int>>>
                               local_ghost_faces,
                const MPI_Comm comm,
-               const MPI_Comm sm_comm,
+               const MPI_Comm comm_sm,
                const bool     do_buffering);
 
         /**
@@ -253,25 +241,6 @@ namespace hyperdeal
 
       public:
         /**
-         * Return global communicator.
-         */
-        const MPI_Comm &
-        get_mpi_communicator() const override;
-
-
-        /**
-         * Return shared-memory communicator.
-         */
-        const MPI_Comm &
-        get_sm_mpi_communicator() const override;
-
-        /**
-         * Return number of local elements.
-         */
-        std::size_t
-        local_size() const;
-
-        /**
          * Return position of shared cell: cell -> (owner, offset)
          */
         const std::map<dealii::types::global_dof_index,
@@ -306,9 +275,6 @@ namespace hyperdeal
         unsigned int dofs_per_ghost; // ghost face or ghost cell
 
         // II) MPI-communicator related stuff
-        MPI_Comm     comm_all;
-        MPI_Comm     sm_comm;
-        unsigned int n_mpi_processes_;
         unsigned int sm_size;
         unsigned int sm_rank;
 
@@ -341,10 +307,6 @@ namespace hyperdeal
         std::vector<unsigned int>                    sm_recv_offset_1;
         std::vector<unsigned int>                    sm_recv_offset_2;
         std::vector<unsigned int>                    sm_recv_no;
-
-        // IV) Size of vector (queried by the vector)
-        std::size_t _local_size;
-        std::size_t _ghost_size;
       };
 
 
@@ -481,7 +443,7 @@ namespace hyperdeal
                       MPI_INT,
                       sm_targets[i],
                       mpi::internal::Tags::partitioner_sync,
-                      sm_comm,
+                      this->comm_sm,
                       req.data() + i);
           }
 
@@ -493,7 +455,7 @@ namespace hyperdeal
                       MPI_INT,
                       sm_sources[i],
                       mpi::internal::Tags::partitioner_sync,
-                      sm_comm,
+                      this->comm_sm,
                       req.data() + i + sm_targets.size());
           }
 
@@ -580,7 +542,8 @@ namespace hyperdeal
 
       template <typename Number>
       Partitioner::Partitioner(const ShapeInfo<Number> &shape_info)
-        : dofs_per_cell(shape_info.dofs_per_cell)
+        : dealii::LinearAlgebra::SharedMPI::PartitionerBase(false)
+        , dofs_per_cell(shape_info.dofs_per_cell)
         , dofs_per_face(shape_info.dofs_per_face)
         , face_to_cell_index_nodal(shape_info.face_to_cell_index_nodal)
       {}
@@ -600,22 +563,6 @@ namespace hyperdeal
 
 
 
-      std::size_t
-      Partitioner::n_ghost_indices() const
-      {
-        return _ghost_size;
-      }
-
-
-
-      std::size_t
-      Partitioner::n_mpi_processes() const
-      {
-        return n_mpi_processes_;
-      }
-
-
-
       void
       Partitioner::reinit(
         const std::vector<dealii::types::global_dof_index> local_cells,
@@ -623,9 +570,12 @@ namespace hyperdeal
           std::pair<dealii::types::global_dof_index, std::vector<unsigned int>>>
                        local_ghost_faces,
         const MPI_Comm comm,
-        const MPI_Comm sm_comm,
+        const MPI_Comm comm_sm,
         const bool     do_buffering)
       {
+        // fill some information needed by PartitionerBase
+        this->comm             = comm;
+        this->comm_sm          = comm_sm;
         this->n_mpi_processes_ = dealii::Utilities::MPI::n_mpi_processes(comm);
 
         this->do_buffering = do_buffering;
@@ -633,7 +583,7 @@ namespace hyperdeal
         AssertThrow(local_cells.size() > 0,
                     dealii::ExcMessage("No local cells!"));
 
-        _local_size = local_cells.size() * dofs_per_cell;
+        this->n_local_elements = local_cells.size() * dofs_per_cell;
 
         // 1) determine if ghost faces or ghost cells are needed
         const dealii::types::global_dof_index dofs_per_ghost = [&]() {
@@ -648,8 +598,8 @@ namespace hyperdeal
 
         this->dofs_per_ghost = dofs_per_ghost;
 
-        // const auto sm_comm  = create_sm(comm);
-        const auto sm_procs = hyperdeal::mpi::procs_of_sm(comm, sm_comm);
+        // const auto this->comm_sm  = create_sm(comm);
+        const auto sm_procs = hyperdeal::mpi::procs_of_sm(comm, this->comm_sm);
         const auto sm_rank  = [&]() {
           const auto ptr =
             std::find(sm_procs.begin(),
@@ -662,11 +612,9 @@ namespace hyperdeal
           return std::distance(sm_procs.begin(), ptr);
         }();
 
-        this->sm_comm = sm_comm;
         this->sm_rank = sm_rank;
         this->sm_size = sm_procs.size();
 
-        this->comm_all = comm;
 
         for (unsigned int i = 0; i < local_cells.size(); i++)
           this->maps[local_cells[i]] = {sm_rank, i * dofs_per_cell};
@@ -797,16 +745,16 @@ namespace hyperdeal
                       this->maps[cell] = {other_rank, offset * dofs_per_cell};
                     }
                 });
-          dealii::Utilities::MPI::ConsensusAlgorithms::
-            Selector<dealii::types::global_dof_index, unsigned int>(temp,
-                                                                    sm_comm)
-              .run();
+          dealii::Utilities::MPI::ConsensusAlgorithms::Selector<
+            dealii::types::global_dof_index,
+            unsigned int>(temp, this->comm_sm)
+            .run();
         }
 
 
         // 3) merge local_ghost_faces_remote and sort -> ghost_faces_remote
         const auto local_ghost_faces_remote_pairs_global =
-          [&local_ghost_faces_remote, &comm, &sm_comm]() {
+          [&local_ghost_faces_remote, &comm, this]() {
             std::vector<
               std::pair<dealii::types::global_dof_index, unsigned int>>
               local_ghost_faces_remote_pairs_local;
@@ -823,7 +771,7 @@ namespace hyperdeal
               std::pair<dealii::types::global_dof_index, unsigned int>>
               local_ghost_faces_remote_pairs_global =
                 internal::MPI_Allgather_Pairs(
-                  local_ghost_faces_remote_pairs_local, sm_comm);
+                  local_ghost_faces_remote_pairs_local, this->comm_sm);
 
             // sort
             std::sort(local_ghost_faces_remote_pairs_global.begin(),
@@ -870,7 +818,7 @@ namespace hyperdeal
 
 
         // ... update ghost size, and
-        this->_ghost_size =
+        this->n_ghost_elements =
           (distributed_local_ghost_faces_remote_pairs_global[sm_rank].size() +
            (do_buffering ?
               std::accumulate(local_ghost_faces_shared.begin(),
@@ -906,7 +854,7 @@ namespace hyperdeal
             [&distributed_local_ghost_faces_remote_pairs_global,
              &dofs_per_ghost,
              &local_cells,
-             &sm_comm,
+             this,
              &sm_procs,
              &my_offset]() {
               std::vector<unsigned int> offsets(sm_procs.size());
@@ -918,7 +866,7 @@ namespace hyperdeal
                 offsets.data(),
                 1,
                 dealii::Utilities::MPI::internal::mpi_type_id(&my_offset),
-                sm_comm);
+                this->comm_sm);
 
               std::map<std::pair<unsigned int, unsigned int>,
                        std::pair<dealii::types::global_dof_index, unsigned int>>
@@ -1007,7 +955,7 @@ namespace hyperdeal
                   });
             dealii::Utilities::MPI::ConsensusAlgorithms::Selector<LocalDoFType,
                                                                   LocalDoFType>(
-              temp, sm_comm)
+              temp, this->comm_sm)
               .run();
 
             std::sort(maps_ghost_inverse_precomp.begin(),
@@ -1250,7 +1198,8 @@ namespace hyperdeal
             this->sm_sources.push_back(i);
 
           this->sm_targets = dealii::Utilities::MPI::
-            compute_point_to_point_communication_pattern(sm_comm, sm_sources);
+            compute_point_to_point_communication_pattern(this->comm_sm,
+                                                         sm_sources);
         }
 
         if (do_buffering)
@@ -1340,14 +1289,6 @@ namespace hyperdeal
 
 
 
-      std::size_t
-      Partitioner::local_size() const
-      {
-        return _local_size;
-      }
-
-
-
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_start_impl(
@@ -1383,7 +1324,7 @@ namespace hyperdeal
                         MPI_INT,
                         sm_targets[i],
                         communication_channel + 21,
-                        sm_comm,
+                        this->comm_sm,
                         requests.data() + i + sm_sources.size());
 
             for (unsigned int i = 0; i < sm_sources.size(); i++)
@@ -1392,7 +1333,7 @@ namespace hyperdeal
                         MPI_INT,
                         sm_sources[i],
                         communication_channel + 21,
-                        sm_comm,
+                        this->comm_sm,
                         requests.data() + i);
           }
 
@@ -1404,7 +1345,7 @@ namespace hyperdeal
                       MPI_DOUBLE,
                       recv_ranks[i],
                       communication_channel + 22,
-                      comm_all,
+                      comm,
                       requests.data() + i + sm_sources.size() +
                         sm_targets.size());
         }
@@ -1438,7 +1379,7 @@ namespace hyperdeal
                        MPI_DOUBLE,
                        send_ranks[c],
                        communication_channel + 22,
-                       comm_all,
+                       comm,
                        requests.data() + c + sm_sources.size() +
                          sm_targets.size() + recv_ranks.size());
           }
@@ -1608,7 +1549,7 @@ namespace hyperdeal
                         MPI_INT,
                         sm_sources[i],
                         communication_channel + 21,
-                        sm_comm,
+                        this->comm_sm,
                         requests.data() + i);
 
             for (unsigned int i = 0; i < sm_targets.size(); i++)
@@ -1617,7 +1558,7 @@ namespace hyperdeal
                         MPI_INT,
                         sm_targets[i],
                         communication_channel + 21,
-                        sm_comm,
+                        this->comm_sm,
                         requests.data() + i + sm_sources.size());
           }
 
@@ -1629,7 +1570,7 @@ namespace hyperdeal
                       MPI_DOUBLE,
                       recv_ranks[i],
                       0,
-                      comm_all,
+                      comm,
                       requests.data() + i + sm_sources.size() +
                         sm_targets.size());
         }
@@ -1641,7 +1582,7 @@ namespace hyperdeal
                     MPI_DOUBLE,
                     send_ranks[i],
                     0,
-                    comm_all,
+                    comm,
                     requests.data() + i + sm_sources.size() +
                       sm_targets.size() + recv_ranks.size());
       }
@@ -1740,22 +1681,6 @@ namespace hyperdeal
           }
 
         MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
-      }
-
-
-
-      const MPI_Comm &
-      Partitioner::get_mpi_communicator() const
-      {
-        return comm_all;
-      }
-
-
-
-      const MPI_Comm &
-      Partitioner::get_sm_mpi_communicator() const
-      {
-        return sm_comm;
       }
 
 
