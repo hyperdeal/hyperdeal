@@ -92,7 +92,7 @@ namespace hyperdeal
                const bool     do_buffering);
 
         /**
-         * TODO.
+         * Start to export to ghost array.
          */
         void
         export_to_ghosted_array_start(
@@ -103,7 +103,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &     requests) const override;
 
         /**
-         * TODO.
+         * Finish to export to ghost array.
          */
         void
         export_to_ghosted_array_finish(
@@ -112,7 +112,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &   requests) const override;
 
         /**
-         * TODO.
+         * Start to import from ghost array.
          */
         void
         import_from_ghosted_array_start(
@@ -124,7 +124,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * TODO.
+         * Finish to import from ghost array.
          */
         void
         import_from_ghosted_array_finish(
@@ -135,7 +135,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * TODO.
+         * Start to export to ghost array.
          */
         void
         export_to_ghosted_array_start(
@@ -146,7 +146,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &    requests) const override;
 
         /**
-         * TODO.
+         * Finish to export to ghost array.
          */
         void
         export_to_ghosted_array_finish(
@@ -154,22 +154,8 @@ namespace hyperdeal
           const std::vector<float *> &data_others,
           std::vector<MPI_Request> &  requests) const override;
 
-        template <typename Number>
-        void
-        export_to_ghosted_array_finish_0(
-          Number *const                data_this,
-          const std::vector<Number *> &data_others,
-          std::vector<MPI_Request> &   requests) const;
-
-        template <typename Number>
-        void
-        export_to_ghosted_array_finish_1(
-          Number *const                data_this,
-          const std::vector<Number *> &data_others,
-          std::vector<MPI_Request> &   requests) const;
-
         /**
-         * TODO.
+         * Start to import from ghost array.
          */
         void
         import_from_ghosted_array_start(
@@ -181,7 +167,7 @@ namespace hyperdeal
           std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * TODO.
+         * Finish to import from ghost array.
          */
         void
         import_from_ghosted_array_finish(
@@ -191,9 +177,30 @@ namespace hyperdeal
           const dealii::AlignedVector<float> &  buffer,
           std::vector<MPI_Request> &            requests) const override;
 
+        /**
+         * TODO.
+         */
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_0(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
+
+        /**
+         * TODO.
+         */
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_1(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
+
       private:
         /**
-         * Start ghost value update.
+         * Actual type-independent implementation of
+         * export_to_ghosted_array_start().
          */
         template <typename Number>
         void
@@ -205,7 +212,8 @@ namespace hyperdeal
           std::vector<MPI_Request> &     requests) const;
 
         /**
-         * Finish ghost value update.
+         * Actual type-independent implementation of
+         * export_to_ghosted_array_finish().
          */
         template <typename Number>
         void
@@ -215,7 +223,8 @@ namespace hyperdeal
           std::vector<MPI_Request> &   requests) const;
 
         /**
-         * Start compress.
+         * Actual type-independent implementation of
+         * import_from_ghosted_array_start().
          */
         template <typename Number>
         void
@@ -228,7 +237,8 @@ namespace hyperdeal
           std::vector<MPI_Request> &            requests) const;
 
         /**
-         * Finish compress.
+         * Actual type-independent implementation of
+         * import_from_ghosted_array_finish().
          */
         template <typename Number>
         void
