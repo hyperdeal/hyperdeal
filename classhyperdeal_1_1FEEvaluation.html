@@ -131,6 +131,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae829631669913a4d23e5d073a3b04e2e"><td class="memItemLeft" align="right" valign="top"><a id="ae829631669913a4d23e5d073a3b04e2e"></a>
 DEAL_II_ALWAYS_INLINE VectorizedArrayType&#160;</td><td class="memItemRight" valign="bottom"><b>JxW</b> (unsigned int qx, unsigned int qv) const</td></tr>
 <tr class="separator:ae829631669913a4d23e5d073a3b04e2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4f7da6f4cd85115792a2458fb219f14"><td class="memItemLeft" align="right" valign="top">DEAL_II_ALWAYS_INLINE dealii::Tensor&lt; 1, dim_x, VectorizedArrayType &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1FEEvaluation.html#ad4f7da6f4cd85115792a2458fb219f14">get_gradient_x</a> (const VectorizedArrayType *__restrict grad_in, const unsigned int q, const unsigned int qx, const unsigned int qv) const</td></tr>
+<tr class="separator:ad4f7da6f4cd85115792a2458fb219f14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad1c6b175060d6db1ee608e3d847ca4f"><td class="memItemLeft" align="right" valign="top">DEAL_II_ALWAYS_INLINE dealii::Tensor&lt; 1, dim_v, VectorizedArrayType &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1FEEvaluation.html#aad1c6b175060d6db1ee608e3d847ca4f">get_gradient_v</a> (const VectorizedArrayType *__restrict grad_in, const unsigned int q, const unsigned int qx, const unsigned int qv) const</td></tr>
+<tr class="separator:aad1c6b175060d6db1ee608e3d847ca4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a883493203816c747b9d962690927e30d"><td class="memTemplParams" colspan="2">template&lt;bool do_add&gt; </td></tr>
+<tr class="memitem:a883493203816c747b9d962690927e30d"><td class="memTemplItemLeft" align="right" valign="top">DEAL_II_ALWAYS_INLINE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1FEEvaluation.html#a883493203816c747b9d962690927e30d">submit_value</a> (VectorizedArrayType *__restrict data_ptr_out, const VectorizedArrayType __restrict values_in, const unsigned int q, const unsigned int qx, const unsigned int qv) const</td></tr>
+<tr class="separator:a883493203816c747b9d962690927e30d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f5f5f438795957b9fd1bc37d96197a7"><td class="memItemLeft" align="right" valign="top">DEAL_II_ALWAYS_INLINE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1FEEvaluation.html#a7f5f5f438795957b9fd1bc37d96197a7">submit_gradient_x</a> (VectorizedArrayType *__restrict data_ptr_out, const VectorizedArrayType *__restrict grad_in, const unsigned int q, const unsigned int qx, const unsigned int qv) const</td></tr>
 <tr class="separator:a7f5f5f438795957b9fd1bc37d96197a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc55694e6da66050ec298bd53a91a68f"><td class="memItemLeft" align="right" valign="top">DEAL_II_ALWAYS_INLINE void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1FEEvaluation.html#abc55694e6da66050ec298bd53a91a68f">submit_gradient_v</a> (VectorizedArrayType *__restrict data_ptr_out, const VectorizedArrayType *__restrict grad_in, const unsigned int q, const unsigned int qx, const unsigned int qv) const</td></tr>
@@ -303,6 +310,108 @@ template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , ty
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="aad1c6b175060d6db1ee608e3d847ca4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad1c6b175060d6db1ee608e3d847ca4f">&#9670;&nbsp;</a></span>get_gradient_v()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , typename VectorizedArrayType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEAL_II_ALWAYS_INLINE dealii::Tensor&lt;1, dim_v, VectorizedArrayType&gt; <a class="el" href="classhyperdeal_1_1FEEvaluation.html">hyperdeal::FEEvaluation</a>&lt; dim_x, dim_v, degree, n_points, Number, VectorizedArrayType &gt;::get_gradient_v </td>
+          <td>(</td>
+          <td class="paramtype">const VectorizedArrayType *__restrict&#160;</td>
+          <td class="paramname"><em>grad_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get gradient in v-space </p>
+
+</div>
+</div>
+<a id="ad4f7da6f4cd85115792a2458fb219f14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4f7da6f4cd85115792a2458fb219f14">&#9670;&nbsp;</a></span>get_gradient_x()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , typename VectorizedArrayType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEAL_II_ALWAYS_INLINE dealii::Tensor&lt;1, dim_x, VectorizedArrayType&gt; <a class="el" href="classhyperdeal_1_1FEEvaluation.html">hyperdeal::FEEvaluation</a>&lt; dim_x, dim_v, degree, n_points, Number, VectorizedArrayType &gt;::get_gradient_x </td>
+          <td>(</td>
+          <td class="paramtype">const VectorizedArrayType *__restrict&#160;</td>
+          <td class="paramname"><em>grad_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get gradient in x-space </p>
+
+</div>
+</div>
 <a id="a0434057d581dc5aeafd9cd82520db556"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0434057d581dc5aeafd9cd82520db556">&#9670;&nbsp;</a></span>get_quadrature_point()</h2>
 
@@ -692,6 +801,65 @@ template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , ty
 </div><div class="memdoc">
 <p>Return product of <code>data</code> and |J|xw.</p>
 <p>TODO: remove. </p>
+
+</div>
+</div>
+<a id="a883493203816c747b9d962690927e30d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a883493203816c747b9d962690927e30d">&#9670;&nbsp;</a></span>submit_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , typename VectorizedArrayType &gt; </div>
+<div class="memtemplate">
+template&lt;bool do_add&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEAL_II_ALWAYS_INLINE void <a class="el" href="classhyperdeal_1_1FEEvaluation.html">hyperdeal::FEEvaluation</a>&lt; dim_x, dim_v, degree, n_points, Number, VectorizedArrayType &gt;::submit_value </td>
+          <td>(</td>
+          <td class="paramtype">VectorizedArrayType *__restrict&#160;</td>
+          <td class="paramname"><em>data_ptr_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const VectorizedArrayType __restrict&#160;</td>
+          <td class="paramname"><em>values_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>qv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Submit value for integration along x-v coordinates </p>
 
 </div>
 </div>

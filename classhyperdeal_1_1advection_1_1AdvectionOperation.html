@@ -99,8 +99,8 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>FECellEval_inv</b> =
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a6ad3d0ce9726a29413071b60c722dc77"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a6ad3d0ce9726a29413071b60c722dc77">AdvectionOperation</a> (const <a class="el" href="classhyperdeal_1_1MatrixFree.html">MatrixFree</a>&lt; dim_x, dim_v, Number, VectorizedArrayType &gt; &amp;data, <a class="el" href="classhyperdeal_1_1DynamicConvergenceTable.html">DynamicConvergenceTable</a> &amp;table)</td></tr>
 <tr class="separator:a6ad3d0ce9726a29413071b60c722dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13e11291683bd44199fdb8d567e7bd27"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a13e11291683bd44199fdb8d567e7bd27">reinit</a> (std::shared_ptr&lt; <a class="el" href="structhyperdeal_1_1advection_1_1BoundaryDescriptor.html">BoundaryDescriptor</a>&lt; dim, Number &gt;&gt; boundary_descriptor, std::shared_ptr&lt; VelocityField &gt; velocity_field)</td></tr>
-<tr class="separator:a13e11291683bd44199fdb8d567e7bd27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7855167bd5864219dbba4b9e9b5d3401"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a7855167bd5864219dbba4b9e9b5d3401">reinit</a> (std::shared_ptr&lt; <a class="el" href="structhyperdeal_1_1advection_1_1BoundaryDescriptor.html">BoundaryDescriptor</a>&lt; dim, Number &gt;&gt; boundary_descriptor, std::shared_ptr&lt; VelocityField &gt; velocity_field, const <a class="el" href="structhyperdeal_1_1advection_1_1AdvectionOperationParamters.html">AdvectionOperationParamters</a> additional_data)</td></tr>
+<tr class="separator:a7855167bd5864219dbba4b9e9b5d3401"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63e10e5610390efdffae388d568136ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a63e10e5610390efdffae388d568136ea">apply</a> (VectorType &amp;dst, const VectorType &amp;src, const Number time, <a class="el" href="classhyperdeal_1_1Timers.html">Timers</a> *timers=nullptr)</td></tr>
 <tr class="separator:a63e10e5610390efdffae388d568136ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -209,8 +209,8 @@ template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , ty
 
 </div>
 </div>
-<a id="a13e11291683bd44199fdb8d567e7bd27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13e11291683bd44199fdb8d567e7bd27">&#9670;&nbsp;</a></span>reinit()</h2>
+<a id="a7855167bd5864219dbba4b9e9b5d3401"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7855167bd5864219dbba4b9e9b5d3401">&#9670;&nbsp;</a></span>reinit()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -230,7 +230,13 @@ template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , ty
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::shared_ptr&lt; VelocityField &gt;&#160;</td>
-          <td class="paramname"><em>velocity_field</em>&#160;</td>
+          <td class="paramname"><em>velocity_field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structhyperdeal_1_1advection_1_1AdvectionOperationParamters.html">AdvectionOperationParamters</a>&#160;</td>
+          <td class="paramname"><em>additional_data</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
