@@ -18,6 +18,8 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/matrix_free/evaluation_kernels.h>
+
 #include <hyper.deal/base/dynamic_convergence_table.h>
 #include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell.h>
@@ -292,14 +294,14 @@ namespace hyperdeal
                 } 
               else
                 {
-                  internal::FEEvaluationImplBasisChange<tensorproduct,
+                  dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                              dealii::internal::EvaluatorQuantity::value,
                                               dim,
                                               degree + 1,
                                               n_points,
-                                              1,
                                               VNumber,
                                               VNumber>::
-                    do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                    do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                               data_ptr, 
                               data_ptr);   
                 }
@@ -423,14 +425,14 @@ namespace hyperdeal
                   }
                   else
                   {
-                    internal::FEEvaluationImplBasisChange<tensorproduct,
+                    dealii::internal::FEEvaluationImplBasisChange<tensorproduct, 
+                                                dealii::internal::EvaluatorQuantity::value, 
                                                 dim - 1,
                                                 degree + 1,
                                                 n_points,
-                                                1,
                                                 VNumber,
                                                 VNumber>::
-                      do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                      do_forward(1 ,data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                                  data_ptr2, 
                                  data_ptr2);   
                   }
@@ -483,7 +485,7 @@ namespace hyperdeal
                           const VectorizedArrayType u_minus = data_ptr1[q];
                           const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
                               (-u_minus) : 
-                              (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
+                              (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
                           const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
                           const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -499,7 +501,7 @@ namespace hyperdeal
                           const VectorizedArrayType u_minus = data_ptr1[q];
                           const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
                               (-u_minus) : 
-                              (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
+                              (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
                           const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
                           const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -536,14 +538,14 @@ namespace hyperdeal
                 }
               else
                 {
-                  internal::FEEvaluationImplBasisChange<tensorproduct,
+                  dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                              dealii::internal::EvaluatorQuantity::hessian,
                                               dim,
                                               degree + 1,
                                               n_points,
-                                              1,
                                               VNumber,
                                               VNumber>::
-                    do_backward_hessians(data.get_matrix_free_x().get_shape_info().data.front().inverse_shape_values_eo,  
+                    do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().inverse_shape_values_eo,  
                                 false,
                                 data_ptr, 
                                 data_ptr);   
@@ -681,14 +683,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                  do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr, 
                              data_ptr);   
               }
@@ -750,14 +752,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
+                  do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
                              false,
                              data_ptr, 
                              data_ptr);   
@@ -830,14 +832,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value, 
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                  do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr1, 
                              data_ptr1);   
               }
@@ -857,14 +859,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                  do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr2, 
                              data_ptr2);   
               }
@@ -909,14 +911,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
+                  do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
                              data_ptr1, 
                              data_ptr1);   
               }
@@ -937,14 +939,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
+                  do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
                              data_ptr2, 
                              data_ptr2);   
               }
@@ -1014,14 +1016,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_forward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
+                  do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr1, 
                              data_ptr1);   
               }
@@ -1035,7 +1037,7 @@ namespace hyperdeal
                   const VectorizedArrayType u_minus = data_ptr1[q];
                   const VectorizedArrayType u_plus = (boundary_pair.first == BoundaryType::DirichletHomogenous) ? 
                       (-u_minus) : 
-                      (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
+                      (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
                   const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
                   const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -1051,7 +1053,7 @@ namespace hyperdeal
                   const VectorizedArrayType u_minus = data_ptr1[q];
                   const VectorizedArrayType u_plus = (boundary_pair.first == BoundaryType::DirichletHomogenous) ? 
                       (-u_minus) : 
-                      (-u_minus + 2.0 * dealii::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
+                      (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
                   const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
                   const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
@@ -1072,14 +1074,14 @@ namespace hyperdeal
               }
               else
               {
-                internal::FEEvaluationImplBasisChange<tensorproduct,
+                dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
+                                            dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
                                             n_points,
-                                            1,
                                             VNumber,
                                             VNumber>::
-                  do_backward(data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
+                  do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
                              false,
                              data_ptr1, 
                              data_ptr1);   
