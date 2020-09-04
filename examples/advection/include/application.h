@@ -23,6 +23,7 @@
 #include <deal.II/grid/grid_out.h>
 
 #include <deal.II/matrix_free/matrix_free.h>
+#include <deal.II/matrix_free/tools.h>
 
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/time_integrators.h>
@@ -30,7 +31,6 @@
 #include <hyper.deal/base/timers.h>
 #include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
-#include <hyper.deal/matrix_free/tools.h>
 #include <hyper.deal/numerics/vector_tools.h>
 #include <hyper.deal/operators/advection/advection_operation.h>
 #include <hyper.deal/operators/advection/cfl.h>
@@ -221,7 +221,7 @@ namespace hyperdeal
 
             // ensure that inner and boundary faces are not mixed in the
             // same macro cell
-            dealii::MatrixFreeTools::categorize_accoring_boundary_ids_for_ecl(
+            dealii::MatrixFreeTools::categorize_by_boundary_ids(
               *triangulation_x, additional_data);
 
             matrix_free_x.reinit(
@@ -261,7 +261,7 @@ namespace hyperdeal
 
             // ensure that inner and boundary faces are not mixed in the
             // same macro cell
-            dealii::MatrixFreeTools::categorize_accoring_boundary_ids_for_ecl(
+            dealii::MatrixFreeTools::categorize_by_boundary_ids(
               *triangulation_v, additional_data);
 
             matrix_free_v.reinit(

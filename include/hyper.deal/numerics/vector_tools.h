@@ -61,14 +61,15 @@ namespace hyperdeal
         phi.reinit(cell);
         phi.read_dof_values(src);
 
-        hyperdeal::internal::FEEvaluationImplBasisChange<
+        dealii::internal::FEEvaluationImplBasisChange<
           tensorproduct,
+          dealii::internal::EvaluatorQuantity::value,
           dim,
           degree + 1,
           n_points,
-          1,
           VectorizedArrayType,
-          VectorizedArrayType>::do_forward(*phi.get_shape_values(),
+          VectorizedArrayType>::do_forward(1,
+                                           *phi.get_shape_values(),
                                            data_ptr,
                                            data_ptr);
 
