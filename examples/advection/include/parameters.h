@@ -18,6 +18,7 @@
 
 #include <hyper.deal/base/time_integrators_parameters.h>
 #include <hyper.deal/base/time_loop_parameters.h>
+#include <hyper.deal/operators/advection/advection_operation_parameters.h>
 
 #include <fstream>
 
@@ -76,6 +77,10 @@ namespace hyperdeal
           "Number of warm-up iterations (these iterations are ignored for the timings).");
         prm.leave_subsection();
 
+        prm.enter_subsection("AdvectionOperation");
+        advection_operation_parameters.add_parameters(prm);
+        prm.leave_subsection();
+
         prm.enter_subsection("Matrixfree");
         prm.add_parameter(
           "GhostFaces",
@@ -112,6 +117,9 @@ namespace hyperdeal
 
       // ... CFL-condition
       Number cfl_number = 0.3;
+
+      // ... advection operation
+      AdvectionOperationParamters advection_operation_parameters;
 
       // ... diagnostic
       bool   dignostics_enabled = true;

@@ -1,0 +1,6 @@
+Improved: The class hyperdeal::advection::AdvectionOperation has been 
+generalized for skew-symmetrical DG implementations. The parameter
+factor_skew can be uses to blend between a conservative (skew=0; default) and 
+convective version (skew=1).
+<br>
+(Peter Munch, 2020/08/14)
