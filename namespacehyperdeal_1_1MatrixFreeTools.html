@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.19"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hyper.deal: dealii::MatrixFreeTools Namespace Reference</title>
+<title>hyper.deal: hyperdeal::MatrixFreeTools Namespace Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,68 +61,27 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>dealii</b></li><li class="navelem"><a class="el" href="namespacedealii_1_1MatrixFreeTools.html">MatrixFreeTools</a></li>  </ul>
+<li class="navelem"><b>hyperdeal</b></li><li class="navelem"><a class="el" href="namespacehyperdeal_1_1MatrixFreeTools.html">MatrixFreeTools</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">dealii::MatrixFreeTools Namespace Reference</div>  </div>
+<div class="title">hyperdeal::MatrixFreeTools Namespace Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa42c4b29f7f8e8c121fc5002e48f6efc"><td class="memTemplParams" colspan="2">template&lt;int dim, typename AdditionalData &gt; </td></tr>
-<tr class="memitem:aa42c4b29f7f8e8c121fc5002e48f6efc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedealii_1_1MatrixFreeTools.html#aa42c4b29f7f8e8c121fc5002e48f6efc">categorize_accoring_boundary_ids_for_ecl</a> (const Triangulation&lt; dim &gt; &amp;tria, AdditionalData &amp;additional_data, const unsigned int level=numbers::invalid_unsigned_int)</td></tr>
-<tr class="separator:aa42c4b29f7f8e8c121fc5002e48f6efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92f88baf3f0f2b1fdafabc2a2fc8660d"><td class="memTemplParams" colspan="2"><a id="a92f88baf3f0f2b1fdafabc2a2fc8660d"></a>
+<tr class="memitem:abf61ff1d3d55b4019b9a1d7b23ca6e03"><td class="memTemplParams" colspan="2"><a id="abf61ff1d3d55b4019b9a1d7b23ca6e03"></a>
 template&lt;int dim, typename VectorizedArrayType &gt; </td></tr>
-<tr class="memitem:a92f88baf3f0f2b1fdafabc2a2fc8660d"><td class="memTemplItemLeft" align="right" valign="top">VectorizedArrayType&#160;</td><td class="memTemplItemRight" valign="bottom"><b>evaluate_scalar_function</b> (const dealii::Point&lt; dim, VectorizedArrayType &gt; &amp;point, const Function&lt; dim, typename VectorizedArrayType::value_type &gt; &amp;function, const unsigned int n_lanes)</td></tr>
-<tr class="separator:a92f88baf3f0f2b1fdafabc2a2fc8660d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf61ff1d3d55b4019b9a1d7b23ca6e03"><td class="memTemplItemLeft" align="right" valign="top">VectorizedArrayType&#160;</td><td class="memTemplItemRight" valign="bottom"><b>evaluate_scalar_function</b> (const dealii::Point&lt; dim, VectorizedArrayType &gt; &amp;point, const dealii::Function&lt; dim, typename VectorizedArrayType::value_type &gt; &amp;function, const unsigned int n_lanes)</td></tr>
+<tr class="separator:abf61ff1d3d55b4019b9a1d7b23ca6e03"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A namespace for utility functions in the context of matrix-free operator evaluation. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="aa42c4b29f7f8e8c121fc5002e48f6efc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa42c4b29f7f8e8c121fc5002e48f6efc">&#9670;&nbsp;</a></span>categorize_accoring_boundary_ids_for_ecl()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;int dim, typename AdditionalData &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void dealii::MatrixFreeTools::categorize_accoring_boundary_ids_for_ecl </td>
-          <td>(</td>
-          <td class="paramtype">const Triangulation&lt; dim &gt; &amp;&#160;</td>
-          <td class="paramname"><em>tria</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">AdditionalData &amp;&#160;</td>
-          <td class="paramname"><em>additional_data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const unsigned int&#160;</td>
-          <td class="paramname"><em>level</em> = <code>numbers::invalid_unsigned_int</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Modify <code>additional_data</code> so that cells are categorized according to their boundary ids, making face integrals in the case of ECL simpler. </p>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.19
