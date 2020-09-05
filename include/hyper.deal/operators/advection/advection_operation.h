@@ -114,12 +114,6 @@ namespace hyperdeal
 
         this->do_collocation = do_collocation;
 
-        // TODO move to deal.II (ShapeInfo/UnivariateShapeData)
-        this->shi_get.reinit(
-          dealii::QGaussLobatto<1>(2),
-          dealii::FE_DGQArbitraryNodes<1>(
-            data.get_matrix_free_x().get_shape_info(0, 0).data[0].quadrature));
-
         // clang-format off
         phi_cell.reset(new FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
         phi_cell_inv.reset(new FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>(data, 0, 0, 0, 0));
@@ -413,7 +407,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(shi_get).template interpolate<true>(data_ptr1, data_ptr_inv, face);
+                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<true>(data_ptr1, data_ptr_inv, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -512,7 +506,7 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(shi_get).template interpolate<false>(data_ptr, data_ptr1, face);
+              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<false>(data_ptr, data_ptr1, face);
             else
               phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
           }
@@ -1094,9 +1088,6 @@ namespace hyperdeal
 
       const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &data;
       DynamicConvergenceTable &                                    table;
-
-      dealii::internal::MatrixFreeFunctions::ShapeInfo<VectorizedArrayType>
-        shi_get;
 
       // clang-format off
       std::shared_ptr<FEEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>> phi_cell;
