@@ -31,7 +31,7 @@ namespace hyperdeal
      *
      * TODO: move into deal.II
      */
-    template <unsigned int dim, unsigned int n_points, typename Number>
+    template <int dim, int n_rows, typename Number>
     class FEFaceNormalEvaluation
     {
     public:
@@ -47,19 +47,19 @@ namespace hyperdeal
       /**
        * Perform interpolation for face @p face_no.
        */
-      template <bool forward>
+      template <bool forward, bool add>
       void
       interpolate(Number *           output,
                   const Number *     input,
                   const unsigned int face_no)
       {
         // clang-format off
-        if (dim >= 1 && face_no / 2 == 0) interpolate_impl<0, forward>(output, input, face_no); else
-        if (dim >= 2 && face_no / 2 == 1) interpolate_impl<1, forward>(output, input, face_no); else
-        if (dim >= 3 && face_no / 2 == 2) interpolate_impl<2, forward>(output, input, face_no); else
-        if (dim >= 4 && face_no / 2 == 3) interpolate_impl<3, forward>(output, input, face_no); else
-        if (dim >= 5 && face_no / 2 == 4) interpolate_impl<4, forward>(output, input, face_no); else
-        if (dim >= 6 && face_no / 2 == 5) interpolate_impl<5, forward>(output, input, face_no); else
+        if (dim >= 1 && face_no / 2 == 0) interpolate_impl<0, forward, add>(output, input, face_no); else
+        if (dim >= 2 && face_no / 2 == 1) interpolate_impl<1, forward, add>(output, input, face_no); else
+        if (dim >= 3 && face_no / 2 == 2) interpolate_impl<2, forward, add>(output, input, face_no); else
+        if (dim >= 4 && face_no / 2 == 3) interpolate_impl<3, forward, add>(output, input, face_no); else
+        if (dim >= 5 && face_no / 2 == 4) interpolate_impl<4, forward, add>(output, input, face_no); else
+        if (dim >= 6 && face_no / 2 == 5) interpolate_impl<5, forward, add>(output, input, face_no); else
           {
             Assert(false, dealii::StandardExceptions::ExcNotImplemented());
           }
@@ -70,34 +70,63 @@ namespace hyperdeal
       /**
        * Do the actural interpolation.
        */
-      template <unsigned int d, bool forward>
+      template <int face_direction, bool contract_onto_face, bool add>
       void
-      interpolate_impl(Number *           output,
-                       const Number *     input,
-                       const unsigned int face_no) const
+      interpolate_impl(Number *DEAL_II_RESTRICT out,
+                       const Number *DEAL_II_RESTRICT in,
+                       const unsigned int             face_no) const
       {
-        const auto weights =
+        AssertIndexRange(face_direction, dim);
+
+        constexpr auto n_blocks1 =
+          dealii::Utilities::pow<unsigned int>(n_rows, face_direction);
+        constexpr auto n_blocks2 = dealii::Utilities::pow<unsigned int>(
+          n_rows, std::max(dim - face_direction - 1, 0));
+
+        constexpr auto stride =
+          dealii::Utilities::pow<unsigned int>(n_rows, face_direction);
+
+        const Number *DEAL_II_RESTRICT shape_values =
           &shape_info.data[0].quadrature_data_on_face[face_no % 2][0];
 
-        for (auto i = 0u, e = 0u;
-             i < dealii::Utilities::pow(n_points, dim - d - 1);
-             i++)
-          for (auto j = 0u; j < dealii::Utilities::pow(n_points, d); j++, e++)
-            {
-              if (forward)
-                output[e] = 0;
+        for (unsigned int i2 = 0u; i2 < n_blocks2; ++i2)
+          {
+            for (unsigned int i1 = 0u; i1 < n_blocks1; ++i1)
+              {
+                if (contract_onto_face)
+                  {
+                    Number res0 = in[0] * shape_values[0];
 
-              for (auto k = 0u; k < n_points; k++)
-                if (forward)
-                  output[e] +=
-                    input[i * dealii::Utilities::pow(n_points, d + 1) +
-                          k * dealii::Utilities::pow(n_points, d) + j] *
-                    weights[k];
+                    for (unsigned int ind = 1; ind < n_rows; ++ind)
+                      res0 += in[ind * stride] * shape_values[ind];
+
+                    if (add == false)
+                      out[0] = res0;
+                    else
+                      out[0] += res0;
+                  }
                 else
-                  output[i * dealii::Utilities::pow(n_points, d + 1) +
-                         k * dealii::Utilities::pow(n_points, d) + j] +=
-                    input[e] * weights[k];
-            }
+                  {
+                    for (unsigned int col = 0; col < n_rows; ++col)
+                      {
+                        if (add == false)
+                          out[col * stride] = in[0] * shape_values[col];
+                        else
+                          out[col * stride] += in[0] * shape_values[col];
+                      }
+                  }
+
+                ++out;
+                ++in;
+              }
+
+            if (contract_onto_face)
+              in += (dealii::Utilities::pow(n_rows, face_direction + 1) -
+                     n_blocks1);
+            else
+              out += (dealii::Utilities::pow(n_rows, face_direction + 1) -
+                      n_blocks1);
+          }
       }
 
       // TODO: use the hyper.deal version?
