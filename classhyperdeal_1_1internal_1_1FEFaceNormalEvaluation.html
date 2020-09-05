@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.19"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hyper.deal: hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_points, Number &gt; Class Template Reference</title>
+<title>hyper.deal: hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_rows, Number &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_points, Number &gt; Class Template Reference</div>  </div>
+<div class="title">hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_rows, Number &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -77,32 +77,32 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a89bf35fdbb4bd5a5e389705c8cd30cf2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html#a89bf35fdbb4bd5a5e389705c8cd30cf2">FEFaceNormalEvaluation</a> (const dealii::internal::MatrixFreeFunctions::ShapeInfo&lt; Number &gt; &amp;shape_info)</td></tr>
-<tr class="separator:a89bf35fdbb4bd5a5e389705c8cd30cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3fb3ecb669b2b574d834a5bdba55a87e"><td class="memTemplParams" colspan="2">template&lt;bool forward&gt; </td></tr>
-<tr class="memitem:a3fb3ecb669b2b574d834a5bdba55a87e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html#a3fb3ecb669b2b574d834a5bdba55a87e">interpolate</a> (Number *output, const Number *input, const unsigned int face_no)</td></tr>
-<tr class="separator:a3fb3ecb669b2b574d834a5bdba55a87e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79c9f111fa46ef388b87bf392bfbd8b0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html#a79c9f111fa46ef388b87bf392bfbd8b0">FEFaceNormalEvaluation</a> (const dealii::internal::MatrixFreeFunctions::ShapeInfo&lt; Number &gt; &amp;shape_info)</td></tr>
+<tr class="separator:a79c9f111fa46ef388b87bf392bfbd8b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a999e33ccaf0f2aab7d3b8ca86eb0b2fd"><td class="memTemplParams" colspan="2">template&lt;bool forward, bool add&gt; </td></tr>
+<tr class="memitem:a999e33ccaf0f2aab7d3b8ca86eb0b2fd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html#a999e33ccaf0f2aab7d3b8ca86eb0b2fd">interpolate</a> (Number *output, const Number *input, const unsigned int face_no)</td></tr>
+<tr class="separator:a999e33ccaf0f2aab7d3b8ca86eb0b2fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;unsigned int dim, unsigned int n_points, typename Number&gt;<br />
-class hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_points, Number &gt;</h3>
+<div class="textblock"><h3>template&lt;int dim, int n_rows, typename Number&gt;<br />
+class hyperdeal::internal::FEFaceNormalEvaluation&lt; dim, n_rows, Number &gt;</h3>
 
 <p>Helper class for interpolating values at cell quadrature points to the quadrature points of a given face.</p>
 <p>TODO: move into deal.II </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a89bf35fdbb4bd5a5e389705c8cd30cf2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89bf35fdbb4bd5a5e389705c8cd30cf2">&#9670;&nbsp;</a></span>FEFaceNormalEvaluation()</h2>
+<a id="a79c9f111fa46ef388b87bf392bfbd8b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79c9f111fa46ef388b87bf392bfbd8b0">&#9670;&nbsp;</a></span>FEFaceNormalEvaluation()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;unsigned int dim, unsigned int n_points, typename Number &gt; </div>
+template&lt;int dim, int n_rows, typename Number &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">hyperdeal::internal::FEFaceNormalEvaluation</a>&lt; dim, n_points, Number &gt;::<a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">FEFaceNormalEvaluation</a> </td>
+          <td class="memname"><a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">hyperdeal::internal::FEFaceNormalEvaluation</a>&lt; dim, n_rows, Number &gt;::<a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">FEFaceNormalEvaluation</a> </td>
           <td>(</td>
           <td class="paramtype">const dealii::internal::MatrixFreeFunctions::ShapeInfo&lt; Number &gt; &amp;&#160;</td>
           <td class="paramname"><em>shape_info</em></td><td>)</td>
@@ -120,21 +120,21 @@ template&lt;unsigned int dim, unsigned int n_points, typename Number &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a3fb3ecb669b2b574d834a5bdba55a87e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3fb3ecb669b2b574d834a5bdba55a87e">&#9670;&nbsp;</a></span>interpolate()</h2>
+<a id="a999e33ccaf0f2aab7d3b8ca86eb0b2fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a999e33ccaf0f2aab7d3b8ca86eb0b2fd">&#9670;&nbsp;</a></span>interpolate()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;unsigned int dim, unsigned int n_points, typename Number &gt; </div>
+template&lt;int dim, int n_rows, typename Number &gt; </div>
 <div class="memtemplate">
-template&lt;bool forward&gt; </div>
+template&lt;bool forward, bool add&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">hyperdeal::internal::FEFaceNormalEvaluation</a>&lt; dim, n_points, Number &gt;::interpolate </td>
+          <td class="memname">void <a class="el" href="classhyperdeal_1_1internal_1_1FEFaceNormalEvaluation.html">hyperdeal::internal::FEFaceNormalEvaluation</a>&lt; dim, n_rows, Number &gt;::interpolate </td>
           <td>(</td>
           <td class="paramtype">Number *&#160;</td>
           <td class="paramname"><em>output</em>, </td>
