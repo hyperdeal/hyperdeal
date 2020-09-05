@@ -77,7 +77,7 @@ namespace hyperdeal
                        const unsigned int face_no) const
       {
         const auto weights =
-          &shape_info.data[0].shape_data_on_face[face_no % 2][0];
+          &shape_info.data[0].quadrature_data_on_face[face_no % 2][0];
 
         for (auto i = 0u, e = 0u;
              i < dealii::Utilities::pow(n_points, dim - d - 1);
