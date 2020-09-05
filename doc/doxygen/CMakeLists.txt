@@ -37,6 +37,6 @@ if (HYPER_DEAL_DOCUMENTATION)
       COMMENT "Generating Doxygen documentation"
       VERBATIM )
   else (DOXYGEN_FOUND)
-    message("Doxygen is not installe")
+    message("Doxygen could not be found.")
   endif (DOXYGEN_FOUND)
 endif (HYPER_DEAL_DOCUMENTATION)
