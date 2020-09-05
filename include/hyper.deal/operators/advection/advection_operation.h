@@ -407,7 +407,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<true>(data_ptr1, data_ptr_inv, face);
+                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<true, false>(data_ptr1, data_ptr_inv, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -506,7 +506,7 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<false>(data_ptr, data_ptr1, face);
+              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<false, true>(data_ptr, data_ptr1, face);
             else
               phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
           }
