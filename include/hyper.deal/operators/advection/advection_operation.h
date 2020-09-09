@@ -21,7 +21,6 @@
 #include <deal.II/matrix_free/evaluation_kernels.h>
 
 #include <hyper.deal/base/dynamic_convergence_table.h>
-#include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell_inverse.h>
 #include <hyper.deal/matrix_free/fe_evaluation_face.h>
@@ -407,7 +406,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<true, false>(data_ptr1, data_ptr_inv, face);
+                dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, 1, VectorizedArrayType, true>::template interpolate_quadrature<true, false>(data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, false, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -506,7 +505,7 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              internal::FEFaceNormalEvaluation<dim, n_points, VectorizedArrayType>(data.get_matrix_free_x().get_shape_info()).template interpolate<false, true>(data_ptr, data_ptr1, face);
+              dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, false, face);
             else
               phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
           }

@@ -20,7 +20,6 @@
 
 #include <deal.II/base/function.h>
 
-#include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_cell.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
 
