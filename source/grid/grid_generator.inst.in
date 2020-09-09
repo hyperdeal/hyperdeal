@@ -31,7 +31,8 @@ for (dim_x : DIM_X; dim_v : DIM_V)
       const std::vector<unsigned int> &repetitions_v,
       const dealii::Point<dim_v> &     left_v,
       const dealii::Point<dim_v> &     right_v,
-      const bool                       do_periodic_v);
+      const bool                       do_periodic_v,
+      const bool                       with_internal_deformation);
 
     template
     void

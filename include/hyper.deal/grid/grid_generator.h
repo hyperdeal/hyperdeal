@@ -21,6 +21,7 @@
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_tools.h>
+#include <deal.II/grid/manifold.h>
 
 namespace hyperdeal
 {
@@ -49,7 +50,8 @@ namespace hyperdeal
       const std::vector<unsigned int> &repetitions_v,
       const dealii::Point<dim_v> &     left_v,
       const dealii::Point<dim_v> &     right_v,
-      const bool                       do_periodic_v);
+      const bool                       do_periodic_v,
+      const bool                       with_internal_deformation = false);
 
 
     /**

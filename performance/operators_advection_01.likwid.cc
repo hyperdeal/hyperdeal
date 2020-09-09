@@ -17,12 +17,12 @@
 
 
 #define NUMBER_TYPE double
-#define MIN_DEGREE 3
+#define MIN_DEGREE 2
 #define MAX_DEGREE 5
-#define MIN_DIM 4
+#define MIN_DIM 2
 #define MAX_DIM 6
 #define MIN_SIMD_LENGTH 0
-#define MAX_SIMD_LENGTH 0
+#define MAX_SIMD_LENGTH 8
 
 #include <hyper.deal/grid/grid_generator.h>
 #include <hyper.deal/operators/advection/advection_operation.h>
@@ -61,6 +61,7 @@ struct Parameters
   {
     prm.enter_subsection("General");
     prm.add_parameter("Verbose", print_parameter);
+    prm.add_parameter("Details", details);
     prm.leave_subsection();
 
     prm.enter_subsection("Performance");
@@ -95,6 +96,7 @@ struct Parameters
   }
 
   bool print_parameter = false;
+  bool details         = false;
 
   unsigned int n_iterations_warmup = 0;
   unsigned int n_iterations        = 10;
@@ -120,8 +122,6 @@ test(const MPI_Comm &                    comm_global,
      hyperdeal::DynamicConvergenceTable &table,
      const std::string                   file_name)
 {
-  (void)table;
-
   auto pcout = dealii::ConditionalOStream(
     std::cout, dealii::Utilities::MPI::this_mpi_process(comm_global) == 0);
 
@@ -151,7 +151,7 @@ test(const MPI_Comm &                    comm_global,
   matrixfree_wrapper.init(p, [&](auto & tria_x, auto & tria_v){hyperdeal::GridGenerator::subdivided_hyper_rectangle(
     tria_x, tria_v,
     param.n_refinements_x, param.n_subdivisions_x, px_1, px_2, do_periodic_x, 
-    param.n_refinements_v, param.n_subdivisions_v, pv_1, pv_2, do_periodic_v);});
+    param.n_refinements_v, param.n_subdivisions_v, pv_1, pv_2, do_periodic_v, /*deformation:*/ true);});
   // clang-format on
 
   const auto &matrix_free = matrixfree_wrapper.get_matrix_free();
@@ -197,7 +197,10 @@ test(const MPI_Comm &                    comm_global,
     {
       // run for warm up
       for (unsigned int i = 0; i < param.n_iterations_warmup; i++)
-        advection_operation.apply(vec_dst, vec_src, 0.0);
+        advection_operation.template apply<
+          hyperdeal::advection::AdvectionOperationEvaluationLevel::all>(vec_dst,
+                                                                        vec_src,
+                                                                        0.0);
     }
 
     {
@@ -205,7 +208,10 @@ test(const MPI_Comm &                    comm_global,
       // run without timers
       hyperdeal::ScopedTimerWrapper timer(timers, "total");
       for (unsigned int i = 0; i < param.n_iterations; i++)
-        advection_operation.apply(vec_dst, vec_src, 0.0);
+        advection_operation.template apply<
+          hyperdeal::advection::AdvectionOperationEvaluationLevel::all>(vec_dst,
+                                                                        vec_src,
+                                                                        0.0);
       timers.leave();
     }
 
@@ -228,6 +234,81 @@ test(const MPI_Comm &                    comm_global,
     timers.leave();
   }
 
+  if (param.details)
+    {
+      timers.enter("all1");
+      {
+        hyperdeal::ScopedLikwidTimerWrapper likwid(
+          std::string("all1") + "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_global)) +
+          "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_sm)) +
+          "_" + std::to_string(p.use_ecl) + "_" +
+          std::to_string(VectorizedArrayType::size()) + "_" +
+          std::to_string(degree) + "_" + std::to_string(dim_x + dim_v));
+
+        timers.enter("withtimers");
+        // run with timers
+        hyperdeal::ScopedTimerWrapper timer(timers, "total");
+        for (unsigned int i = 0; i < param.n_iterations; i++)
+          advection_operation.template apply<
+            hyperdeal::advection::AdvectionOperationEvaluationLevel::cell>(
+            vec_dst, vec_src, 0.0, &timers);
+        timers.leave();
+      }
+      timers.leave();
+    }
+
+  if (param.details)
+    {
+      timers.enter("all2");
+      {
+        hyperdeal::ScopedLikwidTimerWrapper likwid(
+          std::string("all2") + "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_global)) +
+          "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_sm)) +
+          "_" + std::to_string(p.use_ecl) + "_" +
+          std::to_string(VectorizedArrayType::size()) + "_" +
+          std::to_string(degree) + "_" + std::to_string(dim_x + dim_v));
+
+        timers.enter("withtimers");
+        // run with timers
+        hyperdeal::ScopedTimerWrapper timer(timers, "total");
+        for (unsigned int i = 0; i < param.n_iterations; i++)
+          advection_operation.template apply<
+            hyperdeal::advection::AdvectionOperationEvaluationLevel::
+              all_without_neighbor_load>(vec_dst, vec_src, 0.0, &timers);
+        timers.leave();
+      }
+      timers.leave();
+    }
+
+  if (param.details)
+    {
+      timers.enter("all3");
+      {
+        hyperdeal::ScopedLikwidTimerWrapper likwid(
+          std::string("all3") + "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_global)) +
+          "_" +
+          std::to_string(dealii::Utilities::MPI::n_mpi_processes(comm_sm)) +
+          "_" + std::to_string(p.use_ecl) + "_" +
+          std::to_string(VectorizedArrayType::size()) + "_" +
+          std::to_string(degree) + "_" + std::to_string(dim_x + dim_v));
+
+        timers.enter("withtimers");
+        // run with timers
+        hyperdeal::ScopedTimerWrapper timer(timers, "total");
+        for (unsigned int i = 0; i < param.n_iterations; i++)
+          advection_operation.template apply<
+            hyperdeal::advection::AdvectionOperationEvaluationLevel::all>(
+            vec_dst, vec_src, 0.0, &timers);
+        timers.leave();
+      }
+      timers.leave();
+    }
+
   table.set("info->size [DoFs]", matrixfree_wrapper.n_dofs());
   table.set(
     "info->ghost_size [DoFs]",
@@ -237,6 +318,7 @@ test(const MPI_Comm &                    comm_global,
   table.set("info->dim_x", dim_x);
   table.set("info->dim_v", dim_v);
   table.set("info->degree", degree);
+  table.set("info->v_len", VectorizedArrayType::size());
 
   table.set("info->procs",
             dealii::Utilities::MPI::n_mpi_processes(comm_global));
@@ -248,13 +330,29 @@ test(const MPI_Comm &                    comm_global,
               matrixfree_wrapper.get_comm_column()));
   table.set("info->procs_sm", dealii::Utilities::MPI::n_mpi_processes(comm_sm));
 
-  table.set("throughput without timers [MDoFs/s]",
+  table.set("throughput without timers [GDoFs/s]",
             matrixfree_wrapper.n_dofs() * param.n_iterations /
-              timers["apply:withouttimers:total"].get_accumulated_time());
+              timers["apply:withouttimers:total"].get_accumulated_time() /
+              1000);
 
-  table.set("throughput [MDoFs/s]",
+  table.set("throughput [GDoFs/s]",
             matrixfree_wrapper.n_dofs() * param.n_iterations /
-              timers["apply:withtimers:total"].get_accumulated_time());
+              timers["apply:withtimers:total"].get_accumulated_time() / 1000);
+
+  if (param.details)
+    table.set("throughput - all1 [GDoFs/s]",
+              matrixfree_wrapper.n_dofs() * param.n_iterations /
+                timers["all1:withtimers:total"].get_accumulated_time() / 1000);
+
+  if (param.details)
+    table.set("throughput - all2 [GDoFs/s]",
+              matrixfree_wrapper.n_dofs() * param.n_iterations /
+                timers["all2:withtimers:total"].get_accumulated_time() / 1000);
+
+  if (param.details)
+    table.set("throughput - all3 [GDoFs/s]",
+              matrixfree_wrapper.n_dofs() * param.n_iterations /
+                timers["all3:withtimers:total"].get_accumulated_time() / 1000);
 
   table.set("apply:total [s]",
             timers["apply:withtimers:total"].get_accumulated_time() / 1e6 /

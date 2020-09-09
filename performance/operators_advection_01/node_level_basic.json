@@ -1,0 +1,36 @@
+{
+  "General" : {
+    "VLen"               : 0,
+    "Dim"                : 6,
+    "Degree"             : 3,
+    "PartitionX"         : 8,
+    "PartitionV"         : 6,
+    "UseVirtualTopology" : true,
+    "UseSharedMemory"    : true,
+    "Details"            : false,
+    "Verbose"            : true
+  },
+  "Triangulation" : {
+    "Type"               : "fullydistributed"
+  },
+  "SpatialDiscretization" : {
+    "DoCollocation"       : false,
+    "Mapping"             : 1
+  },
+  "Case" : {
+    "NRefinementsX"      : 3,
+    "NRefinementsV"      : 3,
+    "NSubdivisionsX"     : {"X" : 1, "Y" : 1, "Z" : 1},
+    "NSubdivisionsV"     : {"X" : 1, "Y" : 1, "Z" : 1}
+  },
+  "MatrixFree" : {
+    "DoBuffering"        : false,
+    "GhostFaces"         : true,
+    "UseECL"             : true,
+    "OverlappingLevel"   : 0
+  },
+  "Performance" : {
+    "Iterations"       : 10,
+    "IterationsWarmup" : 5
+  }
+}

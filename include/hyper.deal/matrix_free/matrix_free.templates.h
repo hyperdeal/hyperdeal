@@ -1222,8 +1222,9 @@ namespace hyperdeal
                 partitions[flag].emplace_back(i, j * v_len + v, i0);
               }
 
-        std::cout << partitions[0].size() << " " << partitions[1].size() << " "
-                  << partitions[2].size() << " " << std::endl;
+        if (dealii::Utilities::MPI::this_mpi_process(comm) == 0)
+          std::cout << partitions[0].size() << " " << partitions[1].size()
+                    << " " << partitions[2].size() << " " << std::endl;
       }
   }
 
@@ -1358,7 +1359,8 @@ namespace hyperdeal
     const DataAccessOnFaces src_vector_face_access,
     Timers *                timers) const
   {
-    AssertThrow(src_vector_face_access == DataAccessOnFaces::values,
+    AssertThrow(src_vector_face_access == DataAccessOnFaces::values ||
+                  src_vector_face_access == DataAccessOnFaces::none,
                 dealii::StandardExceptions::ExcNotImplemented());
 
     const auto part =
@@ -1376,46 +1378,50 @@ namespace hyperdeal
       for (unsigned int i = 0; i < this->partitions.size(); ++i)
         {
           // perform pre-processing step for partition
-          if (i == 0)
+          if (src_vector_face_access == DataAccessOnFaces::values)
             {
-              if (timers != nullptr)
-                timers->operator[]("update_ghost_values_0").start();
-
-              // perform src.update_ghost_values_start()
-              part->export_to_ghosted_array_start(
-                0, src_.begin(), src_.other_values(), buffer, requests);
-
-              // zero out ghost of destination vector
-              if (dst.has_ghost_elements())
-                dst.zero_out_ghosts();
-            }
-          else if (i == 1)
-            {
-              // ... src.update_ghost_values_finish() for shared-memory domain:
-              part->export_to_ghosted_array_finish_0(src_.begin(),
-                                                     src_.other_values(),
-                                                     requests);
-
-              if (timers != nullptr)
+              if (i == 0)
                 {
-                  timers->operator[]("update_ghost_values_0").stop();
-                  timers->operator[]("update_ghost_values_1").start();
-                }
-            }
-          else if (i == 2)
-            {
-              // ... src.update_ghost_values_finish() for remote domain:
-              part->export_to_ghosted_array_finish_1(src_.begin(),
-                                                     src_.other_values(),
-                                                     requests);
+                  if (timers != nullptr)
+                    timers->operator[]("update_ghost_values_0").start();
 
-              if (timers != nullptr)
-                timers->operator[]("update_ghost_values_1").stop();
-            }
-          else
-            {
-              AssertThrow(false,
-                          dealii::StandardExceptions::ExcNotImplemented());
+                  // perform src.update_ghost_values_start()
+                  part->export_to_ghosted_array_start(
+                    0, src_.begin(), src_.other_values(), buffer, requests);
+
+                  // zero out ghost of destination vector
+                  if (dst.has_ghost_elements())
+                    dst.zero_out_ghosts();
+                }
+              else if (i == 1)
+                {
+                  // ... src.update_ghost_values_finish() for shared-memory
+                  // domain:
+                  part->export_to_ghosted_array_finish_0(src_.begin(),
+                                                         src_.other_values(),
+                                                         requests);
+
+                  if (timers != nullptr)
+                    {
+                      timers->operator[]("update_ghost_values_0").stop();
+                      timers->operator[]("update_ghost_values_1").start();
+                    }
+                }
+              else if (i == 2)
+                {
+                  // ... src.update_ghost_values_finish() for remote domain:
+                  part->export_to_ghosted_array_finish_1(src_.begin(),
+                                                         src_.other_values(),
+                                                         requests);
+
+                  if (timers != nullptr)
+                    timers->operator[]("update_ghost_values_1").stop();
+                }
+              else
+                {
+                  AssertThrow(false,
+                              dealii::StandardExceptions::ExcNotImplemented());
+                }
             }
 
           // loop over all cells in partition
@@ -1424,7 +1430,8 @@ namespace hyperdeal
         }
     }
 
-    if (do_buffering == false)
+    if (do_buffering == false &&
+        src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "barrier");
         part->sync();

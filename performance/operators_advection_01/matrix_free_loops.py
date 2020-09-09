@@ -6,21 +6,48 @@ import shutil
 
 from argparse import ArgumentParser
 
-cmd = """#PBS -l nodes={0}:ppn=40
-#PBS -l walltime=20:00:00
-#PBS -N node{1}
-#PBS -q gold
-#PBS -j oe
+cmd = """#!/bin/bash
+# Job Name and Files (also --job-name)
+#SBATCH -J LIKWID
+#Output and error (also --output, --error):
+#SBATCH -o node{1}.out
+#SBATCH -e node{1}.e
+#Initial working directory (also --chdir):
+#SBATCH -D ./
+#Notification and type
+#SBATCH --mail-type=END
+#SBATCH --mail-user=munch@lnm.mw.tum.de
+# Wall clock limit:
+#SBATCH --time=0:30:00
+#SBATCH --no-requeue
+#Setup of execution environment
+#SBATCH --export=NONE
+#SBATCH --get-user-env
+#SBATCH --account=pr83te
+#
+## #SBATCH --switches=4@24:00:00
+#SBATCH --partition={4}
+#Number of nodes and MPI tasks per node:
+#SBATCH --nodes={0}
+#SBATCH --ntasks-per-node=48
+#SBATCH --cpus-per-task=1
 
-echo -n "this script is running on: "
-hostname -f
-date
+#module list
 
-#export LD_LIBRARY_PATH="\${{LD_LIBRARY_PATH}}"
+#source ~/.bashrc
+# lscpu
 
-# since openmpi is compiled with PBS(Torque) support there is no need to
-# specify the number of processes or a hostfile to mpirun.
-env
+module unload mkl mpi.intel intel
+module load intel/19.0 mkl/2019
+module load gcc/9
+module unload mpi.intel
+module load mpi.intel/2019_gcc
+module load cmake
+module load slurm_setup
+
+
+pwd
+
 
 cd {3}/all
 
@@ -69,7 +96,7 @@ def run_instance(dim_x, dim_v, degree, n, c, s, sm, buffering, ecl, overlapping)
     with open(os.path.dirname(os.path.abspath(__file__)) + "/matrix_free_loops.json", 'r') as f:
        datastore = json.load(f)
 
-    N = {"1":[8,5],"2":[10,8],"4":[16,10],"8":[20,16]}
+    N = {"1":[8,6],"2":[12,8],"4":[16,12],"8":[24,16], "16" : [32, 24], "32" : [48, 32], "64" : [64, 48], "128" : [96, 64], "256" : [128, 96], "512" : [192, 128]}
 
     NN = N[str(n)]
 
@@ -133,17 +160,26 @@ def main():
 
     shutil.copy("../operators_advection_01", "all")
 
-    for n in [1, 2, 4, 8]:
+    for n in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]:
+
+        label = ""
+        if n <= 16:
+            label = "test"
+        elif n <= 768:
+            label = "general"
+        elif n <= 3072:
+            label = "large"
 
         if not os.path.exists("all/node%s" % (str(n).zfill(4))):
             os.mkdir("all/node%s" % (str(n).zfill(4)))
 
         with open("all/node%s.cmd" % (str(n).zfill(4)), 'w') as f:
-            f.write(cmd.format(str(n), str(n).zfill(4), 40*n, os.getcwd()))
+            f.write(cmd.format(str(n), str(n).zfill(4), 48*n, os.getcwd(), label))
 
         print n
         for c in range(8,40):
-            if 8 * n*40 <= 2**c and (degree + 1)**(dim_x+dim_v) * 2**c <= 2e9 * n:
+
+            if 8 * n*48 <= 2**c and (degree + 1)**(dim_x+dim_v) * 2**c <= 1e10 * n:
                 s = compute_grid_pair(dim_x, dim_v, c)
                 print s
                 
