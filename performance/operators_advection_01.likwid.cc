@@ -93,6 +93,10 @@ struct Parameters
     prm.leave_subsection();
 
     prm.leave_subsection();
+      
+    prm.enter_subsection("AdvectionOperation");
+    advection_operation_parameters.add_parameters(prm);
+    prm.leave_subsection();
   }
 
   bool print_parameter = false;
@@ -106,6 +110,8 @@ struct Parameters
 
   std::vector<unsigned int> n_subdivisions_x;
   std::vector<unsigned int> n_subdivisions_v;
+    
+  hyperdeal::advection::AdvectionOperationParamters advection_operation_parameters;
 };
 
 template <int dim_x,
@@ -184,7 +190,7 @@ test(const MPI_Comm &                    comm_global,
   advection_operation.reinit(
     boundary_descriptor,
     velocity_field,
-    hyperdeal::advection::AdvectionOperationParamters());
+    param.advection_operation_parameters);
 
   VectorType vec_src, vec_dst;
   matrix_free.initialize_dof_vector(vec_src, 0, true, true);

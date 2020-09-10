@@ -23,6 +23,9 @@
     "NSubdivisionsX"     : {"X" : 1, "Y" : 1, "Z" : 1},
     "NSubdivisionsV"     : {"X" : 1, "Y" : 1, "Z" : 1}
   },
+  "AdvectionOperation": {
+    "SkewFactor": "0.5"
+  },
   "MatrixFree" : {
     "DoBuffering"        : false,
     "GhostFaces"         : true,

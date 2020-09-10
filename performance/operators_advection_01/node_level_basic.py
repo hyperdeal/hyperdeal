@@ -19,7 +19,7 @@ cmd = """#!/bin/bash
 #SBATCH --mail-type=END
 #SBATCH --mail-user=munch@lnm.mw.tum.de
 # Wall clock limit:
-#SBATCH --time=0:30:00
+#SBATCH --time=1:00:00
 #SBATCH --no-requeue
 #Setup of execution environment
 #SBATCH --export=NONE
@@ -27,7 +27,7 @@ cmd = """#!/bin/bash
 #SBATCH --account=pr83te
 #
 ## #SBATCH --switches=4@24:00:00
-#SBATCH --partition=test
+#SBATCH --partition=micro
 #Number of nodes and MPI tasks per node:
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=48
@@ -75,7 +75,7 @@ done
 
 """
 
-def run_instance(v, k, dim_x, dim_v, s, do_collocation, do_ecl):
+def run_instance(type, v, k, dim_x, dim_v, s, do_collocation, do_ecl, detail):
     with open(os.path.dirname(os.path.abspath(__file__)) + "/node_level_basic.json", 'r') as f:
        datastore = json.load(f)
 
@@ -85,6 +85,7 @@ def run_instance(v, k, dim_x, dim_v, s, do_collocation, do_ecl):
     datastore["General"]["Degree"]     = k
     datastore["General"]["PartitionX"] = 8
     datastore["General"]["PartitionV"] = 6
+    datastore["General"]["Details"]    = detail
     
     datastore["SpatialDiscretization"]["DoCollocation"] = do_collocation
     
@@ -139,27 +140,29 @@ def main():
     do_ecl         = True
     degrees        = [3, 5]
     vlens          = [0]
+    detail         = False
         
     # set up configuration
     if(args.all):
-        degrees     = range(2, 6)
-        folder_name = "node_level_basic_all"
+        folder_name    = "node_level_basic_all"
+        degrees        = range(2, 6)
     elif(args.cache):
-        folder_name = "node_level_basic_cache"
+        folder_name    = "node_level_basic_cache"
+        detail         = True
     elif(args.co):
-        folder_name = "node_level_basic_co"
+        folder_name    = "node_level_basic_co"
         do_collocation = True
     elif(args.fcl):
-        folder_name = "node_level_basic_fcl"
-        do_ecl = False
+        folder_name    = "node_level_basic_fcl"
+        do_ecl         = False
     elif(args.simd3):
-        folder_name = "node_level_basic_simd_k3"
-        degrees     = [3]
-        vlens       = [1, 2, 4, 8]
+        folder_name    = "node_level_basic_simd_k3"
+        degrees        = [3]
+        vlens          = [1, 2, 4, 8]
     elif(args.simd4):
-        folder_name = "node_level_basic_simd_k4"
-        degrees     = [4]
-        vlens       = [1, 2, 4, 8]
+        folder_name    = "node_level_basic_simd_k4"
+        degrees        = [4]
+        vlens          = [1, 2, 4, 8]
     else:
         sys.exit("No configuration has been selected!") 
     
@@ -207,7 +210,7 @@ def main():
                 s = [ i for i in range(1,100) if limit <= (degree+1)**dim * 2**i][0]
 
                 # create json files
-                run_instance(vlen, degree, dim_x, dim_v, util.compute_grid_pair(dim_x, dim_v, s), do_collocation, do_ecl)
+                run_instance(type, vlen, degree, dim_x, dim_v, util.compute_grid_pair(dim_x, dim_v, s), do_collocation, do_ecl, detail)
 
 
 if __name__== "__main__":
