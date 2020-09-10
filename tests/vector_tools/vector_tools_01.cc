@@ -46,8 +46,8 @@ test(const MPI_Comm &comm, const unsigned int n_refs)
   const unsigned int size_x = sizes.first;
   const unsigned int size_v = sizes.second;
 
-  if (dealii::Utilities::pow(2, n_refs) < size_x ||
-      dealii::Utilities::pow(2, n_refs) < size_v)
+  if (dealii::Utilities::pow<unsigned int>(2, n_refs) < size_x ||
+      dealii::Utilities::pow<unsigned int>(2, n_refs) < size_v)
     {
       deallog << "Early return, since some processes have no cells!"
               << std::endl;
