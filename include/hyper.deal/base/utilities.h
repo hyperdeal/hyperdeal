@@ -47,6 +47,13 @@ namespace hyperdeal
      */
     std::pair<unsigned int, unsigned int>
     decompose(const unsigned int &number);
+
+    /**
+     * Print hyper.deal and deal.II git version information.
+     */
+    template <typename StreamType>
+    void
+    print_version(const StreamType &stream);
   } // namespace Utilities
 } // namespace hyperdeal
 
