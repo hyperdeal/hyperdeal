@@ -58,6 +58,13 @@ ADD_CUSTOM_TARGET(release
 
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
+DEAL_II_QUERY_GIT_INFORMATION()
+
+MESSAGE("-- deal.II-version ")
+MESSAGE("-- deal.II-branch: " ${DEAL_II_GIT_BRANCH})
+MESSAGE("-- deal.II-hash:   " ${DEAL_II_GIT_REVISION})
+MESSAGE("")
+
 DEAL_II_SETUP_TARGET(hyperdeal)
 
 # load macros and scripts
