@@ -16,7 +16,6 @@
 #include <hyper.deal/base/config.h>
 
 #include <deal.II/base/mpi.h>
-#include <deal.II/base/revision.h>
 
 #include <hyper.deal/base/dynamic_convergence_table.h>
 #include <hyper.deal/base/mpi.h>
@@ -227,9 +226,14 @@ main(int argc, char **argv)
     {
       dealii::Utilities::MPI::MPI_InitFinalize mpi(argc, argv, 1);
 
+      dealii::ConditionalOStream pcout(
+        std::cout, dealii::Utilities::MPI::this_mpi_process(comm) == 0);
+
+      hyperdeal::Utilities::print_version(pcout);
+
       if (argc == 1)
         {
-          if (dealii::Utilities::MPI::this_mpi_process(comm) == 0)
+          if (pcout.is_active())
             printf("ERROR: No .json parameter files has been provided!\n");
 
           return 1;
@@ -237,15 +241,10 @@ main(int argc, char **argv)
       else if (argc == 3 && (std::string(argv[1]) == "--help" ||
                              std::string(argv[1]) == "--help-detail"))
         {
-          if (dealii::Utilities::MPI::this_mpi_process(comm) == 0)
+          if (pcout.is_active())
             print_parameters(std::string(argv[1]) == "--help-detail", argv[2]);
           return 0;
         }
-
-      if (dealii::Utilities::MPI::this_mpi_process(comm) == 0)
-        printf("deal.II git version %s on branch %s\n\n",
-               DEAL_II_GIT_SHORTREV,
-               DEAL_II_GIT_BRANCH);
 
       dealii::deallog.depth_console(0);
 

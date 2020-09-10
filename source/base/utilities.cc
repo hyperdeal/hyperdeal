@@ -13,8 +13,11 @@
 //
 // ---------------------------------------------------------------------
 
+#include <deal.II/base/conditional_ostream.h>
 #include <deal.II/base/mpi.templates.h>
+#include <deal.II/base/revision.h>
 
+#include <hyper.deal/base/revision.h>
 #include <hyper.deal/base/utilities.h>
 #include <immintrin.h>
 
@@ -62,6 +65,27 @@ namespace hyperdeal
 
       return possible_solutions.front();
     }
+
+
+
+    template <typename StreamType>
+    void
+    print_version(const StreamType &stream)
+    {
+      stream << "-- hyper.deal-version " << std::endl;
+      stream << "-- hyper.deal-branch: " << HYPER_DEAL_GIT_BRANCH << std::endl;
+      stream << "-- hyper.deal-hash:   " << HYPER_DEAL_GIT_REVISION
+             << std::endl;
+      stream << "--                    " << std::endl;
+      stream << "-- deal.II-version    " << std::endl;
+      stream << "-- deal.II-branch:    " << DEAL_II_GIT_BRANCH << std::endl;
+      stream << "-- deal.II-hash:      " << DEAL_II_GIT_REVISION << std::endl;
+      stream << "--                    " << std::endl;
+    }
+
+    // template instantiations
+    template void
+    print_version(const dealii::ConditionalOStream &stream);
 
   } // namespace Utilities
 } // namespace hyperdeal

@@ -39,7 +39,7 @@ DEAL_II_INITIALIZE_CACHED_VARIABLES()
 SET( TARGET_SRC hyperdeal.cc )
 
 # Set the include directory and the name of the project
-INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 PROJECT(hyperdeal)
 
@@ -58,12 +58,27 @@ ADD_CUSTOM_TARGET(release
 
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
-DEAL_II_QUERY_GIT_INFORMATION()
+DEAL_II_QUERY_GIT_INFORMATION(HYPER_DEAL)
+MESSAGE("--")
 
-MESSAGE("-- deal.II-version ")
-MESSAGE("-- deal.II-branch: " ${DEAL_II_GIT_BRANCH})
-MESSAGE("-- deal.II-hash:   " ${DEAL_II_GIT_REVISION})
-MESSAGE("")
+MESSAGE("-- hyper.deal-version ")
+MESSAGE("-- hyper.deal-branch: " ${HYPER_DEAL_GIT_BRANCH})
+MESSAGE("-- hyper.deal-hash:   " ${HYPER_DEAL_GIT_REVISION})
+MESSAGE("--")
+
+MESSAGE("-- deal.II-version    ")
+MESSAGE("-- deal.II-branch:    " ${DEAL_II_GIT_BRANCH})
+MESSAGE("-- deal.II-hash:      " ${DEAL_II_GIT_REVISION})
+MESSAGE("--")
+
+cmake_policy(SET CMP0053 OLD)
+SET(HYPER_DEAL_GIT_BRANCH "@HYPER_DEAL_GIT_BRANCH@")
+SET(HYPER_DEAL_GIT_REVISION "@HYPER_DEAL_GIT_REVISION@")
+
+CONFIGURE_FILE(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/hyper.deal/base/revision.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/include/hyper.deal/base/revision.h
+  )
 
 DEAL_II_SETUP_TARGET(hyperdeal)
 
