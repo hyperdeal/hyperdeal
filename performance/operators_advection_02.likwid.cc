@@ -18,11 +18,11 @@
 
 #define NUMBER_TYPE double
 #define MIN_DEGREE 3
-#define MAX_DEGREE 3
+#define MAX_DEGREE 5
 #define MIN_DIM 2
 #define MAX_DIM 6
 #define MIN_SIMD_LENGTH 0
-#define MAX_SIMD_LENGTH 8
+#define MAX_SIMD_LENGTH 0
 
 #include <hyper.deal/grid/grid_generator.h>
 #include <hyper.deal/operators/advection/cfl.h>
@@ -142,6 +142,17 @@ namespace hyperdeal
         phi_face_m.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, true, 0, 0, 0, 0));
         phi_face_p.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, false, 0, 0, 0, 0));
         // clang-format on
+        
+        const unsigned int n_cells   = data.get_matrix_free_x().n_cell_batches() * data.get_matrix_free_v().n_cell_batches();
+        const unsigned int n_q_cells = n_cells * dealii::Utilities::pow(n_points, dim);
+        const unsigned int n_q_faces = 2*n_cells * dim * dealii::Utilities::pow(n_points, dim - 1);
+
+        JxW_values.resize(n_q_cells, 0);
+        JxW_inv_values.resize(n_q_cells, 0);
+        inverse_jacobian_values.resize(n_q_cells, Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>());
+
+        JxW_face_values.resize(n_q_faces, 0);
+        normal_values.resize(n_q_faces, Tensor<1,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>() );
       }
 
       /**
@@ -258,7 +269,13 @@ namespace hyperdeal
                      .inverse_shape_values_eo);
 
         dealii::Tensor<1, dim, VectorizedArrayType> vel; // constant velocity
-
+        
+        {
+            const unsigned int offset = cell.macro * dealii::Utilities::pow(n_points, dim_x + dim_v);
+            JxW              = &JxW_values[offset];
+            JxW_inv          = &JxW_inv_values[offset];
+            inverse_jacobian = &inverse_jacobian_values[offset];
+        }
         // clang-format off
         // 1) advection: cell contribution
         {
@@ -350,6 +367,12 @@ namespace hyperdeal
             // load negative side from buffer
             phi_m.reinit(cell, face);
             
+            {
+              const unsigned int offset_face = (cell.macro  * 2 * dim + face) * dealii::Utilities::pow(n_points, dim_x + dim_v - 1);
+              JxW_face = &JxW_face_values[offset_face];
+              normal   = &normal_values[offset_face];
+            }
+            
             const auto bid = data.get_faces_by_cells_boundary_id(cell, face);
             
             // load positive side from global structure
@@ -395,7 +418,7 @@ namespace hyperdeal
                           const VectorizedArrayType normal_times_speed          = vel * get_normal_vector_face(q);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
+                          submit_value_face<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
                 else
@@ -408,7 +431,7 @@ namespace hyperdeal
                           const VectorizedArrayType normal_times_speed          = vel * get_normal_vector_face(q);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
+                          submit_value_face<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
               }
@@ -472,7 +495,7 @@ namespace hyperdeal
         (void) qx;
         (void) qv;
           
-        const auto jxw = 0.0; // TODO
+        const auto jxw = JxW_inv[q];
 
         if (do_add)
           data_ptr_out[q] += values_in * jxw;
@@ -489,9 +512,7 @@ namespace hyperdeal
         (void) qx;
         (void) qv;
           
-        const auto jxw = 0.0; // TODO
-
-         data_ptr_out[q] = data_ptr_out[q] * jxw;
+        data_ptr_out[q] *= JxW_inv[q];
       }
       
       
@@ -502,11 +523,13 @@ namespace hyperdeal
                      const unsigned int qx,
                      const unsigned int qv) const
     {
-      (void)qv;
+        (void) qx;
+        (void) qv;
+          
+        const auto jxw        = JxW[q];
+        const auto & jacobian = inverse_jacobian[qx];
 
       dealii::Tensor<1, dim, VectorizedArrayType> result;
-
-      const Tensor<2, dim, VectorizedArrayType> jacobian; // TODO
 
       for (auto d = 0u; d < dim; d++)
         {
@@ -528,8 +551,12 @@ namespace hyperdeal
                           const unsigned int qx,
                           const unsigned int qv) const
       {
-        const auto jxw = 0.0;
-        const Tensor<2, dim, VectorizedArrayType> jacobian; // TODO
+        (void) qx;
+        (void) qv;
+          
+        const auto jxw        = JxW[q];
+        const auto & jacobian = inverse_jacobian[qx];
+
   
         for (auto d = 0u; d < dim; d++)
           {
@@ -541,14 +568,41 @@ namespace hyperdeal
       }
       
       
+    template <TensorID::SpaceType stype>
+    inline DEAL_II_ALWAYS_INLINE //
+      void
+      submit_value_face(VectorizedArrayType *__restrict data_ptr,
+                   const VectorizedArrayType &value,
+                   const unsigned int         q,
+                   const unsigned int         qx,
+                   const unsigned int         qv) const
+    {
+        (void) qx;
+        (void) qv;
+        
+      data_ptr[q] = -value * JxW_face[q];
+    }
+      
+      
     inline DEAL_II_ALWAYS_INLINE //
       dealii::Tensor<1, dim, VectorizedArrayType>
       get_normal_vector_face(const unsigned int q) const
     {
-       // TODO
-        (void) q;
-      return dealii::Tensor<1, dim, VectorizedArrayType>();
+      return normal[q];
     }
+    
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_values;
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_inv_values;
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_face_values;
+      AlignedVector<Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>> inverse_jacobian_values;
+      AlignedVector<Tensor<1,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>> normal_values;
+    
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW;
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW_inv;
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW_face;
+      Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>* inverse_jacobian;
+      Tensor<1,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>* normal;
+
 
       const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &data;
       DynamicConvergenceTable &                                    table;
@@ -1120,6 +1174,7 @@ struct Parameters
     prm.enter_subsection("General");
     prm.add_parameter("Verbose", print_parameter);
     prm.add_parameter("Details", details);
+    prm.add_parameter("Mapping", mapping);
     prm.leave_subsection();
 
     prm.enter_subsection("Performance");
@@ -1170,6 +1225,8 @@ struct Parameters
   std::vector<unsigned int> n_subdivisions_v;
     
   hyperdeal::advection::AdvectionOperationParamters advection_operation_parameters;
+  
+  std::string mapping;
 };
 
 template <int dim_x,
@@ -1241,6 +1298,7 @@ test(const MPI_Comm &                    comm_global,
 
   hyperdeal::Timers timers(false);
 
+  if(param.mapping == "full")
   {
      hyperdeal::advection::AdvectionOperation1<dim_x,
                                               dim_v,
@@ -1257,6 +1315,7 @@ test(const MPI_Comm &                    comm_global,
        velocity_field,
        param.advection_operation_parameters);
      
+    timers.enter("apply");
     {
       hyperdeal::ScopedLikwidTimerWrapper likwid(
         std::string("apply") + "_" +
@@ -1276,6 +1335,7 @@ test(const MPI_Comm &                    comm_global,
     timers.leave();
   }
 
+  if(param.mapping == "cartesian")
   {
      hyperdeal::advection::AdvectionOperation2<dim_x,
                                               dim_v,
@@ -1292,6 +1352,7 @@ test(const MPI_Comm &                    comm_global,
        velocity_field,
        param.advection_operation_parameters);
      
+    timers.enter("apply");
     {
       hyperdeal::ScopedLikwidTimerWrapper likwid(
         std::string("apply") + "_" +
@@ -1311,6 +1372,8 @@ test(const MPI_Comm &                    comm_global,
     timers.leave();
   }
 
+  std::cout << "C" << std::endl;
+  
   table.set("info->size [DoFs]", matrixfree_wrapper.n_dofs());
   table.set(
     "info->ghost_size [DoFs]",
@@ -1332,13 +1395,13 @@ test(const MPI_Comm &                    comm_global,
               matrixfree_wrapper.get_comm_column()));
   table.set("info->procs_sm", dealii::Utilities::MPI::n_mpi_processes(comm_sm));
 
-  table.set("apply:total1 [s]",
-            timers["apply1:withtimers:total"].get_accumulated_time() / 1e6 /
+  table.set("apply:total [s]",
+            timers["apply:withtimers:total"].get_accumulated_time() / 1e6 /
               param.n_iterations);
-
-  table.set("apply2:total [s]",
-            timers["apply2:withtimers:total"].get_accumulated_time() / 1e6 /
-              param.n_iterations);
+  
+  table.set("throughput - all1 [GDoFs/s]",
+            matrixfree_wrapper.n_dofs() * param.n_iterations /
+              timers["apply:withtimers:total"].get_accumulated_time() / 1000);
 
   std::vector<std::pair<std::string, std::string>> timer_labels;
 
