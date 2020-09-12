@@ -684,9 +684,10 @@ namespace hyperdeal
         std::shared_ptr<VelocityField>                   velocity_field,
         const AdvectionOperationParamters                additional_data)
       {
+        (void) velocity_field;
+          
         this->factor_skew         = additional_data.factor_skew;
         this->boundary_descriptor = boundary_descriptor;
-        this->velocity_field      = velocity_field;
 
         AssertDimension(
           (data.get_matrix_free_x().get_shape_info(0, 0).data[0].element_type ==
@@ -712,6 +713,18 @@ namespace hyperdeal
         phi_face_m.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, true, 0, 0, 0, 0));
         phi_face_p.reset(new FEFaceEvaluation<dim_x, dim_v, degree, n_points, Number, VNumber>(data, false, 0, 0, 0, 0));
         // clang-format on
+        
+        
+        const unsigned int n_cells   = 1;
+        const unsigned int n_q_cells = n_cells * dealii::Utilities::pow(n_points, dim);
+        const unsigned int n_q_faces = 2*n_cells * dim * dealii::Utilities::pow(n_points, dim - 1);
+
+        JxW_values.resize(n_q_cells, 0);
+        JxW_inv_values.resize(n_q_cells, 0);
+        inverse_jacobian_values.resize(n_q_cells, Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>());
+
+        JxW_face_values.resize(n_q_faces, 0);
+        
       }
 
       /**
@@ -826,13 +839,22 @@ namespace hyperdeal
                      .get_shape_info()
                      .data[0]
                      .inverse_shape_values_eo);
+        
+        
+        dealii::Tensor<1, dim, VectorizedArrayType> vel; // constant velocity
+        
+        
+        {
+            const unsigned int offset = 0;
+            JxW              = &JxW_values[offset];
+            JxW_inv          = &JxW_inv_values[offset];
+            inverse_jacobian = &inverse_jacobian_values[offset];
+        }
 
         // clang-format off
 
         // 1) advection: cell contribution
         {
-          this->velocity_field->reinit(cell);
-
           // load from global structure
           phi.reinit(cell);
           phi.read_dof_values(src);
@@ -850,16 +872,7 @@ namespace hyperdeal
                 } 
               else
                 {
-                  dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
-                                              dealii::internal::EvaluatorQuantity::value,
-                                              dim,
-                                              degree + 1,
-                                              n_points,
-                                              VNumber,
-                                              VNumber>::
-                    do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
-                              data_ptr, 
-                              data_ptr);   
+                  Assert(false, dealii::StandardExceptions::ExcNotImplemented ());  
                 }
             }
 
@@ -870,84 +883,45 @@ namespace hyperdeal
           for (auto i = 0u; i < dealii::Utilities::pow<unsigned int>(n_points, dim); i++)
             buffer[i] = data_ptr[i];
 
-          // x-space
+          for(unsigned int d = 0; d < dim; ++d)
           {
             dealii::AlignedVector<VNumber> scratch_data_array;
-            scratch_data_array.resize_fast(dealii::Utilities::pow(n_points, dim) * dim_x);
+            scratch_data_array.resize_fast(dealii::Utilities::pow(n_points, dim) );
             VNumber *tempp = scratch_data_array.begin();
             
             if(factor_skew != 0.0)
               {
-                if (dim_x >= 1) eval_.template gradients<0, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 0);
-                if (dim_x >= 2) eval_.template gradients<1, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 1);
-                if (dim_x >= 3) eval_.template gradients<2, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 2);
+                if (d == 0 && dim_x >= 1) eval_.template gradients<0, true, false>(buffer, tempp);
+                if (d == 1 && dim_x >= 2) eval_.template gradients<1, true, false>(buffer, tempp);
+                if (d == 2 && dim_x >= 3) eval_.template gradients<2, true, false>(buffer, tempp);
+                if (d == 3 && dim_x >= 4) eval_.template gradients<3, true, false>(buffer, tempp);
+                if (d == 4 && dim_x >= 5) eval_.template gradients<4, true, false>(buffer, tempp);
+                if (d == 5 && dim_x >= 6) eval_.template gradients<5, true, false>(buffer, tempp);
               }
             
             for (auto qv = 0u, q = 0u; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
               for (auto qx = 0u; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
                 {
-                  VNumber    grad_in[dim_x];
-                  const auto vel = velocity_field->evaluate_x(q, qx, qv);
-                  
                   if(factor_skew != 0.0)
-                    phi.template submit_value<false>(data_ptr, - factor_skew * (phi.get_gradient_x(tempp, q, qx, qv) * vel), q, qx, qv);
+                    submit_value_cell<false>(data_ptr, - factor_skew * (get_gradient_cell(tempp, q, qx, qv, d) * vel[d]), q, qx, qv);
                   
                   if (factor_skew != 1.0)
-                    {
-                      for (int d = 0; d < dim_x; d++)
-                        grad_in[d] = (1.0-factor_skew) * buffer[q] * vel[d];
-                      phi.submit_gradient_x(tempp, grad_in, q, qx, qv);
-                    }
+                    submit_gradient_cell(tempp, (1.0-factor_skew) * buffer[q] * vel[d], q, qx, qv, d);
                 }
             
             if(factor_skew != 1.0)
               {
-                if (dim_x >= 1 && (factor_skew != 0.0))
-                  eval_.template gradients<0, false, true >(tempp + dealii::Utilities::pow(n_points, dim) * 0, data_ptr);
-                else if (dim_x >= 1) 
-                  eval_.template gradients<0, false, false>(tempp + dealii::Utilities::pow(n_points, dim) * 0, data_ptr);
+                if (d == 0 && dim_x >= 1 && (factor_skew != 0.0))
+                  eval_.template gradients<0, false, true >(tempp, data_ptr);
+                else if (d == 0 && dim_x >= 1) 
+                  eval_.template gradients<0, false, false>(tempp, data_ptr);
                   
-                if (dim_x >= 2) eval_.template gradients<1, false, true >(tempp + dealii::Utilities::pow(n_points, dim) * 1, data_ptr);
-                if (dim_x >= 3) eval_.template gradients<2, false, true >(tempp + dealii::Utilities::pow(n_points, dim) * 2, data_ptr);
+                if (d == 1 && dim_x >= 2) eval_.template gradients<1, false, true >(tempp, data_ptr);
+                if (d == 2 && dim_x >= 3) eval_.template gradients<2, false, true >(tempp, data_ptr);
+                if (d == 3 && dim_x >= 4) eval_.template gradients<3, false, true >(tempp, data_ptr);
+                if (d == 4 && dim_x >= 5) eval_.template gradients<4, false, true >(tempp, data_ptr);
+                if (d == 5 && dim_x >= 6) eval_.template gradients<5, false, true >(tempp, data_ptr);
             }
-          }
-            
-          // v-space
-          {
-            dealii::AlignedVector<VNumber> scratch_data_array;
-            scratch_data_array.resize_fast(dealii::Utilities::pow(n_points, dim) * dim_v);
-            VNumber *tempp = scratch_data_array.begin();
-            
-            if(factor_skew != 0.0)
-              {
-                if (dim_v >= 1) eval_.template gradients<0 + dim_x, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 0);
-                if (dim_v >= 2) eval_.template gradients<1 + dim_x, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 1);
-                if (dim_v >= 3) eval_.template gradients<2 + dim_x, true, false>(buffer, tempp + dealii::Utilities::pow(n_points, dim) * 2);
-              }
-            
-            for (auto qv = 0u, q = 0u; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
-              for (auto qx = 0u; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
-                {
-                  VNumber    grad_in[dim_v];
-                  const auto vel = velocity_field->evaluate_v(q, qx, qv);
-                  
-                  if(factor_skew != 0.0)
-                    phi.template submit_value<true>(data_ptr, - factor_skew * (phi.get_gradient_v(tempp, q, qx, qv) * vel), q, qx, qv);
-                  
-                  if (factor_skew != 1.0)
-                    {
-                      for (int d = 0; d < dim_v; d++)
-                        grad_in[d] = (1.0-factor_skew) * buffer[q] * vel[d];
-                      phi.submit_gradient_v(tempp, grad_in, q, qx, qv);
-                    }
-                }
-
-            if(factor_skew != 1.0)
-              {
-                if (dim_v >= 1) eval_.template gradients<0 + dim_x, false, true>(tempp + dealii::Utilities::pow(n_points, dim) * 0, data_ptr);
-                if (dim_v >= 2) eval_.template gradients<1 + dim_x, false, true>(tempp + dealii::Utilities::pow(n_points, dim) * 1, data_ptr);
-                if (dim_v >= 3) eval_.template gradients<2 + dim_x, false, true>(tempp + dealii::Utilities::pow(n_points, dim) * 2, data_ptr);
-              }
           }
         }
 
@@ -955,10 +929,13 @@ namespace hyperdeal
         if(eval_level != AdvectionOperationEvaluationLevel::cell)
         for (auto face = 0u; face < dim * 2; face++)
           {
-            this->velocity_field->reinit_face(cell, face);
-
             // load negative side from buffer
             phi_m.reinit(cell, face);
+            
+            {
+              const unsigned int offset_face = (face) * dealii::Utilities::pow(n_points, dim_x + dim_v - 1);
+              JxW_face = &JxW_face_values[offset_face];
+            }
             
             const auto bid = data.get_faces_by_cells_boundary_id(cell, face);
             
@@ -985,21 +962,12 @@ namespace hyperdeal
                   }
                   else
                   {
-                    dealii::internal::FEEvaluationImplBasisChange<tensorproduct, 
-                                                dealii::internal::EvaluatorQuantity::value, 
-                                                dim - 1,
-                                                degree + 1,
-                                                n_points,
-                                                VNumber,
-                                                VNumber>::
-                      do_forward(1 ,data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
-                                 data_ptr2, 
-                                 data_ptr2);   
+                    Assert(false, dealii::StandardExceptions::ExcNotImplemented ());
                   }
               }
             else
               {
-                phi_m.read_dof_values_from_buffer(this->phi_cell_inv->get_data_ptr());
+                Assert(false, dealii::StandardExceptions::ExcNotImplemented ());
               }
 
             if(bid == dealii::numbers::internal_face_boundary_id)
@@ -1011,10 +979,10 @@ namespace hyperdeal
                         {
                           const VectorizedArrayType u_minus                     = data_ptr1[q];
                           const VectorizedArrayType u_plus                      = data_ptr2[q];
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType normal_times_speed          = vel[face/2] * ((face%2==0) ? -1.0 : 1.0 );
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
+                          submit_value_face<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
                 else
@@ -1024,57 +992,27 @@ namespace hyperdeal
                         {
                           const VectorizedArrayType u_minus                     = data_ptr1[q];
                           const VectorizedArrayType u_plus                      = data_ptr2[q];
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType normal_times_speed          = vel[face/2] * ((face%2==0) ? -1.0 : 1.0 );
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
+                          submit_value_face<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
               }
             else
               {
-                AssertDimension(factor_skew, 0.0);
-                
-                const auto boundary_pair = boundary_descriptor->get_boundary(bid);
-                    
-                if (face < dim_x * 2)
-                  {
-                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
-                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x - 1); ++qx, ++q)
-                        {
-                          const VectorizedArrayType u_minus = data_ptr1[q];
-                          const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
-                              (-u_minus) : 
-                              (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
-                          
-                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
-                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-        
-                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
-                        }
-                  }
-                else
-                  {
-                    for (unsigned int qv = 0, q = 0; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v - 1); ++qv)
-                      for (unsigned int qx = 0; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
-                        {
-                          const VectorizedArrayType u_minus = data_ptr1[q];
-                          const VectorizedArrayType u_plus = boundary_pair.first == BoundaryType::DirichletHomogenous ? 
-                              (-u_minus) : 
-                              (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
-                          
-                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
-                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-        
-                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
-                        }
-                  }
+                Assert(false, dealii::StandardExceptions::ExcNotImplemented ());
               }
 
             if(do_collocation == false)
+            {
               dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, false, face);
+            }
             else
-              phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
+            {
+                Assert(false, dealii::StandardExceptions::ExcNotImplemented ());
+            }
+            
           }
 
         // 3) inverse mass matrix
@@ -1083,7 +1021,7 @@ namespace hyperdeal
 
           for (auto qv = 0u, q = 0u; qv < dealii::Utilities::pow<unsigned int>(n_points, dim_v); ++qv)
             for (auto qx = 0u; qx < dealii::Utilities::pow<unsigned int>(n_points, dim_x); ++qx, ++q)
-              phi_inv.submit_inv(data_ptr, q, qx, qv);
+              submit_inv(data_ptr, q, qx, qv);
 
           if(do_collocation == false)
             {
@@ -1098,17 +1036,7 @@ namespace hyperdeal
                 }
               else
                 {
-                  dealii::internal::FEEvaluationImplBasisChange<tensorproduct,
-                                              dealii::internal::EvaluatorQuantity::hessian,
-                                              dim,
-                                              degree + 1,
-                                              n_points,
-                                              VNumber,
-                                              VNumber>::
-                    do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().inverse_shape_values_eo,  
-                                false,
-                                data_ptr, 
-                                data_ptr);   
+                  Assert(false, dealii::StandardExceptions::ExcNotImplemented ()); 
                 }
             }
 
@@ -1118,6 +1046,94 @@ namespace hyperdeal
 
         // clang-format on
       }
+      
+      template<bool do_add>
+      void
+      submit_value_cell(VectorizedArrayType *__restrict data_ptr_out,
+                   const VectorizedArrayType __restrict values_in,
+                   const unsigned int q,
+                   const unsigned int qx,
+                   const unsigned int qv)
+      {
+        (void) qx;
+        (void) qv;
+          
+        const auto jxw = JxW_inv[q];
+
+        if (do_add)
+          data_ptr_out[q] += values_in * jxw;
+        else
+          data_ptr_out[q] = values_in * jxw;
+      }
+      
+      void
+      submit_inv(VectorizedArrayType *__restrict data_ptr_out,
+                 const unsigned int q,
+                 const unsigned int qx,
+                 const unsigned int qv)
+      {
+        (void) qx;
+        (void) qv;
+          
+        data_ptr_out[q] *= JxW_inv[q];
+      }
+      
+      
+    inline DEAL_II_ALWAYS_INLINE //
+      VectorizedArrayType
+      get_gradient_cell(const VectorizedArrayType *__restrict grad_in,
+                     const unsigned int q,
+                     const unsigned int qx,
+                     const unsigned int qv, const unsigned int d)
+    {
+      (void) qx;
+      (void) qv;
+          
+      return inverse_jacobian[0][d][d] * grad_in[q];
+    }
+    
+      
+      inline DEAL_II_ALWAYS_INLINE //
+        void
+        submit_gradient_cell(VectorizedArrayType *__restrict data_ptr_out,
+                          const VectorizedArrayType &__restrict grad_in,
+                          const unsigned int q,
+                          const unsigned int qx,
+                          const unsigned int qv, const unsigned int d)
+      {
+        (void) qx;
+        (void) qv;
+          
+        data_ptr_out[q] = grad_in * JxW[q] * inverse_jacobian[0][d][d];
+        
+      }
+      
+      
+    template <TensorID::SpaceType stype>
+    inline DEAL_II_ALWAYS_INLINE //
+      void
+      submit_value_face(VectorizedArrayType *__restrict data_ptr,
+                   const VectorizedArrayType &value,
+                   const unsigned int         q,
+                   const unsigned int         qx,
+                   const unsigned int         qv)
+    {
+        (void) qx;
+        (void) qv;
+        
+      data_ptr[q] = -value * JxW_face[q];
+    }
+    
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_values;
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_inv_values;
+      AlignedVector<typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX> JxW_face_values;
+      AlignedVector<Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>> inverse_jacobian_values;
+    
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW;
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW_inv;
+      typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX* JxW_face;
+      Tensor<2,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>* inverse_jacobian;
+      Tensor<1,dim,typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::VectorizedArrayTypeX>* normal;
 
       const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &data;
       DynamicConvergenceTable &                                    table;
@@ -1131,7 +1147,6 @@ namespace hyperdeal
       // clang-format on
 
       std::shared_ptr<BoundaryDescriptor<dim, Number>> boundary_descriptor;
-      std::shared_ptr<VelocityField>                   velocity_field;
 
       bool do_collocation;
 
@@ -1372,8 +1387,6 @@ test(const MPI_Comm &                    comm_global,
     timers.leave();
   }
 
-  std::cout << "C" << std::endl;
-  
   table.set("info->size [DoFs]", matrixfree_wrapper.n_dofs());
   table.set(
     "info->ghost_size [DoFs]",

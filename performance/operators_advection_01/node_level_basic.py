@@ -50,6 +50,9 @@ module load likwid/4.3.3-perf
 
 pwd
 
+rm caches.out
+rm flops.out
+
 for K in 2 3 4 5
 do
 

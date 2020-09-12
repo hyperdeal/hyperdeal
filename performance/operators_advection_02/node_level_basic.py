@@ -19,7 +19,7 @@ cmd = """#!/bin/bash
 #SBATCH --mail-type=END
 #SBATCH --mail-user=munch@lnm.mw.tum.de
 # Wall clock limit:
-#SBATCH --time=1:00:00
+#SBATCH --time=0:30:00
 #SBATCH --no-requeue
 #Setup of execution environment
 #SBATCH --export=NONE
@@ -27,7 +27,7 @@ cmd = """#!/bin/bash
 #SBATCH --account=pr83te
 #
 ## #SBATCH --switches=4@24:00:00
-#SBATCH --partition=micro
+#SBATCH --partition=test
 #Number of nodes and MPI tasks per node:
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=48
@@ -49,6 +49,9 @@ module load slurm_setup
 module load likwid/4.3.3-perf
 
 pwd
+
+rm caches.out
+rm flops.out
 
 for K in 2 3 4 5
 do
@@ -184,7 +187,13 @@ def main():
             for dim in range(2,7):
 
                 # set size limit of the problem
-                limit = 1.0e8
+                if version == "full" :
+                    if degree == 3:
+                        limit = 1.0e8
+                    else:
+                        limit = 0.5e8
+                else:
+                    limit = 1.0e9
 
                 # decompose dimension
                 dim_x = int(dim / 2 + dim % 2)
