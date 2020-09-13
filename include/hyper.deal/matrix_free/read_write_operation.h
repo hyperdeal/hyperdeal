@@ -143,6 +143,8 @@ namespace hyperdeal
 
         // step 1: get pointer to the first dof of the cell in the sm-domain
         std::array<Number *, v_len> global_ptr;
+        std::fill(global_ptr.begin(), global_ptr.end(), nullptr);
+
         for (unsigned int v = 0;
              v < n_vectorization_lanes_filled[2][cell_batch_number] &&
              v < v_len;
@@ -196,6 +198,8 @@ namespace hyperdeal
           dealii::Utilities::pow<unsigned int>(degree + 1, dim - 1);
 
         std::array<Number *, v_len> global_ptr;
+        std::fill(global_ptr.begin(), global_ptr.end(), nullptr);
+
         for (unsigned int v = 0;
              v < n_vectorization_lanes_filled[cell_side][cell_batch_number] &&
              v < v_len;
