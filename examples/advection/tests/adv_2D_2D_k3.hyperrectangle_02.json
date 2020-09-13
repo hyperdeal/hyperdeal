@@ -43,8 +43,8 @@
     "Case": {
         "NRefinementsX": "0",
         "NRefinementsV": "0",
-        "PeriodicX": "false",
-        "PeriodicV": "false",
+        "PeriodicX": "true",
+        "PeriodicV": "true",
         "NSubdivisionsX": {
             "X": "4",
             "Y": "4"
