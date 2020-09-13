@@ -63,6 +63,7 @@ def run_instance(dim_x, dim_v, degree, n, c, s):
     datastore["General"]["DimV"]       = dim_v
     datastore["General"]["DegreeX"]    = degree
     datastore["General"]["DegreeV"]    = degree
+    datastore["General"]["PartitionX"] = NN[0]
     datastore["General"]["PartitionV"] = NN[1]
 
     datastore["Case"]["NRefinementsX"]       = s[0][0]

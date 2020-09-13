@@ -51,10 +51,10 @@ mpirun -np {3} ./advection \"${{array[@]}}\"
 """
 
 def run_instance(dim_x, dim_v, degree, n, c, s):
-    with open(os.path.dirname(os.path.abspath(__file__)) + "/all.json", 'r') as f:
+    with open(os.path.dirname(os.path.abspath(__file__)) + "/weak.json", 'r') as f:
        datastore = json.load(f)
 
-    N = {"1":[8,6],"2":[12,8],"4":[16,12],"8":[24,16],"16":[32,24],"32":[48,32],"64":[64,48],"128":[96,64],"256":[128,96],"512":[192,128], "1024":[256,192], "2048":[384, 256], "3072" : [384, 384]}
+    N = {"1":[8,6],"2":[16,6],"4":[32,6],"8":[64,6],"16":[64,12],"32":[64,24],"64":[64,48],"128":[128,48],"256":[256,48],"512":[512,48], "1024":[512,96], "2048":[512, 192]}
 
     NN = N[str(n)]
 
@@ -63,6 +63,7 @@ def run_instance(dim_x, dim_v, degree, n, c, s):
     datastore["General"]["DimV"]       = dim_v
     datastore["General"]["DegreeX"]    = degree
     datastore["General"]["DegreeV"]    = degree
+    datastore["General"]["PartitionX"] = NN[0]
     datastore["General"]["PartitionV"] = NN[1]
 
     datastore["Case"]["NRefinementsX"]       = s[0][0]
@@ -93,8 +94,9 @@ def main():
     dim_x  = 3;
     dim_v  = 3;
     degree = 3;
+    shift  = 18; # start with 8^6 cells, e.g., 32^6 dofs
 
-    folder_name = "all-%s-%s-%s" %(str(dim_x), str(dim_v), str(degree) )
+    folder_name = "weak-%s-%s-%s" %(str(dim_x), str(dim_v), str(degree) )
 
     if not os.path.exists(folder_name):
         os.mkdir(folder_name)
@@ -102,7 +104,7 @@ def main():
 
     shutil.copy("../../advection", ".")
 
-    for n in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3072]:
+    for c, n in enumerate([1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]):
 
         if not os.path.exists("node%s" % (str(n).zfill(4))):
             os.mkdir("node%s" % (str(n).zfill(4)))
@@ -118,13 +120,11 @@ def main():
         with open("node%s.cmd" % (str(n).zfill(4)), 'w') as f:
             f.write(cmd.format(str(n), str(n).zfill(4), label, 48*n))
         
-
         print n
-        for c in range(8,40):
-            if 4 * n*48 <= 2**c:
-                s = compute_grid_pair(dim_x, dim_v, c)
-                print s
-                run_instance(dim_x, dim_v, degree, n, c, s)
+
+        s = compute_grid_pair(dim_x, dim_v, c + shift)
+        print s
+        run_instance(dim_x, dim_v, degree, n, c + shift, s)
 
 
 if __name__== "__main__":
