@@ -25,6 +25,7 @@
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/tools.h>
 
+#include <hyper.deal/base/config.h>
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/base/time_loop.h>
@@ -68,8 +69,8 @@ namespace hyperdeal
 
       using VectorType = dealii::LinearAlgebra::SharedMPI::Vector<Number>;
 
-      Application(const MPI_Comm &         comm_global,
-                  const MPI_Comm &         comm_sm,
+      Application(const MPI_Comm           comm_global,
+                  const MPI_Comm           comm_sm,
                   const unsigned int       size_x,
                   const unsigned int       size_v,
                   DynamicConvergenceTable &table)
@@ -297,6 +298,7 @@ namespace hyperdeal
 
         // step 6: set initial condition in Gauss-Lobatto points (quad_no_x=2,
         // quad_no_v=2)
+        if(true)
         {
           pcout << "  - advection::initial_condition" << std::endl;
           initializer->set_analytical_solution(analytical_solution);
@@ -535,8 +537,8 @@ namespace hyperdeal
 
     private:
       // communicators
-      const MPI_Comm &comm_global;
-      const MPI_Comm &comm_sm;
+      const MPI_Comm comm_global;
+      const MPI_Comm comm_sm;
       MPI_Comm comm_row;    // should be const. but has to be freed at the end
       MPI_Comm comm_column; // the same here
 

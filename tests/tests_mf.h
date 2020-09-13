@@ -263,6 +263,18 @@ namespace hyperdeal
       return dof_handler_x->n_dofs() * dof_handler_v->n_dofs();
     }
 
+    dealii::types::global_dof_index
+    n_dofs_x() const
+    {
+      return dof_handler_x->n_dofs();
+    }
+
+    dealii::types::global_dof_index
+    n_dofs_v() const
+    {
+      return dof_handler_v->n_dofs();
+    }
+
     const MPI_Comm &
     get_comm_row()
     {

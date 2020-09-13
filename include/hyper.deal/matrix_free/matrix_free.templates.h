@@ -845,8 +845,8 @@ namespace hyperdeal
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::MatrixFree(
-    const MPI_Comm &comm,
-    const MPI_Comm &comm_sm,
+    const MPI_Comm comm,
+    const MPI_Comm comm_sm,
     const dealii::MatrixFree<dim_x, Number, VectorizedArrayTypeX>
       &matrix_free_x,
     const dealii::MatrixFree<dim_v, Number, VectorizedArrayTypeV>

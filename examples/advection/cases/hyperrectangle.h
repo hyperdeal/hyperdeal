@@ -167,7 +167,7 @@ namespace hyperdeal
 #if true
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
               n_refinements_x, n_subdivisions_x, p1_x, p2_x, do_periodic_x,
-              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v);
+              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v, true);
 #elif false
           hyperdeal::GridGenerator::orientated_hyper_cube(tria_x, tria_v, 
               n_refinements_x, p1_x, p2_x, do_periodic_x, orientation_x,

@@ -104,8 +104,8 @@ namespace hyperdeal
     /**
      * Constructor (does nothing - see reinit()).
      */
-    MatrixFree(const MPI_Comm &comm,
-               const MPI_Comm &comm_sm,
+    MatrixFree(const MPI_Comm comm,
+               const MPI_Comm comm_sm,
                const dealii::MatrixFree<dim_x, Number, VectorizedArrayTypeX>
                  &matrix_free_x,
                const dealii::MatrixFree<dim_v, Number, VectorizedArrayTypeV>
@@ -322,12 +322,12 @@ namespace hyperdeal
     /**
      * Global communicator.
      */
-    const MPI_Comm &comm;
+    const MPI_Comm comm;
 
     /**
      * Shared-memory communicator.
      */
-    const MPI_Comm &comm_sm;
+    const MPI_Comm comm_sm;
 
     /**
      * dealii::MatrixFree for x-space.
