@@ -276,6 +276,14 @@ namespace hyperdeal
                   triangulation_x->set_manifold(1, manifold);
                 }
 
+              if (with_internal_deformation)
+                {
+                  static internal::DeformedCubeManifold<dim_v> manifold(
+                    left_v, right_v);
+                  triangulation_v->set_all_manifold_ids(1);
+                  triangulation_v->set_manifold(1, manifold);
+                }
+
 
               triangulation_x->refine_global(n_refinements_x);
               triangulation_v->refine_global(n_refinements_v);
@@ -303,10 +311,23 @@ namespace hyperdeal
 
                 if (do_periodic_x)
                   internal::apply_periodicity(&tria, left_x, right_x);
+
+              static internal::DeformedCubeManifold<dim_x> manifold(
+                left_x, right_x);
+              
+              if (with_internal_deformation)
+                {
+                  tria.set_all_manifold_ids(1);
+                  tria.set_manifold(1, manifold);
+                }
+                
                 tria.refine_global(n_refinements_x);
                 dealii::GridTools::partition_triangulation_zorder(
                   dealii::Utilities::MPI::n_mpi_processes(comm), tria, false);
                 dealii::GridTools::partition_multigrid_levels(tria);
+
+              if (with_internal_deformation)
+                  tria_x->set_manifold(1, manifold);
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
@@ -339,10 +360,23 @@ namespace hyperdeal
                                               left_v,
                                               right_v,
                                               2 * dim_x);
+                
+              static internal::DeformedCubeManifold<dim_v> manifold(
+                left_v, right_v);
+
+              if (with_internal_deformation)
+                {
+                  tria.set_all_manifold_ids(1);
+                  tria.set_manifold(1, manifold);
+                }
+                
                 tria.refine_global(n_refinements_v);
                 dealii::GridTools::partition_triangulation_zorder(
                   dealii::Utilities::MPI::n_mpi_processes(comm), tria, false);
                 dealii::GridTools::partition_multigrid_levels(tria);
+                
+                if (with_internal_deformation)
+                  tria_v->set_manifold(1, manifold);
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
