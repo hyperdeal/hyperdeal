@@ -502,6 +502,13 @@ namespace hyperdeal
                       dealii::Utilities::MPI::n_mpi_processes(comm_column));
 #endif
         }
+        
+        if(param.performance_log_all_calls)
+        {
+#ifdef PERFORMANCE_TIMING
+            timers.print_log(comm_global, "test");
+#endif
+        }
 
         if (param.dignostics_enabled)
           {
