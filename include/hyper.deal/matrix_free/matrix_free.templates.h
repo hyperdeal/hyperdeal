@@ -1265,7 +1265,9 @@ namespace hyperdeal
           0, 
           vec.begin(), 
           vec.other_values(), 
-          buffer, requests);
+          buffer, 
+          requests);
+        
         this->partitioner->export_to_ghosted_array_finish(
           vec.begin(),
           vec.other_values(),
@@ -1543,7 +1545,7 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        src.update_ghost_values();
+        src.update_ghost_values(); // TODO: use partitioner directly
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1622,7 +1624,7 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "compress");
 
-        dst.compress(dealii::VectorOperation::add);
+        dst.compress(dealii::VectorOperation::add); // TODO: use partitioner directly
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
