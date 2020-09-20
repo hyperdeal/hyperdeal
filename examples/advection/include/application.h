@@ -294,11 +294,23 @@ namespace hyperdeal
           memory_stat_monitor.monitor("vector_Ti");
           matrix_free.initialize_dof_vector(vct_Ti, 0, true, true);
           // clang-format on
+          
+          const auto add_min_max_avg_table_entry = [](const auto & table, 
+                  const std::string label, const auto val, const auto & comm){
+              const auto min_max_avg = dealii::Utilities::MPI::min_max_avg(static_cast<double>(val), comm);
+              
+              table.set(label + ":sum", min_max_avg.sum);
+              table.set(label + ":min", min_max_avg.min);
+              table.set(label + ":max", min_max_avg.max);
+              table.set(label + ":avg", min_max_avg.avg);
+          };
+          
+          add_min_max_avg_table_entry(table, "info->partitioner->local_size", matrix_free.get_vector_partitioner()->local_size(), comm_global);
+          add_min_max_avg_table_entry(table, "info->partitioner->n_ghost_indices", matrix_free.get_vector_partitioner()->n_ghost_indices(), comm_global);
         }
 
         // step 6: set initial condition in Gauss-Lobatto points (quad_no_x=2,
         // quad_no_v=2)
-        if(true)
         {
           pcout << "  - advection::initial_condition" << std::endl;
           initializer->set_analytical_solution(analytical_solution);
