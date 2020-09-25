@@ -21,9 +21,9 @@
 #include <hyper.deal/base/memory_consumption.h>
 
 #include <chrono>
+#include <fstream>
 #include <ios>
 #include <map>
-#include <fstream>
 
 #ifdef LIKWID_PERFMON
 #  include <likwid.h>
@@ -39,7 +39,7 @@ namespace hyperdeal
     {
       times.reserve(max_size);
     }
-      
+
     void
     reset()
     {
@@ -57,12 +57,12 @@ namespace hyperdeal
       const double dt = std::chrono::duration_cast<std::chrono::microseconds>(
                           std::chrono::system_clock::now() - temp)
                           .count();
-        
+
       accumulated_time += dt;
-      
-      if(times.capacity() > 0)
-          times.push_back(dt);
-      
+
+      if (times.capacity() > 0)
+        times.push_back(dt);
+
       counter++;
     }
 
@@ -77,32 +77,30 @@ namespace hyperdeal
     {
       return accumulated_time;
     }
-    
+
     const std::vector<double> &
     get_log() const
     {
-        return times;
+      return times;
     }
 
   private:
     unsigned int                                       counter = 0;
     std::chrono::time_point<std::chrono::system_clock> temp;
     double                                             accumulated_time = 0.0;
-    std::vector<double> times;
+    std::vector<double>                                times;
   };
 
   class Timers
   {
-    static const unsigned int max_levels = 10;
-    static const unsigned int max_timers = 100;
+    static const unsigned int max_levels     = 10;
+    static const unsigned int max_timers     = 100;
     static const unsigned int max_iterations = 1000;
 
   public:
-    Timers(const bool log_all_calls) : log_all_calls(log_all_calls)
+    Timers(const bool log_all_calls)
+      : log_all_calls(log_all_calls)
     {
-      AssertThrow(!log_all_calls,
-                  dealii::StandardExceptions::ExcNotImplemented());
-
       path.reserve(max_levels);
       timers.reserve(max_timers);
 
@@ -119,8 +117,8 @@ namespace hyperdeal
         {
           timers.resize(timers.size() + 1);
           map[label_] = timers.size() - 1;
-          
-          if(this->log_all_calls)
+
+          if (this->log_all_calls)
             timers.back().reserve(max_iterations);
           return timers.back();
         }
@@ -175,72 +173,86 @@ namespace hyperdeal
       internal::print_(
         stream, comm, list, list_count, {"Time [sec]"}, max_counter);
     }
-    
+
     void
-    print_log(const MPI_Comm &comm_global, const std::string & prefix) const
+    print_log(const MPI_Comm &comm_global, const std::string &prefix) const
     {
-        
-      const auto print_statistics = [&](const auto & v, std::string slabel){
+      const auto print_statistics = [&](const auto &       v,
+                                        std::string        slabel,
+                                        const unsigned int tag) {
+        const auto my_rank =
+          dealii::Utilities::MPI::this_mpi_process(comm_global);
 
-          const auto my_rank = dealii::Utilities::MPI::this_mpi_process(comm_global);
+        std::cout << slabel << std::endl;
 
-          if(my_rank == 0 )
+        if (my_rank == 0)
           {
             std::ofstream myfile;
-            myfile.open (prefix + "_" + slabel + ".stat");
+            myfile.open(prefix + "_" + slabel + ".stat");
 
-              for(unsigned int i = 0; i < dealii::Utilities::MPI::n_mpi_processes(comm_global); i++)
+            for (unsigned int i = 0;
+                 i < dealii::Utilities::MPI::n_mpi_processes(comm_global);
+                 i++)
               {
-                  std::vector<double> recv_data;
-                  if(i==0)
+                std::vector<double> recv_data;
+                if (i == 0)
                   {
-                      recv_data = v;
+                    recv_data = v;
                   }
-                  else
+                else
                   {
-                  // wait for any request
-                  MPI_Status status;
-                  auto       ierr = MPI_Probe(MPI_ANY_SOURCE, 110, comm_global, &status);
-                  AssertThrowMPI(ierr);
+                    // wait for any request
+                    MPI_Status status;
+                    auto       ierr =
+                      MPI_Probe(MPI_ANY_SOURCE, tag, comm_global, &status);
+                    AssertThrowMPI(ierr);
 
-                  // determine number of ghost faces * 2 (since we are considering
-                  // pairs)
-                  int          len;
-                  double dummy;
-                  MPI_Get_count(&status,
-                                dealii::Utilities::MPI::internal::mpi_type_id(&dummy),
-                                &len);
+                    // determine number of ghost faces * 2 (since we are
+                    // considering pairs)
+                    int len;
+                    MPI_Get_count(&status,
+                                  dealii::Utilities::MPI::internal::mpi_type_id(
+                                    v.data()),
+                                  &len);
 
-                  recv_data.resize(len);
+                    recv_data.resize(len);
 
-                  // receive data
-                  MPI_Recv(recv_data.data(),
-                           len,
-                           dealii::Utilities::MPI::internal::mpi_type_id(&dummy),
-                           status.MPI_SOURCE,
-                           status.MPI_TAG,
-                           comm_global,
-                           &status);
+                    // receive data
+                    MPI_Recv(recv_data.data(),
+                             len,
+                             dealii::Utilities::MPI::internal::mpi_type_id(
+                               v.data()),
+                             status.MPI_SOURCE,
+                             status.MPI_TAG,
+                             comm_global,
+                             &status);
                   }
 
-                  for(const auto j : recv_data)
-                      myfile << i << " " <<  j << std::endl;
+                for (const auto j : recv_data)
+                  myfile << i << " " << j << std::endl;
               }
 
-              myfile.close();
+            myfile.close();
           }
-          else
+        else
           {
-              unsigned int dummy;
-              MPI_Send(v.data(), v.size(), dealii::Utilities::MPI::internal::mpi_type_id(&dummy), 0, 110, comm_global);
+            MPI_Send(v.data(),
+                     v.size(),
+                     dealii::Utilities::MPI::internal::mpi_type_id(v.data()),
+                     0,
+                     tag,
+                     comm_global);
           }
 
-          MPI_Barrier(MPI_COMM_WORLD);
-    };
+        MPI_Barrier(comm_global);
+      };
 
 
+      unsigned int tag = 110;
       for (const auto &time : map)
-        print_statistics(timers[time.second].get_log(), std::string(time.first) );
+        print_statistics(timers[time.second].get_log(),
+                         std::string(time.first),
+                         tag++);
     }
 
   private:
@@ -251,7 +263,7 @@ namespace hyperdeal
     std::vector<Timer> timers;
 
     std::vector<std::string> path;
-    
+
     const bool log_all_calls;
   };
 

@@ -72,6 +72,10 @@ namespace hyperdeal
           performance_log_all_calls,
           "Save all measured timings (extra memory consumption) or only store min/max/avg.");
         prm.add_parameter(
+          "PerformanceLogAllCallsPrefix",
+          performance_log_all_calls_prefix,
+          "Save all measured timings (extra memory consumption) or only store min/max/avg.");
+        prm.add_parameter(
           "DiagnosticsWarmUpIterations",
           performance_warm_up_iterations,
           "Number of warm-up iterations (these iterations are ignored for the timings).");
@@ -130,8 +134,9 @@ namespace hyperdeal
       Number dignostics_tick    = 0.1;
 
       // ... performance
-      bool         performance_log_all_calls      = false;
-      unsigned int performance_warm_up_iterations = 0;
+      bool         performance_log_all_calls        = false;
+      std::string  performance_log_all_calls_prefix = "test";
+      unsigned int performance_warm_up_iterations   = 0;
 
       // matrix-free
       bool         do_ghost_faces    = true;
@@ -221,6 +226,7 @@ namespace hyperdeal
 } // namespace hyperdeal
 
 #include "../cases/hyperrectangle.h"
+#include "../cases/torus_hyperball.h"
 
 namespace hyperdeal
 {
@@ -281,6 +287,8 @@ namespace hyperdeal
         std::shared_ptr<hyperdeal::advection::Initializer<dim_x, dim_v, degree, Number>> initializer;
         if(case_name == "hyperrectangle")
           initializer.reset(new hyperdeal::advection::hyperrectangle::Initializer<dim_x, dim_v, degree, Number>);
+        if(case_name == "torus")
+          initializer.reset(new hyperdeal::advection::torus_hyperball::Initializer<dim_x, dim_v, degree, Number>);
         else
           AssertThrow(false, dealii::ExcMessage("This case does not exist!"));
         // clang-format on
