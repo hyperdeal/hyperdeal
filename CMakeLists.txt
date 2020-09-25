@@ -102,7 +102,7 @@ ENDIF()
 ADD_SUBDIRECTORY(doc/doxygen)
 
 # performance tests
-ADD_SUBDIRECTORY(performance)
+#ADD_SUBDIRECTORY(performance)
 
 # tests
 enable_testing()

@@ -832,7 +832,7 @@ namespace hyperdeal
                         //                    >(manifold.get()))
                         //                        m.initialize(*triangulation_x);
 
-                        triangulation_x->set_manifold(manifold_id, manifold);
+                        //triangulation_x->set_manifold(manifold_id, manifold);
                       }
                   }
 

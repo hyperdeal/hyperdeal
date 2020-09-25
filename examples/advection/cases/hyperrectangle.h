@@ -39,11 +39,11 @@ namespace hyperdeal
             advection[1] = 0.15;
           if (DIM > 2)
             advection[2] = -0.05;
-          if (DIM > 3)
+          if (DIM > 3 && false)
             advection[3] = -0.10;
-          if (DIM > 4)
+          if (DIM > 4 && false)
             advection[4] = -0.15;
-          if (DIM > 5)
+          if (DIM > 5 && false)
             advection[5] = 0.5;
         }
 
@@ -167,7 +167,7 @@ namespace hyperdeal
 #if true
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
               n_refinements_x, n_subdivisions_x, p1_x, p2_x, do_periodic_x,
-              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v, true);
+              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v, false);
 #elif false
           hyperdeal::GridGenerator::orientated_hyper_cube(tria_x, tria_v, 
               n_refinements_x, p1_x, p2_x, do_periodic_x, orientation_x,

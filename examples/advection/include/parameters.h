@@ -287,7 +287,7 @@ namespace hyperdeal
         std::shared_ptr<hyperdeal::advection::Initializer<dim_x, dim_v, degree, Number>> initializer;
         if(case_name == "hyperrectangle")
           initializer.reset(new hyperdeal::advection::hyperrectangle::Initializer<dim_x, dim_v, degree, Number>);
-        if(case_name == "torus")
+        else if(case_name == "torus")
           initializer.reset(new hyperdeal::advection::torus_hyperball::Initializer<dim_x, dim_v, degree, Number>);
         else
           AssertThrow(false, dealii::ExcMessage("This case does not exist!"));
