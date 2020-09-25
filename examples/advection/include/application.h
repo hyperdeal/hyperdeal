@@ -13,6 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
+#include <hyper.deal/base/config.h>
+
 #include <deal.II/base/conditional_ostream.h>
 
 #include <deal.II/distributed/fully_distributed_tria.h>
@@ -25,7 +27,6 @@
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/tools.h>
 
-#include <hyper.deal/base/config.h>
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/base/time_loop.h>
@@ -294,19 +295,31 @@ namespace hyperdeal
           memory_stat_monitor.monitor("vector_Ti");
           matrix_free.initialize_dof_vector(vct_Ti, 0, true, true);
           // clang-format on
-          
-          const auto add_min_max_avg_table_entry = [](const auto & table, 
-                  const std::string label, const auto val, const auto & comm){
-              const auto min_max_avg = dealii::Utilities::MPI::min_max_avg(static_cast<double>(val), comm);
-              
-              table.set(label + ":sum", min_max_avg.sum);
-              table.set(label + ":min", min_max_avg.min);
-              table.set(label + ":max", min_max_avg.max);
-              table.set(label + ":avg", min_max_avg.avg);
+
+          const auto add_min_max_avg_table_entry = [](const auto &      table,
+                                                      const std::string label,
+                                                      const auto        val,
+                                                      const auto &      comm) {
+            const auto min_max_avg =
+              dealii::Utilities::MPI::min_max_avg(static_cast<double>(val),
+                                                  comm);
+
+            table.set(label + ":sum", min_max_avg.sum);
+            table.set(label + ":min", min_max_avg.min);
+            table.set(label + ":max", min_max_avg.max);
+            table.set(label + ":avg", min_max_avg.avg);
           };
-          
-          add_min_max_avg_table_entry(table, "info->partitioner->local_size", matrix_free.get_vector_partitioner()->local_size(), comm_global);
-          add_min_max_avg_table_entry(table, "info->partitioner->n_ghost_indices", matrix_free.get_vector_partitioner()->n_ghost_indices(), comm_global);
+
+          add_min_max_avg_table_entry(
+            table,
+            "info->partitioner->local_size",
+            matrix_free.get_vector_partitioner()->local_size(),
+            comm_global);
+          add_min_max_avg_table_entry(
+            table,
+            "info->partitioner->n_ghost_indices",
+            matrix_free.get_vector_partitioner()->n_ghost_indices(),
+            comm_global);
         }
 
         // step 6: set initial condition in Gauss-Lobatto points (quad_no_x=2,
@@ -433,7 +446,10 @@ namespace hyperdeal
           [&](const VectorType &src, VectorType &dst, const Number cur_time) {
             ScopedTimerWrapper timer(timers, "id_advection");
 
-            advection_operation.apply(dst, src, cur_time);
+            if (param.performance_log_all_calls)
+              advection_operation.apply(dst, src, cur_time, &timers);
+            else
+              advection_operation.apply(dst, src, cur_time);
           },
           [&](const Number cur_time) {
             if (!param.dignostics_enabled ||
@@ -514,13 +530,14 @@ namespace hyperdeal
                       dealii::Utilities::MPI::n_mpi_processes(comm_column));
 #endif
         }
-        
-        if(param.performance_log_all_calls)
-        {
+
+        if (param.performance_log_all_calls)
+          {
 #ifdef PERFORMANCE_TIMING
-            timers.print_log(comm_global, "test");
+            timers.print_log(comm_global,
+                             param.performance_log_all_calls_prefix);
 #endif
-        }
+          }
 
         if (param.dignostics_enabled)
           {

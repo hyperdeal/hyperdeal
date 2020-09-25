@@ -87,4 +87,12 @@ for (dim_x : DIM_X; dim_v : DIM_V)
       const dealii::Point<dim_v> &left_v,
       const dealii::Point<dim_v> &right_v,
       const bool                  do_periodic_v);
+
+    template
+    void
+    construct_tensor_product(
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v,
+      const std::function<void(dealii::Triangulation<dim_x>&)> fu_x,
+      const std::function<void(dealii::Triangulation<dim_v>&)> fu_v);
   }
