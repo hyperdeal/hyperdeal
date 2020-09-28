@@ -37,6 +37,8 @@ Tensor product of two two dimension triangulations and `FE_DGQ<1+1>(3)`.
 - hyperrectangle_04: test FCL + DBC
 - hyperrectangle_05: test ECL + DBC + collocation 
 - hyperrectangle_06: test FCL + DBC + collocation
+- hyperrectangle_07: test ECL + DBC + skew-factor = 0.5  
+- hyperrectangle_08: test FCL + DBC + skew-factor = 0.5 
 
 ### adv_2D_2D_k3_q5
 
