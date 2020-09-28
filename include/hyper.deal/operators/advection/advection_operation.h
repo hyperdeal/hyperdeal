@@ -465,8 +465,6 @@ namespace hyperdeal
               }
             else
               {
-                AssertDimension(factor_skew, 0.0);
-                
                 const auto boundary_pair = boundary_descriptor->get_boundary(bid);
                     
                 if (face < dim_x * 2)
@@ -479,10 +477,10 @@ namespace hyperdeal
                               (-u_minus) : 
                               (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
-                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
-                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-        
-                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
+
+                          phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
                 else
@@ -495,10 +493,10 @@ namespace hyperdeal
                               (-u_minus) : 
                               (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
-                          const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
-                          const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
-        
-                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
+
+                          phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                         }
                   }
               }
@@ -1006,8 +1004,6 @@ namespace hyperdeal
         const VectorType &                                           src,
         const ID                                                     face)
       {
-        AssertDimension(factor_skew, 0.0);
-
         (void)data;
 
         const auto bid = data.get_boundary_id(face);
@@ -1075,10 +1071,10 @@ namespace hyperdeal
                       (-u_minus) : 
                       (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
-                  const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
-                  const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                  const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                  phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal, q, qx, qv);
+                  phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                 }
           }
         else
@@ -1091,10 +1087,10 @@ namespace hyperdeal
                       (-u_minus) : 
                       (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
-                  const VectorizedArrayType normal_times_advection = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
-                  const VectorizedArrayType flux_times_normal      = 0.5 * ((u_minus + u_plus) * normal_times_advection + std::abs(normal_times_advection) * (u_minus - u_plus)) * alpha;
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                  const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
-                  phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal, q, qx, qv);
+                  phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
                 }
           }
 
