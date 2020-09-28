@@ -27,7 +27,7 @@ if (HYPER_DEAL_DOCUMENTATION)
     
     # copy input to output file
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Configured to build Doxygen documentation")
+    message("-- Configured to build Doxygen documentation")
     
     # create documentation
     add_custom_target( doxygen
@@ -36,7 +36,5 @@ if (HYPER_DEAL_DOCUMENTATION)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT "Generating Doxygen documentation"
       VERBATIM )
-  else (DOXYGEN_FOUND)
-    message("Doxygen could not be found.")
   endif (DOXYGEN_FOUND)
 endif (HYPER_DEAL_DOCUMENTATION)
