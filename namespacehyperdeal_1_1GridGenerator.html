@@ -74,9 +74,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a316efbae35e9ca38059daf9092a8340d"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v&gt; </td></tr>
-<tr class="memitem:a316efbae35e9ca38059daf9092a8340d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehyperdeal_1_1GridGenerator.html#a316efbae35e9ca38059daf9092a8340d">subdivided_hyper_rectangle</a> (std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const std::vector&lt; unsigned int &gt; &amp;repetitions_x, const dealii::Point&lt; dim_x &gt; &amp;left_x, const dealii::Point&lt; dim_x &gt; &amp;right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const std::vector&lt; unsigned int &gt; &amp;repetitions_v, const dealii::Point&lt; dim_v &gt; &amp;left_v, const dealii::Point&lt; dim_v &gt; &amp;right_v, const bool do_periodic_v)</td></tr>
-<tr class="separator:a316efbae35e9ca38059daf9092a8340d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe54b54f8e87a10d9c8b8946a7602cfd"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v&gt; </td></tr>
+<tr class="memitem:abe54b54f8e87a10d9c8b8946a7602cfd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehyperdeal_1_1GridGenerator.html#abe54b54f8e87a10d9c8b8946a7602cfd">subdivided_hyper_rectangle</a> (std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const std::vector&lt; unsigned int &gt; &amp;repetitions_x, const dealii::Point&lt; dim_x &gt; &amp;left_x, const dealii::Point&lt; dim_x &gt; &amp;right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const std::vector&lt; unsigned int &gt; &amp;repetitions_v, const dealii::Point&lt; dim_v &gt; &amp;left_v, const dealii::Point&lt; dim_v &gt; &amp;right_v, const bool do_periodic_v, const bool with_internal_deformation=false)</td></tr>
+<tr class="separator:abe54b54f8e87a10d9c8b8946a7602cfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a423a874410ab0bba3ae0927932100238"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v&gt; </td></tr>
 <tr class="memitem:a423a874410ab0bba3ae0927932100238"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehyperdeal_1_1GridGenerator.html#a423a874410ab0bba3ae0927932100238">hyper_cube</a> (std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const double left_x, const double right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const double left_v, const double right_v, const bool do_periodic_v)</td></tr>
 <tr class="separator:a423a874410ab0bba3ae0927932100238"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -89,6 +89,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a3c018840fdf4e1e8dbfcb1b62528cc7a"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v&gt; </td></tr>
 <tr class="memitem:a3c018840fdf4e1e8dbfcb1b62528cc7a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehyperdeal_1_1GridGenerator.html#a3c018840fdf4e1e8dbfcb1b62528cc7a">subdivided_hyper_ball</a> (std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const dealii::Point&lt; dim_x &gt; &amp;left_x, const dealii::Point&lt; dim_x &gt; &amp;right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const dealii::Point&lt; dim_v &gt; &amp;left_v, const dealii::Point&lt; dim_v &gt; &amp;right_v, const bool do_periodic_v)</td></tr>
 <tr class="separator:a3c018840fdf4e1e8dbfcb1b62528cc7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3f39dc7ca1694999c10949933b7c2b7"><td class="memTemplParams" colspan="2"><a id="ad3f39dc7ca1694999c10949933b7c2b7"></a>
+template&lt;int dim_x, int dim_v&gt; </td></tr>
+<tr class="memitem:ad3f39dc7ca1694999c10949933b7c2b7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>construct_tensor_product</b> (std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const std::function&lt; void(dealii::Triangulation&lt; dim_x &gt; &amp;)&gt; fu_x, const std::function&lt; void(dealii::Triangulation&lt; dim_v &gt; &amp;)&gt; fu_v)</td></tr>
+<tr class="separator:ad3f39dc7ca1694999c10949933b7c2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This namespace provides a collection of functions for generating triangulations for some basic tensor-product geometries.</p>
@@ -315,7 +319,7 @@ template&lt;int dim_x, int dim_v&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Same as above but that each coarse cell is subdivided in z-direction. In contrast to <a class="el" href="namespacehyperdeal_1_1GridGenerator.html#a316efbae35e9ca38059daf9092a8340d">hyperdeal::GridGenerator::subdivided_hyper_rectangle</a>, one can give the coarse cells different orientations (0 &ge; orientation_x, orientation_v &lt; 16). This function is particular useful, since it is the most simple prototype of an unstrucured grid and enables straight-forward debugging.</p>
+<p>Same as above but that each coarse cell is subdivided in z-direction. In contrast to <a class="el" href="namespacehyperdeal_1_1GridGenerator.html#abe54b54f8e87a10d9c8b8946a7602cfd">hyperdeal::GridGenerator::subdivided_hyper_rectangle</a>, one can give the coarse cells different orientations (0 &ge; orientation_x, orientation_v &lt; 16). This function is particular useful, since it is the most simple prototype of an unstrucured grid and enables straight-forward debugging.</p>
 <dl class="section note"><dt>Note</dt><dd>Only implemented for dim_x==dim_v==3. </dd></dl>
 
 </div>
@@ -400,8 +404,8 @@ template&lt;int dim_x, int dim_v&gt; </div>
 
 </div>
 </div>
-<a id="a316efbae35e9ca38059daf9092a8340d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a316efbae35e9ca38059daf9092a8340d">&#9670;&nbsp;</a></span>subdivided_hyper_rectangle()</h2>
+<a id="abe54b54f8e87a10d9c8b8946a7602cfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe54b54f8e87a10d9c8b8946a7602cfd">&#9670;&nbsp;</a></span>subdivided_hyper_rectangle()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -478,7 +482,13 @@ template&lt;int dim_x, int dim_v&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>do_periodic_v</em>&#160;</td>
+          <td class="paramname"><em>do_periodic_v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>with_internal_deformation</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
