@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['use_5fecl_308',['use_ecl',['../structhyperdeal_1_1MatrixFree_1_1AdditionalData.html#a33a58e29c51083c61f5b399247af50d0',1,'hyperdeal::MatrixFree::AdditionalData']]]
+  ['time_5fstep_310',['time_step',['../classhyperdeal_1_1TimeLoop.html#ad183dc301f398502b2a3f75d480f33a8',1,'hyperdeal::TimeLoop']]],
+  ['type_311',['type',['../structhyperdeal_1_1TensorID.html#adedb24e30a0e66fe917ab636132eaa43',1,'hyperdeal::TensorID']]]
 ];

@@ -115,8 +115,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a429abc439cad7494fb66566a03b5720c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a610560a29f9be942f22cf105511bbe33"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#a610560a29f9be942f22cf105511bbe33">local_size</a> () const</td></tr>
 <tr class="separator:a610560a29f9be942f22cf105511bbe33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2388341dc5d2211bee540f8d32cea304"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#a2388341dc5d2211bee540f8d32cea304">ghost_size</a> () const</td></tr>
-<tr class="separator:a2388341dc5d2211bee540f8d32cea304"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7f8e4df7dc858814c1f78ab669a7c19"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#aa7f8e4df7dc858814c1f78ab669a7c19">n_ghost_indices</a> () const</td></tr>
+<tr class="separator:aa7f8e4df7dc858814c1f78ab669a7c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4304ee3165815f4c3d378783e58e10ec"><td class="memItemLeft" align="right" valign="top">const std::map&lt; dealii::types::global_dof_index, std::pair&lt; unsigned int, unsigned int &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#a4304ee3165815f4c3d378783e58e10ec">get_maps</a> () const</td></tr>
 <tr class="separator:a4304ee3165815f4c3d378783e58e10ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade637b687ae6c84b370a82da6138e012"><td class="memItemLeft" align="right" valign="top">const std::map&lt; std::pair&lt; dealii::types::global_dof_index, unsigned int &gt;, std::pair&lt; unsigned int, unsigned int &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#ade637b687ae6c84b370a82da6138e012">get_maps_ghost</a> () const</td></tr>
@@ -340,23 +340,6 @@ template&lt;typename Number &gt; </div>
 
 </div>
 </div>
-<a id="a2388341dc5d2211bee540f8d32cea304"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2388341dc5d2211bee540f8d32cea304">&#9670;&nbsp;</a></span>ghost_size()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Number &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">std::size_t <a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html">hyperdeal::internal::MatrixFreeFunctions::Partitioner</a>&lt; Number &gt;::ghost_size</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return number of ghost elements. </p>
-
-</div>
-</div>
 <a id="a610560a29f9be942f22cf105511bbe33"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a610560a29f9be942f22cf105511bbe33">&#9670;&nbsp;</a></span>local_size()</h2>
 
@@ -389,6 +372,23 @@ template&lt;typename Number &gt; </div>
 </div><div class="memdoc">
 <p>Return memory consumption.</p>
 <dl class="section note"><dt>Note</dt><dd>: Only counts the buffers [TODO]. </dd></dl>
+
+</div>
+</div>
+<a id="aa7f8e4df7dc858814c1f78ab669a7c19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7f8e4df7dc858814c1f78ab669a7c19">&#9670;&nbsp;</a></span>n_ghost_indices()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Number &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t <a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html">hyperdeal::internal::MatrixFreeFunctions::Partitioner</a>&lt; Number &gt;::n_ghost_indices</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return number of ghost elements. </p>
 
 </div>
 </div>

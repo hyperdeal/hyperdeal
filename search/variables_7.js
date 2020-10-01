@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['time_5fstep_306',['time_step',['../classhyperdeal_1_1TimeLoop.html#ad183dc301f398502b2a3f75d480f33a8',1,'hyperdeal::TimeLoop']]],
-  ['type_307',['type',['../structhyperdeal_1_1TensorID.html#adedb24e30a0e66fe917ab636132eaa43',1,'hyperdeal::TensorID']]]
+  ['shape_5fgradients_307',['shape_gradients',['../classhyperdeal_1_1FEEvaluationBase.html#a44010233b335f7316db786308b9b1bfb',1,'hyperdeal::FEEvaluationBase']]],
+  ['shape_5fvalues_308',['shape_values',['../classhyperdeal_1_1FEEvaluationBase.html#ad8e86bfd501e28a4b8695fcf89905ff3',1,'hyperdeal::FEEvaluationBase']]],
+  ['start_5ftime_309',['start_time',['../classhyperdeal_1_1TimeLoop.html#aba6f93695513912fb55f2a57fbc319d5',1,'hyperdeal::TimeLoop']]]
 ];

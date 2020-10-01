@@ -24,7 +24,7 @@ var searchData=
   ['get_5fshape_5fgradients_61',['get_shape_gradients',['../classhyperdeal_1_1FEEvaluationBase.html#ac3b89c651f4f7ec7d7c6f56848d9fab0',1,'hyperdeal::FEEvaluationBase']]],
   ['get_5fshape_5finfo_62',['get_shape_info',['../classhyperdeal_1_1MatrixFree.html#add4e3c070a4f36533490db08f4e72c1f',1,'hyperdeal::MatrixFree']]],
   ['get_5fshape_5fvalues_63',['get_shape_values',['../classhyperdeal_1_1FEEvaluationBase.html#a05fcd06a759ca319b142d6df69519ac8',1,'hyperdeal::FEEvaluationBase']]],
-  ['ghost_5fsize_64',['ghost_size',['../classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#a2388341dc5d2211bee540f8d32cea304',1,'hyperdeal::internal::MatrixFreeFunctions::Partitioner']]],
+  ['get_5fvector_5fpartitioner_64',['get_vector_partitioner',['../classhyperdeal_1_1MatrixFree.html#a6918a3540e763dfa7379b887d38d9a4d',1,'hyperdeal::MatrixFree']]],
   ['gid_65',['gid',['../structhyperdeal_1_1internal_1_1CellInfo.html#a0f6d5e4e2d9c700f418eb25aabbf971a',1,'hyperdeal::internal::CellInfo']]],
   ['globalcellinfo_66',['GlobalCellInfo',['../structhyperdeal_1_1internal_1_1GlobalCellInfo.html',1,'hyperdeal::internal']]],
   ['globalcellinfoprocessor_67',['GlobalCellInfoProcessor',['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html',1,'hyperdeal::internal::GlobalCellInfoProcessor'],['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html#a8df92881d1d070d62f821b45f39fdb15',1,'hyperdeal::internal::GlobalCellInfoProcessor::GlobalCellInfoProcessor()']]],

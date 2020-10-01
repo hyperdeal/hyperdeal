@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['rank_302',['rank',['../structhyperdeal_1_1internal_1_1CellInfo.html#a402b9885154f8d2e253f6a7741efe707',1,'hyperdeal::internal::CellInfo']]]
+  ['overlapping_5flevel_305',['overlapping_level',['../structhyperdeal_1_1MatrixFree_1_1AdditionalData.html#af82b509ba2158f4bbe8211cff29b688a',1,'hyperdeal::MatrixFree::AdditionalData']]]
 ];
