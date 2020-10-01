@@ -136,6 +136,11 @@ namespace hyperdeal
                             orientation_v,
                             "v-space: number of global refinements.");
 
+          prm.add_parameter(
+            "DeformMesh",
+            deform_mesh,
+            "Deform Cartesian mesh with an arbitrary non-linear manifold.");
+
           prm.leave_subsection();
         }
 
@@ -161,7 +166,7 @@ namespace hyperdeal
 #if true
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
               n_refinements_x, n_subdivisions_x, p1_x, p2_x, do_periodic_x,
-              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v);
+              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v, deform_mesh);
 #elif false
           hyperdeal::GridGenerator::orientated_hyper_cube(tria_x, tria_v, 
               n_refinements_x, p1_x, p2_x, do_periodic_x, orientation_x,
@@ -223,6 +228,8 @@ namespace hyperdeal
 
         unsigned int orientation_x = 0;
         unsigned int orientation_v = 0;
+
+        bool deform_mesh = false;
       };
     } // namespace hyperrectangle
   }   // namespace advection
