@@ -64,6 +64,12 @@ public:
     this->do_zero_mean = do_zero_mean;
   }
 
+  bool
+  is_singular() const
+  {
+    return this->do_zero_mean;
+  }
+
   const dealii::MatrixFree<dim, Number, VectorizedArrayType> &
   get_matrix_free() const
   {

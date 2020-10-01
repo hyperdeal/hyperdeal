@@ -185,6 +185,13 @@ namespace hyperdeal
         AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
         return dealii::Tensor<1, dim_x + dim_v>();
       }
+
+      virtual bool
+      is_poisson_problem_singular() const
+      {
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
+        return false;
+      }
     };
   } // namespace vp
 } // namespace hyperdeal

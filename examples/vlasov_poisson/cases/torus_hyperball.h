@@ -132,6 +132,12 @@ namespace hyperdeal
             .get_transport_direction();
         }
 
+        bool
+        is_poisson_problem_singular() const override
+        {
+          return false;
+        }
+
       private:
         unsigned int n_refinements_x = 0;
         unsigned int n_refinements_v = 0;
