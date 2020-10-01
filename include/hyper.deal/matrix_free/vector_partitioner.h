@@ -153,7 +153,7 @@ namespace hyperdeal
          * Return number of ghost elements.
          */
         std::size_t
-        ghost_size() const;
+        n_ghost_indices() const;
 
         /**
          * Return position of shared cell: cell -> (owner, offset)
@@ -1094,7 +1094,7 @@ namespace hyperdeal
 
       template <typename Number>
       std::size_t
-      Partitioner<Number>::ghost_size() const
+      Partitioner<Number>::n_ghost_indices() const
       {
         return _ghost_size;
       }

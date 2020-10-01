@@ -68,6 +68,7 @@ namespace hyperdeal
         : do_ghost_faces(true)
         , do_buffering(false)
         , use_ecl(true)
+        , overlapping_level(0 /*no overlapping communication-computation*/)
       {}
 
       /**
@@ -92,14 +93,19 @@ namespace hyperdeal
        *   time.
        */
       bool use_ecl;
+
+      /**
+       * TODO
+       */
+      unsigned int overlapping_level;
     };
 
 
     /**
      * Constructor (does nothing - see reinit()).
      */
-    MatrixFree(const MPI_Comm &comm,
-               const MPI_Comm &comm_sm,
+    MatrixFree(const MPI_Comm comm,
+               const MPI_Comm comm_sm,
                const dealii::MatrixFree<dim_x, Number, VectorizedArrayTypeX>
                  &matrix_free_x,
                const dealii::MatrixFree<dim_v, Number, VectorizedArrayTypeV>
@@ -310,16 +316,22 @@ namespace hyperdeal
       return mem;
     }
 
+    /**
+     * Return partitioner of the vectors.
+     */
+    const std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>> &
+    get_vector_partitioner() const;
+
   private:
     /**
      * Global communicator.
      */
-    const MPI_Comm &comm;
+    const MPI_Comm comm;
 
     /**
      * Shared-memory communicator.
      */
-    const MPI_Comm &comm_sm;
+    const MPI_Comm comm_sm;
 
     /**
      * dealii::MatrixFree for x-space.

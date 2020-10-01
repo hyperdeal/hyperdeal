@@ -33,12 +33,13 @@ namespace hyperdeal
   {
     std::string triangulation_type;
 
-    unsigned int degree         = 1;
-    unsigned int mapping_degree = 1;
-    bool         do_collocation = false;
-    bool         do_ghost_faces = true;
-    bool         do_buffering   = false;
-    bool         use_ecl        = true;
+    unsigned int degree            = 1;
+    unsigned int mapping_degree    = 1;
+    bool         do_collocation    = false;
+    bool         do_ghost_faces    = true;
+    bool         do_buffering      = false;
+    bool         use_ecl           = true;
+    unsigned int overlapping_level = 0;
 
     bool print_parameter = false;
 
@@ -84,6 +85,7 @@ namespace hyperdeal
       prm.add_parameter("GhostFaces", do_ghost_faces);
       prm.add_parameter("DoBuffering", do_buffering);
       prm.add_parameter("UseECL", use_ecl);
+      prm.add_parameter("OverlappingLevel", overlapping_level);
       prm.leave_subsection();
     }
   };
@@ -239,9 +241,10 @@ namespace hyperdeal
       // step 4: setup tensor-product matrixfree
       {
         typename MF::AdditionalData ad;
-        ad.do_ghost_faces = param.do_ghost_faces;
-        ad.do_buffering   = param.do_buffering;
-        ad.use_ecl        = param.use_ecl;
+        ad.do_ghost_faces    = param.do_ghost_faces;
+        ad.do_buffering      = param.do_buffering;
+        ad.use_ecl           = param.use_ecl;
+        ad.overlapping_level = param.overlapping_level;
 
         matrix_free.reinit(ad);
       }
@@ -258,6 +261,18 @@ namespace hyperdeal
     n_dofs() const
     {
       return dof_handler_x->n_dofs() * dof_handler_v->n_dofs();
+    }
+
+    dealii::types::global_dof_index
+    n_dofs_x() const
+    {
+      return dof_handler_x->n_dofs();
+    }
+
+    dealii::types::global_dof_index
+    n_dofs_v() const
+    {
+      return dof_handler_v->n_dofs();
     }
 
     const MPI_Comm &
