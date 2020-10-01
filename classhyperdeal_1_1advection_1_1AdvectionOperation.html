@@ -101,8 +101,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6ad3d0ce9726a29413071b60c722dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7855167bd5864219dbba4b9e9b5d3401"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a7855167bd5864219dbba4b9e9b5d3401">reinit</a> (std::shared_ptr&lt; <a class="el" href="structhyperdeal_1_1advection_1_1BoundaryDescriptor.html">BoundaryDescriptor</a>&lt; dim, Number &gt;&gt; boundary_descriptor, std::shared_ptr&lt; VelocityField &gt; velocity_field, const <a class="el" href="structhyperdeal_1_1advection_1_1AdvectionOperationParamters.html">AdvectionOperationParamters</a> additional_data)</td></tr>
 <tr class="separator:a7855167bd5864219dbba4b9e9b5d3401"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63e10e5610390efdffae388d568136ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a63e10e5610390efdffae388d568136ea">apply</a> (VectorType &amp;dst, const VectorType &amp;src, const Number time, <a class="el" href="classhyperdeal_1_1Timers.html">Timers</a> *timers=nullptr)</td></tr>
-<tr class="separator:a63e10e5610390efdffae388d568136ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a780530cdb64996196844a59c4fc81871"><td class="memTemplParams" colspan="2">template&lt;AdvectionOperationEvaluationLevel eval_level = AdvectionOperationEvaluationLevel::all&gt; </td></tr>
+<tr class="memitem:a780530cdb64996196844a59c4fc81871"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1advection_1_1AdvectionOperation.html#a780530cdb64996196844a59c4fc81871">apply</a> (VectorType &amp;dst, const VectorType &amp;src, const Number time, <a class="el" href="classhyperdeal_1_1Timers.html">Timers</a> *timers=nullptr)</td></tr>
+<tr class="separator:a780530cdb64996196844a59c4fc81871"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -158,13 +159,15 @@ template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , ty
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a63e10e5610390efdffae388d568136ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63e10e5610390efdffae388d568136ea">&#9670;&nbsp;</a></span>apply()</h2>
+<a id="a780530cdb64996196844a59c4fc81871"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a780530cdb64996196844a59c4fc81871">&#9670;&nbsp;</a></span>apply()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;int dim_x, int dim_v, int degree, int n_points, typename Number , typename VectorType , typename VelocityField , typename VectorizedArrayType &gt; </div>
+<div class="memtemplate">
+template&lt;AdvectionOperationEvaluationLevel eval_level = AdvectionOperationEvaluationLevel::all&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
