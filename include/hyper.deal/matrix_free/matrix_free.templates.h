@@ -844,8 +844,8 @@ namespace hyperdeal
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::MatrixFree(
-    const MPI_Comm &comm,
-    const MPI_Comm &comm_sm,
+    const MPI_Comm comm,
+    const MPI_Comm comm_sm,
     const dealii::MatrixFree<dim_x, Number, VectorizedArrayTypeX>
       &matrix_free_x,
     const dealii::MatrixFree<dim_v, Number, VectorizedArrayTypeV>
@@ -1184,7 +1184,7 @@ namespace hyperdeal
     vec.reinit(comm,
                comm_sm,
                partitioner->local_size(),
-               do_ghosts ? partitioner->ghost_size() : 0);
+               do_ghosts ? partitioner->n_ghost_indices() : 0);
 
     // zero out values
     if (zero_out_values)
@@ -1647,6 +1647,16 @@ namespace hyperdeal
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::get_shape_info() const
   {
     return shape_info;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  const std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>> &
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::
+    get_vector_partitioner() const
+  {
+    return partitioner;
   }
 
 } // namespace hyperdeal

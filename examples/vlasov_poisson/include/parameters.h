@@ -18,6 +18,7 @@
 
 #include <hyper.deal/base/time_integrators_parameters.h>
 #include <hyper.deal/base/time_loop_parameters.h>
+#include <hyper.deal/operators/advection/advection_operation_parameters.h>
 
 #include <fstream>
 
@@ -50,14 +51,21 @@ namespace hyperdeal
         prm.add_parameter("DiagnosticsTick", dignostics_tick);
         prm.add_parameter("DiagnosticsFileName", diag_file);
         prm.add_parameter("PerformanceLogAllCalls", performance_log_all_calls);
+        prm.add_parameter("PerformanceLogAllCallsPrefix",
+                          performance_log_all_calls_prefix);
         prm.add_parameter("DiagnosticsWarmUpIterations",
                           performance_warm_up_iterations);
+        prm.leave_subsection();
+
+        prm.enter_subsection("AdvectionOperation");
+        advection_operation_parameters.add_parameters(prm);
         prm.leave_subsection();
 
         prm.enter_subsection("Matrixfree");
         prm.add_parameter("GhostFaces", do_ghost_faces);
         prm.add_parameter("DoBuffering", do_buffering);
         prm.add_parameter("UseECL", use_ecl);
+        prm.add_parameter("OverlappingLevel", overlapping_level);
         prm.leave_subsection();
 
         prm.enter_subsection("General");
@@ -81,19 +89,24 @@ namespace hyperdeal
       // ... CFL-condition
       Number cfl_number = 0.3;
 
+      // ... advection operation
+      advection::AdvectionOperationParamters advection_operation_parameters;
+
       // ... diagnostic
       bool        dignostics_enabled = true;
       Number      dignostics_tick    = 0.1;
       std::string diag_file          = "time_history_diagnostics.out";
 
       // ... performance
-      bool         performance_log_all_calls      = false;
-      unsigned int performance_warm_up_iterations = 0;
+      bool         performance_log_all_calls        = false;
+      std::string  performance_log_all_calls_prefix = "test";
+      unsigned int performance_warm_up_iterations   = 0;
 
       // matrix-free
-      bool do_ghost_faces = true;
-      bool do_buffering   = false;
-      bool use_ecl        = true;
+      bool         do_ghost_faces    = true;
+      bool         do_buffering      = false;
+      bool         use_ecl           = true;
+      unsigned int overlapping_level = 0;
 
       bool print_parameter = true;
     };

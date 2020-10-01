@@ -13,6 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
+#include <hyper.deal/base/config.h>
+
 #include <deal.II/base/conditional_ostream.h>
 
 #include <deal.II/distributed/fully_distributed_tria.h>
@@ -23,6 +25,7 @@
 #include <deal.II/grid/grid_out.h>
 
 #include <deal.II/matrix_free/matrix_free.h>
+#include <deal.II/matrix_free/tools.h>
 
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/time_integrators.h>
@@ -76,8 +79,8 @@ namespace hyperdeal
       using VectorType2 = dealii::LinearAlgebra::distributed::Vector<Number>;
 
 
-      Application(const MPI_Comm &         comm_global,
-                  const MPI_Comm &         comm_sm,
+      Application(const MPI_Comm           comm_global,
+                  const MPI_Comm           comm_sm,
                   const unsigned int       size_x,
                   const unsigned int       size_v,
                   DynamicConvergenceTable &table)
@@ -112,6 +115,8 @@ namespace hyperdeal
                   dealii::Utilities::MPI::n_mpi_processes(comm_row));
         table.set("info->procs_v",
                   dealii::Utilities::MPI::n_mpi_processes(comm_column));
+        table.set("info->procs_sm",
+                  dealii::Utilities::MPI::n_mpi_processes(comm_sm));
 
 
         const unsigned int degree_x   = degree;
@@ -195,7 +200,7 @@ namespace hyperdeal
 
         // step 3: setup two low-dimensional matrix-frees
         {
-          memory_stat_monitor.monitor("dealii::,matrixfree");
+          memory_stat_monitor.monitor("dealii::matrixfree");
           dealii::AffineConstraints<Number> constraint;
           constraint.close();
 
@@ -229,6 +234,12 @@ namespace hyperdeal
               quads.push_back(dealii::QGauss<1>(n_points_x));
             quads.push_back(dealii::QGauss<1>(degree_x + 1));
             quads.push_back(dealii::QGaussLobatto<1>(degree_x + 1));
+
+            // ensure that inner and boundary faces are not mixed in the
+            // same macro cell
+            if (false /*TODO*/)
+              dealii::MatrixFreeTools::categorize_by_boundary_ids(
+                *triangulation_x, additional_data);
 
             matrix_free_x.reinit(
               mapping_x, dof_handlers, constraints, quads, additional_data);
@@ -313,6 +324,12 @@ namespace hyperdeal
             quads.push_back(dealii::QGauss<1>(degree_v + 1));
             quads.push_back(dealii::QGaussLobatto<1>(degree_v + 1));
 
+            // ensure that inner and boundary faces are not mixed in the
+            // same macro cell
+            if (false /*TODO*/)
+              dealii::MatrixFreeTools::categorize_by_boundary_ids(
+                *triangulation_v, additional_data);
+
             matrix_free_v.reinit(
               mapping_v, dof_handlers, constraints, quads, additional_data);
           }
@@ -323,9 +340,10 @@ namespace hyperdeal
           memory_stat_monitor.monitor("hyperdeal_matrixfree");
           pcout << "  - hyperdeal::MatrixFree" << std::endl;
           typename MF::AdditionalData ad;
-          ad.do_ghost_faces = param.do_ghost_faces;
-          ad.do_buffering   = param.do_buffering;
-          ad.use_ecl        = param.use_ecl;
+          ad.do_ghost_faces    = param.do_ghost_faces;
+          ad.do_buffering      = param.do_buffering;
+          ad.use_ecl           = param.use_ecl;
+          ad.overlapping_level = param.overlapping_level;
 
           matrix_free.reinit(ad);
         }
@@ -374,8 +392,9 @@ namespace hyperdeal
         // step 8: set (constant) velocity field
         {
           pcout << "  - advection::velocity_field_view" << std::endl;
-          velocity_field.reset(
-            new VelocityFieldView(matrix_free, negative_electric_field));
+          velocity_field =
+            std::make_shared<VelocityFieldView>(matrix_free,
+                                                negative_electric_field);
         }
 
         // step 9: initialize advection operator
@@ -383,7 +402,7 @@ namespace hyperdeal
           pcout << "  - advection::operator" << std::endl;
           advection_operation.reinit(boundary_descriptor,
                                      velocity_field,
-                                     advection::AdvectionOperationParamters());
+                                     param.advection_operation_parameters);
         }
 
         // step 10: time loop
@@ -449,6 +468,12 @@ namespace hyperdeal
         unsigned int time_step_counter          = 0;
         unsigned int n_total_poisson_iterations = 0;
 
+#ifdef PERFORMANCE_TIMING
+        bool performance_timing = true;
+#else
+        bool performance_timing = false;
+#endif
+
         Timers timers(param.performance_log_all_calls);
 
         const unsigned int time_steps = time_loop.loop(
@@ -458,15 +483,18 @@ namespace hyperdeal
               const auto  time_step,
               const auto &runnable) {
 #ifdef PERFORMANCE_TIMING
-            if (time_step_counter == param.performance_warm_up_iterations)
+            if (performance_timing)
               {
-                if (time_step_counter != 0)
-                  timers.reset();
-                n_total_poisson_iterations = 0;
-                MPI_Barrier(comm_global);
-                timers["id_total"].start();
+                if (time_step_counter == param.performance_warm_up_iterations)
+                  {
+                    if (time_step_counter != 0)
+                      timers.reset();
+                    n_total_poisson_iterations = 0;
+                    MPI_Barrier(comm_global);
+                    timers["id_total"].start();
+                  }
+                time_step_counter++;
               }
-            time_step_counter++;
 #endif
 
             ScopedTimerWrapper timer(timers, "id_stage");
@@ -549,7 +577,14 @@ namespace hyperdeal
               ScopedTimerWrapper timer(timers, "id_step5");
 
               timers.enter("id_step5");
-              advection_operation.apply(dst, src, cur_time, &timers);
+              {
+                ScopedTimerWrapper timer(timers, "id_advection");
+
+                if (performance_timing || param.performance_log_all_calls)
+                  advection_operation.apply(dst, src, cur_time, &timers);
+                else
+                  advection_operation.apply(dst, src, cur_time);
+              }
               timers.leave();
             }
           },
@@ -610,45 +645,51 @@ namespace hyperdeal
           });
 
 #ifdef PERFORMANCE_TIMING
-        MPI_Barrier(comm_global);
-        timers["id_total"].stop();
-        timers.print(comm_global, pcout);
+        if (performance_timing)
+          {
+            MPI_Barrier(comm_global);
+            timers["id_total"].stop();
+            timers.print(comm_global, pcout);
+          }
 #endif
 
 
         {
 #ifdef PERFORMANCE_TIMING
-          auto &timer = timers["id_stage"];
-          AssertThrow(time_steps == time_step_counter,
-                      dealii::StandardExceptions::ExcMessage(
-                        "Mismatch in time step counter!"));
-          AssertThrow((time_steps - param.performance_warm_up_iterations) ==
-                        timer.get_counter(),
-                      dealii::StandardExceptions::ExcMessage(
-                        "Mismatch in time step counter!"));
-          AssertThrow(timers["id_step5"].get_counter() ==
-                        timer.get_counter() * time_integrator.n_stages(),
-                      dealii::StandardExceptions::ExcMessage(
-                        "Mismatch in time step counter!"));
+          if (performance_timing)
+            {
+              auto &timer = timers["id_stage"];
+              AssertThrow(time_steps == time_step_counter,
+                          dealii::StandardExceptions::ExcMessage(
+                            "Mismatch in time step counter!"));
+              AssertThrow((time_steps - param.performance_warm_up_iterations) ==
+                            timer.get_counter(),
+                          dealii::StandardExceptions::ExcMessage(
+                            "Mismatch in time step counter!"));
+            }
 #endif
 
           table.set("info->time_steps",
                     time_steps - param.performance_warm_up_iterations);
 
 #ifdef PERFORMANCE_TIMING
-          table.set("throughput [MDoFs/s]",
-                    dof_handler_x->n_dofs() * dof_handler_v->n_dofs() *
-                      timer.get_counter() * time_integrator.n_stages() /
-                      timer.get_accumulated_time());
-          table.set("throughput [MDoFs/s/core]",
-                    dof_handler_x->n_dofs() * dof_handler_v->n_dofs() *
-                      timer.get_counter() * time_integrator.n_stages() /
-                      timer.get_accumulated_time() /
-                      dealii::Utilities::MPI::n_mpi_processes(comm_row) /
-                      dealii::Utilities::MPI::n_mpi_processes(comm_column));
-          table.set("avg. Poisson iterations",
-                    static_cast<double>(n_total_poisson_iterations) /
-                      timers["id_step3"].get_counter());
+          if (performance_timing)
+            {
+              auto &timer = timers["id_stage"];
+              table.set("throughput [MDoFs/s]",
+                        dof_handler_x->n_dofs() * dof_handler_v->n_dofs() *
+                          timer.get_counter() * time_integrator.n_stages() /
+                          timer.get_accumulated_time());
+              table.set("throughput [MDoFs/s/core]",
+                        dof_handler_x->n_dofs() * dof_handler_v->n_dofs() *
+                          timer.get_counter() * time_integrator.n_stages() /
+                          timer.get_accumulated_time() /
+                          dealii::Utilities::MPI::n_mpi_processes(comm_row) /
+                          dealii::Utilities::MPI::n_mpi_processes(comm_column));
+              table.set("avg. Poisson iterations",
+                        static_cast<double>(n_total_poisson_iterations) /
+                          timers["id_step3"].get_counter());
+            }
 #endif
         }
       }
@@ -690,8 +731,8 @@ namespace hyperdeal
 
     private:
       // communicators
-      const MPI_Comm &comm_global;
-      const MPI_Comm &comm_sm;
+      const MPI_Comm comm_global;
+      const MPI_Comm comm_sm;
       MPI_Comm comm_row;    // should be const. but has to be freed at the end
       MPI_Comm comm_column; // the same here
 

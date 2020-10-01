@@ -72,6 +72,10 @@ namespace hyperdeal
           performance_log_all_calls,
           "Save all measured timings (extra memory consumption) or only store min/max/avg.");
         prm.add_parameter(
+          "PerformanceLogAllCallsPrefix",
+          performance_log_all_calls_prefix,
+          "Save all measured timings (extra memory consumption) or only store min/max/avg.");
+        prm.add_parameter(
           "DiagnosticsWarmUpIterations",
           performance_warm_up_iterations,
           "Number of warm-up iterations (these iterations are ignored for the timings).");
@@ -93,6 +97,10 @@ namespace hyperdeal
           "UseECL",
           use_ecl,
           "Use element-centric loops (ECL) or face-centric loops (FCL).");
+        prm.add_parameter(
+          "OverlappingLevel",
+          overlapping_level,
+          "Level of overlapping of communication and computation.");
         prm.leave_subsection();
 
         prm.enter_subsection("General");
@@ -126,13 +134,15 @@ namespace hyperdeal
       Number dignostics_tick    = 0.1;
 
       // ... performance
-      bool         performance_log_all_calls      = false;
-      unsigned int performance_warm_up_iterations = 0;
+      bool         performance_log_all_calls        = false;
+      std::string  performance_log_all_calls_prefix = "test";
+      unsigned int performance_warm_up_iterations   = 0;
 
       // matrix-free
-      bool do_ghost_faces = true;
-      bool do_buffering   = false;
-      bool use_ecl        = true;
+      bool         do_ghost_faces    = true;
+      bool         do_buffering      = false;
+      bool         use_ecl           = true;
+      unsigned int overlapping_level = 0;
 
       bool print_parameter = true;
     };

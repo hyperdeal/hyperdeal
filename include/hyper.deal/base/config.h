@@ -13,4 +13,9 @@
 //
 // ---------------------------------------------------------------------
 
+#ifndef HYPERDEAL_CONFIG
+#define HYPERDEAL_CONFIG
+
 #define PERFORMANCE_TIMING
+
+#endif
