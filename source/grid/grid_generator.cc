@@ -13,6 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
+#include <deal.II/grid/manifold_lib.h>
+
 #include <hyper.deal/grid/grid_generator.h>
 
 namespace hyperdeal
@@ -104,6 +106,129 @@ namespace hyperdeal
 
         apply_periodicity(tria, counter, point_left, point_right);
       }
+
+      template <int dim>
+      class DeformedCubeManifold : public dealii::ChartManifold<dim, dim, dim>
+      {
+      public:
+        DeformedCubeManifold(const dealii::Point<dim> left,
+                             const dealii::Point<dim> right,
+                             const double             deformation = 0.1,
+                             const unsigned int       frequency   = 2)
+          : left(left[0])
+          , right(right[0])
+          , deformation(deformation)
+          , frequency(frequency)
+        {
+          const auto check = [](const auto &points) {
+            for (unsigned int d = 1; d < dim; ++d)
+              if (points[0] != points[d])
+                return false;
+
+            return true;
+          };
+
+          AssertThrow(check(left),
+                      dealii::StandardExceptions::ExcInternalError());
+          AssertThrow(check(right),
+                      dealii::StandardExceptions::ExcInternalError());
+        }
+
+        DeformedCubeManifold(const double       left,
+                             const double       right,
+                             const double       deformation = 0.1,
+                             const unsigned int frequency   = 2)
+          : left(left)
+          , right(right)
+          , deformation(deformation)
+          , frequency(frequency)
+        {}
+
+        dealii::Point<dim>
+        push_forward(const dealii::Point<dim> &chart_point) const
+        {
+          double sinval = deformation;
+          for (unsigned int d = 0; d < dim; ++d)
+            sinval *= std::sin(frequency * dealii::numbers::PI *
+                               (chart_point(d) - left) / (right - left));
+          dealii::Point<dim> space_point;
+          for (unsigned int d = 0; d < dim; ++d)
+            space_point(d) = chart_point(d) + sinval;
+          return space_point;
+        }
+
+        dealii::Point<dim>
+        pull_back(const dealii::Point<dim> &space_point) const
+        {
+          dealii::Point<dim> x = space_point;
+          dealii::Point<dim> one;
+          for (unsigned int d = 0; d < dim; ++d)
+            one(d) = 1.;
+
+          // Newton iteration to solve the nonlinear equation given by the point
+          dealii::Tensor<1, dim> sinvals;
+          for (unsigned int d = 0; d < dim; ++d)
+            sinvals[d] = std::sin(frequency * dealii::numbers::PI *
+                                  (x(d) - left) / (right - left));
+
+          double sinval = deformation;
+          for (unsigned int d = 0; d < dim; ++d)
+            sinval *= sinvals[d];
+          dealii::Tensor<1, dim> residual = space_point - x - sinval * one;
+          unsigned int           its      = 0;
+          while (residual.norm() > 1e-12 && its < 100)
+            {
+              dealii::Tensor<2, dim> jacobian;
+              for (unsigned int d = 0; d < dim; ++d)
+                jacobian[d][d] = 1.;
+              for (unsigned int d = 0; d < dim; ++d)
+                {
+                  double sinval_der = deformation * frequency / (right - left) *
+                                      dealii::numbers::PI *
+                                      std::cos(frequency * dealii::numbers::PI *
+                                               (x(d) - left) / (right - left));
+                  for (unsigned int e = 0; e < dim; ++e)
+                    if (e != d)
+                      sinval_der *= sinvals[e];
+                  for (unsigned int e = 0; e < dim; ++e)
+                    jacobian[e][d] += sinval_der;
+                }
+
+              x += dealii::invert(jacobian) * residual;
+
+              for (unsigned int d = 0; d < dim; ++d)
+                sinvals[d] = std::sin(frequency * dealii::numbers::PI *
+                                      (x(d) - left) / (right - left));
+
+              sinval = deformation;
+              for (unsigned int d = 0; d < dim; ++d)
+                sinval *= sinvals[d];
+              residual = space_point - x - sinval * one;
+              ++its;
+            }
+          AssertThrow(residual.norm() < 1e-12,
+                      dealii::StandardExceptions::ExcMessage(
+                        "Newton for point did not converge."));
+          return x;
+        }
+
+        std::unique_ptr<dealii::Manifold<dim>>
+        clone() const override
+        {
+          return std::make_unique<DeformedCubeManifold<dim>>(left,
+                                                             right,
+                                                             deformation,
+                                                             frequency);
+        }
+
+      private:
+        const double       left;
+        const double       right;
+        const double       deformation;
+        const unsigned int frequency;
+      };
+
+
     } // namespace internal
 
 
@@ -121,7 +246,8 @@ namespace hyperdeal
       const std::vector<unsigned int> &repetitions_v,
       const dealii::Point<dim_v> &     left_v,
       const dealii::Point<dim_v> &     right_v,
-      const bool                       do_periodic_v)
+      const bool                       do_periodic_v,
+      const bool                       with_internal_deformation)
     {
       if (auto triangulation_x =
             dynamic_cast<dealii::parallel::distributed::Triangulation<dim_x> *>(
@@ -143,6 +269,23 @@ namespace hyperdeal
                                             left_v,
                                             right_v,
                                             2 * dim_x);
+
+              if (with_internal_deformation)
+                {
+                  static internal::DeformedCubeManifold<dim_x> manifold(
+                    left_x, right_x);
+                  triangulation_x->set_all_manifold_ids(1);
+                  triangulation_x->set_manifold(1, manifold);
+                }
+
+              if (with_internal_deformation)
+                {
+                  static internal::DeformedCubeManifold<dim_v> manifold(
+                    left_v, right_v);
+                  triangulation_v->set_all_manifold_ids(1);
+                  triangulation_v->set_manifold(1, manifold);
+                }
+
 
               triangulation_x->refine_global(n_refinements_x);
               triangulation_v->refine_global(n_refinements_v);
@@ -170,10 +313,23 @@ namespace hyperdeal
 
                 if (do_periodic_x)
                   internal::apply_periodicity(&tria, left_x, right_x);
+
+                static internal::DeformedCubeManifold<dim_x> manifold(left_x,
+                                                                      right_x);
+
+                if (with_internal_deformation)
+                  {
+                    tria.set_all_manifold_ids(1);
+                    tria.set_manifold(1, manifold);
+                  }
+
                 tria.refine_global(n_refinements_x);
                 dealii::GridTools::partition_triangulation_zorder(
                   dealii::Utilities::MPI::n_mpi_processes(comm), tria, false);
                 dealii::GridTools::partition_multigrid_levels(tria);
+
+                if (with_internal_deformation)
+                  tria_x->set_manifold(1, manifold);
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
@@ -206,10 +362,23 @@ namespace hyperdeal
                                               left_v,
                                               right_v,
                                               2 * dim_x);
+
+                static internal::DeformedCubeManifold<dim_v> manifold(left_v,
+                                                                      right_v);
+
+                if (with_internal_deformation)
+                  {
+                    tria.set_all_manifold_ids(1);
+                    tria.set_manifold(1, manifold);
+                  }
+
                 tria.refine_global(n_refinements_v);
                 dealii::GridTools::partition_triangulation_zorder(
                   dealii::Utilities::MPI::n_mpi_processes(comm), tria, false);
                 dealii::GridTools::partition_multigrid_levels(tria);
+
+                if (with_internal_deformation)
+                  tria_v->set_manifold(1, manifold);
 
                 const auto construction_data =
                   dealii::TriangulationDescription::Utilities::
@@ -618,6 +787,68 @@ namespace hyperdeal
       else
         AssertThrow(false, dealii::ExcMessage("Unknown triangulation!"));
     }
+
+
+
+    template <int dim>
+    void
+    construct(std::shared_ptr<dealii::parallel::TriangulationBase<dim>> &tria,
+              const std::function<void(dealii::Triangulation<dim> &)>    fu)
+    {
+      if (auto triangulation = dynamic_cast<
+            dealii::parallel::fullydistributed::Triangulation<dim> *>(&*tria))
+        {
+          const auto comm = tria->get_communicator();
+
+          dealii::Triangulation<dim> tria(
+            dealii::Triangulation<dim>::limit_level_difference_at_vertices);
+
+          fu(tria);
+
+          dealii::GridTools::partition_triangulation_zorder(
+            dealii::Utilities::MPI::n_mpi_processes(comm), tria, false);
+          dealii::GridTools::partition_multigrid_levels(tria);
+
+          const auto manifold_ids = tria.get_manifold_ids();
+          for (const auto manifold_id : manifold_ids)
+            if (manifold_id != dealii::numbers::flat_manifold_id)
+              {
+                auto manifold = tria.get_manifold(manifold_id).clone();
+
+                if (auto temp = dynamic_cast<
+                      dealii::TransfiniteInterpolationManifold<dim> *>(
+                      manifold.get()))
+                  temp->initialize(*triangulation);
+
+                triangulation->set_manifold(manifold_id, *manifold);
+              }
+
+          const auto construction_data = dealii::TriangulationDescription::
+            Utilities::create_description_from_triangulation(
+              tria,
+              comm,
+              dealii::TriangulationDescription::Settings::
+                construct_multigrid_hierarchy);
+          triangulation->create_triangulation(construction_data);
+        }
+      else
+        AssertThrow(false, dealii::ExcMessage("Unknown triangulation!"));
+    }
+
+
+
+    template <int dim_x, int dim_v>
+    void
+    construct_tensor_product(
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
+      std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v,
+      const std::function<void(dealii::Triangulation<dim_x> &)>    fu_x,
+      const std::function<void(dealii::Triangulation<dim_v> &)>    fu_v)
+    {
+      construct<dim_x>(tria_x, fu_x);
+      construct<dim_v>(tria_v, fu_v);
+    }
+
 
 #include "grid_generator.inst"
 

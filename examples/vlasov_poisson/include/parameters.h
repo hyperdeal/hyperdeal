@@ -177,6 +177,7 @@ namespace hyperdeal
 } // namespace hyperdeal
 
 #include "../cases/hyperrectangle.h"
+#include "../cases/torus_hyperball.h"
 
 namespace hyperdeal
 {
@@ -236,6 +237,8 @@ namespace hyperdeal
         std::shared_ptr<hyperdeal::vp::Initializer<dim_x, dim_v, degree, Number>> initializer;
         if(case_name == "hyperrectangle")
           initializer.reset(new hyperdeal::vp::hyperrectangle::Initializer<dim_x, dim_v, degree, Number>);
+        else if(case_name == "torus")
+          initializer.reset(new hyperdeal::vp::torus_hyperball::Initializer<dim_x, dim_v, degree, Number>);
         else
           AssertThrow(false, dealii::ExcMessage("This case does not exist!"));
         // clang-format on
