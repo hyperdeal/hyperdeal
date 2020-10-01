@@ -18,6 +18,7 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/fe/fe_dgq.h>
 #include <deal.II/fe/fe_values.h>
 
 namespace hyperdeal

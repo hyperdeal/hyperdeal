@@ -13,9 +13,30 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
-#define HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
+#ifndef HYPERDEAL_BASE_MPI_TAGS
+#define HYPERDEAL_BASE_MPI_TAGS
 
-#include <deal.II/lac/la_sm_vector.h>
+#include <hyper.deal/base/config.h>
+
+#include <deal.II/base/mpi.h>
+
+namespace hyperdeal
+{
+  namespace mpi
+  {
+    namespace internal
+    {
+      namespace Tags
+      {
+        enum enumeration : std::uint16_t
+        {
+          // Partitioner::sync() -> MPI_Isend/MPI_Irecv
+          partitioner_sync,
+
+        };
+      }
+    } // namespace internal
+  }   // namespace mpi
+} // namespace hyperdeal
 
 #endif

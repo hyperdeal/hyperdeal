@@ -29,7 +29,10 @@
 #  include <deal.II/base/mpi_consensus_algorithms.templates.h>
 #endif
 
+#include <deal.II/lac/la_sm_partitioner.h>
+
 #include <hyper.deal/base/mpi.h>
+#include <hyper.deal/base/mpi_tags.h>
 #include <hyper.deal/matrix_free/shape_info.h>
 
 #include <map>
@@ -46,8 +49,8 @@ namespace hyperdeal
        * Partitioner for discontinuous Galerkin discretizations, exploiting
        * shared memory.
        */
-      template <typename Number>
       class Partitioner
+        : public dealii::LinearAlgebra::SharedMPI::PartitionerBase
       {
         const dealii::types::global_dof_index         dofs_per_cell;
         const dealii::types::global_dof_index         dofs_per_face;
@@ -62,9 +65,18 @@ namespace hyperdeal
         /**
          * Constructor.
          */
-        Partitioner(
-          const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
-            &shape_info);
+        template <typename Number>
+        Partitioner(const ShapeInfo<Number> &shape_info);
+
+        /**
+         * Constructor.
+         *
+         * @note Not implemented. Use the other reinit function.
+         */
+        void
+        reinit(const dealii::IndexSet &is_locally_owned,
+               const dealii::IndexSet &is_locally_ghost,
+               const MPI_Comm &        communicator) override;
 
         /**
          * Initialize partitioner with a list of locally owned cells and
@@ -76,85 +88,168 @@ namespace hyperdeal
                                            std::vector<unsigned int>>>
                               local_ghost_faces,
                const MPI_Comm comm,
-               const MPI_Comm sm_comm,
+               const MPI_Comm comm_sm,
                const bool     do_buffering);
 
         /**
-         * Start and finish ghost value update.
+         * Start to export to ghost array.
          */
         void
-        update_ghost_values(double *               data_this,
-                            std::vector<double *> &data_others) const;
+        export_to_ghosted_array_start(
+          const unsigned int             communication_channel,
+          double *const                  data_this,
+          const std::vector<double *> &  data_others,
+          dealii::AlignedVector<double> &buffer,
+          std::vector<MPI_Request> &     requests) const override;
 
         /**
-         * Start ghost value update.
+         * Finish to export to ghost array.
          */
         void
-        update_ghost_values_start(
-          double *               data_this,
-          std::vector<double *> &data_others,
-          const unsigned int     communication_channel = 0) const;
+        export_to_ghosted_array_finish(
+          double *const                data_this,
+          const std::vector<double *> &data_others,
+          std::vector<MPI_Request> &   requests) const override;
 
         /**
-         * Finish ghost value update.
+         * Start to import from ghost array.
          */
         void
-        update_ghost_values_finish(double *               data_this,
-                                   std::vector<double *> &data_others) const;
+        import_from_ghosted_array_start(
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          double *const                         data_this,
+          const std::vector<double *> &         data_others,
+          dealii::AlignedVector<double> &       buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * Start and finish compress.
+         * Finish to import from ghost array.
          */
         void
-        compress(double *                        data_this,
-                 std::vector<double *> &         data_others,
-                 dealii::VectorOperation::values operation =
-                   dealii::VectorOperation::add) const;
+        import_from_ghosted_array_finish(
+          const dealii::VectorOperation::values operation,
+          double *const                         data_this,
+          const std::vector<double *> &         data_others,
+          const dealii::AlignedVector<double> & buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * Start compress.
+         * Start to export to ghost array.
          */
         void
-        compress_start(double *               data_this,
-                       std::vector<double *> &data_others,
-                       const unsigned int     communication_channel = 0,
-                       dealii::VectorOperation::values operation =
-                         dealii::VectorOperation::add) const;
+        export_to_ghosted_array_start(
+          const unsigned int            communication_channel,
+          float *const                  data_this,
+          const std::vector<float *> &  data_others,
+          dealii::AlignedVector<float> &buffer,
+          std::vector<MPI_Request> &    requests) const override;
 
         /**
-         * Finish compress.
+         * Finish to export to ghost array.
          */
         void
-        compress_finish(double *                        data_this,
-                        std::vector<double *> &         data_others,
-                        dealii::VectorOperation::values operation =
-                          dealii::VectorOperation::add) const;
+        export_to_ghosted_array_finish(
+          float *const                data_this,
+          const std::vector<float *> &data_others,
+          std::vector<MPI_Request> &  requests) const override;
 
         /**
-         * Return global communicator.
+         * Start to import from ghost array.
          */
-        MPI_Comm &
-        get_mpi_communicator();
-
+        void
+        import_from_ghosted_array_start(
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          float *const                          data_this,
+          const std::vector<float *> &          data_others,
+          dealii::AlignedVector<float> &        buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * Return shared-memory communicator.
+         * Finish to import from ghost array.
          */
-        MPI_Comm &
-        get_mpi_sub_communicator();
+        void
+        import_from_ghosted_array_finish(
+          const dealii::VectorOperation::values operation,
+          float *const                          data_this,
+          const std::vector<float *> &          data_others,
+          const dealii::AlignedVector<float> &  buffer,
+          std::vector<MPI_Request> &            requests) const override;
 
         /**
-         * Return number of local elements.
+         * TODO.
          */
-        std::size_t
-        local_size() const;
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_0(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
 
         /**
-         * Return number of ghost elements.
+         * TODO.
          */
-        std::size_t
-        n_ghost_indices() const;
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_1(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
 
+      private:
+        /**
+         * Actual type-independent implementation of
+         * export_to_ghosted_array_start().
+         */
+        template <typename Number>
+        void
+        export_to_ghosted_array_start_impl(
+          const unsigned int             communication_channel,
+          Number *const                  data_this,
+          const std::vector<Number *> &  data_others,
+          dealii::AlignedVector<Number> &buffer,
+          std::vector<MPI_Request> &     requests) const;
+
+        /**
+         * Actual type-independent implementation of
+         * export_to_ghosted_array_finish().
+         */
+        template <typename Number>
+        void
+        export_to_ghosted_array_finish_impl(
+          Number *const                data_this,
+          const std::vector<Number *> &data_others,
+          std::vector<MPI_Request> &   requests) const;
+
+        /**
+         * Actual type-independent implementation of
+         * import_from_ghosted_array_start().
+         */
+        template <typename Number>
+        void
+        import_from_ghosted_array_start_impl(
+          const dealii::VectorOperation::values operation,
+          const unsigned int                    communication_channel,
+          Number *const                         data_this,
+          const std::vector<Number *> &         data_others,
+          dealii::AlignedVector<Number> &       buffer,
+          std::vector<MPI_Request> &            requests) const;
+
+        /**
+         * Actual type-independent implementation of
+         * import_from_ghosted_array_finish().
+         */
+        template <typename Number>
+        void
+        import_from_ghosted_array_finish_impl(
+          const dealii::VectorOperation::values operation,
+          Number *const                         data_this,
+          const std::vector<Number *> &         data_others,
+          const dealii::AlignedVector<Number> & buffer,
+          std::vector<MPI_Request> &            requests) const;
+
+      public:
         /**
          * Return position of shared cell: cell -> (owner, offset)
          */
@@ -178,40 +273,11 @@ namespace hyperdeal
         std::size_t
         memory_consumption() const;
 
+        /**
+         * Synchronize.
+         */
         void
-        sync()
-        {
-          for (unsigned int i = 0; i < sm_targets.size(); i++)
-            {
-              int dummy;
-              MPI_Isend(&dummy,
-                        0,
-                        MPI_INT,
-                        sm_targets[i],
-                        22,
-                        sm_comm,
-                        sm_targets_request.data() + i);
-            }
-
-          for (unsigned int i = 0; i < sm_sources.size(); i++)
-            {
-              int dummy;
-              MPI_Irecv(&dummy,
-                        0,
-                        MPI_INT,
-                        sm_sources[i],
-                        22,
-                        sm_comm,
-                        sm_sources_request.data() + i);
-            }
-
-          MPI_Waitall(sm_sources_request.size(),
-                      sm_sources_request.data(),
-                      MPI_STATUSES_IGNORE);
-          MPI_Waitall(sm_targets_request.size(),
-                      sm_targets_request.data(),
-                      MPI_STATUSES_IGNORE);
-        }
+        sync() const;
 
       private:
         // I) configuration parameters
@@ -219,8 +285,6 @@ namespace hyperdeal
         unsigned int dofs_per_ghost; // ghost face or ghost cell
 
         // II) MPI-communicator related stuff
-        MPI_Comm     comm_all;
-        MPI_Comm     sm_comm;
         unsigned int sm_size;
         unsigned int sm_rank;
 
@@ -231,20 +295,15 @@ namespace hyperdeal
         // III) information to pack/unpack buffers
         std::vector<unsigned int>                    send_ranks;
         std::vector<dealii::types::global_dof_index> send_ptr;
-        mutable std::vector<double>                  send_buffer_data;
         std::vector<dealii::types::global_dof_index> send_data_id;
         std::vector<unsigned int>                    send_data_face_no;
-        mutable std::vector<MPI_Request>             send_requests;
 
         std::vector<unsigned int>                    recv_ranks;
         std::vector<dealii::types::global_dof_index> recv_ptr;
         std::vector<dealii::types::global_dof_index> recv_size;
-        mutable std::vector<MPI_Request>             recv_requests;
 
-        std::vector<unsigned int>        sm_targets;
-        std::vector<unsigned int>        sm_sources;
-        mutable std::vector<MPI_Request> sm_targets_request;
-        mutable std::vector<MPI_Request> sm_sources_request;
+        std::vector<unsigned int> sm_targets;
+        std::vector<unsigned int> sm_sources;
 
 
         std::vector<dealii::types::global_dof_index> sm_send_ptr;
@@ -258,11 +317,161 @@ namespace hyperdeal
         std::vector<unsigned int>                    sm_recv_offset_1;
         std::vector<unsigned int>                    sm_recv_offset_2;
         std::vector<unsigned int>                    sm_recv_no;
-
-        // IV) Size of vector (queried by the vector)
-        std::size_t _local_size;
-        std::size_t _ghost_size;
       };
+
+
+      void
+      Partitioner::export_to_ghosted_array_start(
+        const unsigned int             communication_channel,
+        double *const                  data_this,
+        const std::vector<double *> &  data_others,
+        dealii::AlignedVector<double> &buffer,
+        std::vector<MPI_Request> &     requests) const
+      {
+        this->export_to_ghosted_array_start_impl(
+          communication_channel, data_this, data_others, buffer, requests);
+      }
+
+
+
+      void
+      Partitioner::export_to_ghosted_array_finish(
+        double *const                data_this,
+        const std::vector<double *> &data_others,
+        std::vector<MPI_Request> &   requests) const
+      {
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  requests);
+      }
+
+
+
+      void
+      Partitioner::import_from_ghosted_array_start(
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        double *const                         data_this,
+        const std::vector<double *> &         data_others,
+        dealii::AlignedVector<double> &       buffer,
+        std::vector<MPI_Request> &            requests) const
+      {
+        this->import_from_ghosted_array_start_impl(operation,
+                                                   communication_channel,
+                                                   data_this,
+                                                   data_others,
+                                                   buffer,
+                                                   requests);
+      }
+
+
+
+      void
+      Partitioner::import_from_ghosted_array_finish(
+        const dealii::VectorOperation::values operation,
+        double *const                         data_this,
+        const std::vector<double *> &         data_others,
+        const dealii::AlignedVector<double> & buffer,
+        std::vector<MPI_Request> &            requests) const
+      {
+        this->import_from_ghosted_array_finish_impl(
+          operation, data_this, data_others, buffer, requests);
+      }
+
+
+
+      void
+      Partitioner::export_to_ghosted_array_start(
+        const unsigned int            communication_channel,
+        float *const                  data_this,
+        const std::vector<float *> &  data_others,
+        dealii::AlignedVector<float> &buffer,
+        std::vector<MPI_Request> &    requests) const
+      {
+        export_to_ghosted_array_start_impl(
+          communication_channel, data_this, data_others, buffer, requests);
+      }
+
+
+
+      void
+      Partitioner::export_to_ghosted_array_finish(
+        float *const                data_this,
+        const std::vector<float *> &data_others,
+        std::vector<MPI_Request> &  requests) const
+      {
+        this->export_to_ghosted_array_finish_impl(data_this,
+                                                  data_others,
+                                                  requests);
+      }
+
+
+
+      void
+      Partitioner::import_from_ghosted_array_start(
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        float *const                          data_this,
+        const std::vector<float *> &          data_others,
+        dealii::AlignedVector<float> &        buffer,
+        std::vector<MPI_Request> &            requests) const
+      {
+        this->import_from_ghosted_array_start_impl(operation,
+                                                   communication_channel,
+                                                   data_this,
+                                                   data_others,
+                                                   buffer,
+                                                   requests);
+      }
+
+
+
+      void
+      Partitioner::import_from_ghosted_array_finish(
+        const dealii::VectorOperation::values operation,
+        float *const                          data_this,
+        const std::vector<float *> &          data_others,
+        const dealii::AlignedVector<float> &  buffer,
+        std::vector<MPI_Request> &            requests) const
+      {
+        this->import_from_ghosted_array_finish_impl(
+          operation, data_this, data_others, buffer, requests);
+      }
+
+
+
+      void
+      Partitioner::sync() const
+      {
+        std::vector<MPI_Request> req(sm_targets.size() + sm_sources.size());
+
+        for (unsigned int i = 0; i < sm_targets.size(); i++)
+          {
+            int dummy;
+            MPI_Isend(&dummy,
+                      0,
+                      MPI_INT,
+                      sm_targets[i],
+                      mpi::internal::Tags::partitioner_sync,
+                      this->comm_sm,
+                      req.data() + i);
+          }
+
+        for (unsigned int i = 0; i < sm_sources.size(); i++)
+          {
+            int dummy;
+            MPI_Irecv(&dummy,
+                      0,
+                      MPI_INT,
+                      sm_sources[i],
+                      mpi::internal::Tags::partitioner_sync,
+                      this->comm_sm,
+                      req.data() + i + sm_targets.size());
+          }
+
+        MPI_Waitall(req.size(), req.data(), MPI_STATUSES_IGNORE);
+      }
+
 
 
       namespace internal
@@ -342,33 +551,49 @@ namespace hyperdeal
 
 
       template <typename Number>
-      Partitioner<Number>::Partitioner(
-        const hyperdeal::internal::MatrixFreeFunctions::ShapeInfo<Number>
-          &shape_info)
-        : dofs_per_cell(shape_info.dofs_per_cell)
+      Partitioner::Partitioner(const ShapeInfo<Number> &shape_info)
+        : dealii::LinearAlgebra::SharedMPI::PartitionerBase(false)
+        , dofs_per_cell(shape_info.dofs_per_cell)
         , dofs_per_face(shape_info.dofs_per_face)
         , face_to_cell_index_nodal(shape_info.face_to_cell_index_nodal)
       {}
 
 
-
-      template <typename Number>
       void
-      Partitioner<Number>::reinit(
+      Partitioner::reinit(const dealii::IndexSet &is_locally_owned,
+                          const dealii::IndexSet &is_locally_ghost,
+                          const MPI_Comm &        communicator)
+      {
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
+
+        (void)is_locally_owned;
+        (void)is_locally_ghost;
+        (void)communicator;
+      }
+
+
+
+      void
+      Partitioner::reinit(
         const std::vector<dealii::types::global_dof_index> local_cells,
         const std::vector<
           std::pair<dealii::types::global_dof_index, std::vector<unsigned int>>>
                        local_ghost_faces,
         const MPI_Comm comm,
-        const MPI_Comm sm_comm,
+        const MPI_Comm comm_sm,
         const bool     do_buffering)
       {
+        // fill some information needed by PartitionerBase
+        this->comm             = comm;
+        this->comm_sm          = comm_sm;
+        this->n_mpi_processes_ = dealii::Utilities::MPI::n_mpi_processes(comm);
+
         this->do_buffering = do_buffering;
 
         AssertThrow(local_cells.size() > 0,
                     dealii::ExcMessage("No local cells!"));
 
-        _local_size = local_cells.size() * dofs_per_cell;
+        this->n_local_elements = local_cells.size() * dofs_per_cell;
 
         // 1) determine if ghost faces or ghost cells are needed
         const dealii::types::global_dof_index dofs_per_ghost = [&]() {
@@ -383,8 +608,8 @@ namespace hyperdeal
 
         this->dofs_per_ghost = dofs_per_ghost;
 
-        // const auto sm_comm  = create_sm(comm);
-        const auto sm_procs = hyperdeal::mpi::procs_of_sm(comm, sm_comm);
+        // const auto this->comm_sm  = create_sm(comm);
+        const auto sm_procs = hyperdeal::mpi::procs_of_sm(comm, this->comm_sm);
         const auto sm_rank  = [&]() {
           const auto ptr =
             std::find(sm_procs.begin(),
@@ -397,11 +622,9 @@ namespace hyperdeal
           return std::distance(sm_procs.begin(), ptr);
         }();
 
-        this->sm_comm = sm_comm;
         this->sm_rank = sm_rank;
         this->sm_size = sm_procs.size();
 
-        this->comm_all = comm;
 
         for (unsigned int i = 0; i < local_cells.size(); i++)
           this->maps[local_cells[i]] = {sm_rank, i * dofs_per_cell};
@@ -532,16 +755,16 @@ namespace hyperdeal
                       this->maps[cell] = {other_rank, offset * dofs_per_cell};
                     }
                 });
-          dealii::Utilities::MPI::ConsensusAlgorithms::
-            Selector<dealii::types::global_dof_index, unsigned int>(temp,
-                                                                    sm_comm)
-              .run();
+          dealii::Utilities::MPI::ConsensusAlgorithms::Selector<
+            dealii::types::global_dof_index,
+            unsigned int>(temp, this->comm_sm)
+            .run();
         }
 
 
         // 3) merge local_ghost_faces_remote and sort -> ghost_faces_remote
         const auto local_ghost_faces_remote_pairs_global =
-          [&local_ghost_faces_remote, &comm, &sm_comm]() {
+          [&local_ghost_faces_remote, &comm, this]() {
             std::vector<
               std::pair<dealii::types::global_dof_index, unsigned int>>
               local_ghost_faces_remote_pairs_local;
@@ -558,7 +781,7 @@ namespace hyperdeal
               std::pair<dealii::types::global_dof_index, unsigned int>>
               local_ghost_faces_remote_pairs_global =
                 internal::MPI_Allgather_Pairs(
-                  local_ghost_faces_remote_pairs_local, sm_comm);
+                  local_ghost_faces_remote_pairs_local, this->comm_sm);
 
             // sort
             std::sort(local_ghost_faces_remote_pairs_global.begin(),
@@ -605,7 +828,7 @@ namespace hyperdeal
 
 
         // ... update ghost size, and
-        this->_ghost_size =
+        this->n_ghost_elements =
           (distributed_local_ghost_faces_remote_pairs_global[sm_rank].size() +
            (do_buffering ?
               std::accumulate(local_ghost_faces_shared.begin(),
@@ -641,7 +864,7 @@ namespace hyperdeal
             [&distributed_local_ghost_faces_remote_pairs_global,
              &dofs_per_ghost,
              &local_cells,
-             &sm_comm,
+             this,
              &sm_procs,
              &my_offset]() {
               std::vector<unsigned int> offsets(sm_procs.size());
@@ -653,7 +876,7 @@ namespace hyperdeal
                 offsets.data(),
                 1,
                 dealii::Utilities::MPI::internal::mpi_type_id(&my_offset),
-                sm_comm);
+                this->comm_sm);
 
               std::map<std::pair<unsigned int, unsigned int>,
                        std::pair<dealii::types::global_dof_index, unsigned int>>
@@ -742,7 +965,7 @@ namespace hyperdeal
                   });
             dealii::Utilities::MPI::ConsensusAlgorithms::Selector<LocalDoFType,
                                                                   LocalDoFType>(
-              temp, sm_comm)
+              temp, this->comm_sm)
               .run();
 
             std::sort(maps_ghost_inverse_precomp.begin(),
@@ -858,7 +1081,7 @@ namespace hyperdeal
                         send_ranks[i],
                         105,
                         comm,
-                        &send_requests[i]);
+                        send_requests.data() + i);
 
               receive_info[send_ranks[i]] = {
                 send_data[i].size() * dofs_per_ghost,
@@ -945,7 +1168,6 @@ namespace hyperdeal
           recv_ptr.clear();
           recv_size.clear();
           recv_ranks.clear();
-          recv_requests.clear();
 
           for (const auto i : receive_info)
             {
@@ -953,7 +1175,6 @@ namespace hyperdeal
               recv_size.push_back(i.second.first);
               recv_ptr.push_back(i.second.second);
             }
-          recv_requests.resize(receive_info.size());
         }
 
         {
@@ -974,9 +1195,6 @@ namespace hyperdeal
 
               send_ptr.push_back(send_data_id.size());
             }
-
-          send_buffer_data.resize(send_ptr.back() * dofs_per_ghost);
-          send_requests.resize(requests_from_relevant_precomp.size());
         }
 
         {
@@ -990,10 +1208,8 @@ namespace hyperdeal
             this->sm_sources.push_back(i);
 
           this->sm_targets = dealii::Utilities::MPI::
-            compute_point_to_point_communication_pattern(sm_comm, sm_sources);
-
-          sm_targets_request.resize(sm_targets.size());
-          sm_sources_request.resize(sm_sources.size());
+            compute_point_to_point_communication_pattern(this->comm_sm,
+                                                         sm_sources);
         }
 
         if (do_buffering)
@@ -1034,7 +1250,7 @@ namespace hyperdeal
                 sm_send_ptr.push_back(sm_send_no.size());
               }
 
-            AssertThrow(sm_send_rank.size() == sm_sources_request.size(),
+            AssertThrow(sm_send_rank.size() == sm_sources.size(),
                         dealii::StandardExceptions::ExcNotImplemented());
           }
 
@@ -1076,7 +1292,7 @@ namespace hyperdeal
                 sm_recv_ptr.push_back(sm_recv_no.size());
               }
 
-            AssertThrow(sm_recv_rank.size() == sm_targets_request.size(),
+            AssertThrow(sm_recv_rank.size() == sm_targets.size(),
                         dealii::StandardExceptions::ExcNotImplemented());
           }
       }
@@ -1084,42 +1300,30 @@ namespace hyperdeal
 
 
       template <typename Number>
-      std::size_t
-      Partitioner<Number>::local_size() const
-      {
-        return _local_size;
-      }
-
-
-
-      template <typename Number>
-      std::size_t
-      Partitioner<Number>::n_ghost_indices() const
-      {
-        return _ghost_size;
-      }
-
-
-
-      template <typename Number>
       void
-      Partitioner<Number>::update_ghost_values(
-        double *               data_this,
-        std::vector<double *> &data_others) const
+      Partitioner::export_to_ghosted_array_start_impl(
+        const unsigned int communication_channel,
+        Number *const      data_this,
+        const std::vector<Number *> & /*data_others*/,
+        dealii::AlignedVector<Number> &send_buffer_data,
+        std::vector<MPI_Request> &     requests) const
       {
-        this->update_ghost_values_start(data_this, data_others, 0);
-        this->update_ghost_values_finish(data_this, data_others);
-      }
+        if (send_buffer_data.size() == 0)
+          {
+            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
+          }
+        else
+          {
+            AssertThrow(send_buffer_data.size() ==
+                          send_ptr.back() * dofs_per_ghost,
+                        dealii::StandardExceptions::ExcDimensionMismatch(
+                          send_buffer_data.size(),
+                          send_ptr.back() * dofs_per_ghost));
+          }
 
+        requests.resize(sm_sources.size() + sm_targets.size() +
+                        recv_ranks.size() + send_ranks.size());
 
-
-      template <typename Number>
-      void
-      Partitioner<Number>::update_ghost_values_start(
-        double *data_this,
-        std::vector<double *> & /*data_others*/,
-        const unsigned int communication_channel) const
-      {
         // 1) notify relevant shared processes that local data is available
         if (sm_size > 1)
           {
@@ -1130,8 +1334,8 @@ namespace hyperdeal
                         MPI_INT,
                         sm_targets[i],
                         communication_channel + 21,
-                        sm_comm,
-                        sm_targets_request.data() + i);
+                        this->comm_sm,
+                        requests.data() + i + sm_sources.size());
 
             for (unsigned int i = 0; i < sm_sources.size(); i++)
               MPI_Irecv(&dummy,
@@ -1139,8 +1343,8 @@ namespace hyperdeal
                         MPI_INT,
                         sm_sources[i],
                         communication_channel + 21,
-                        sm_comm,
-                        sm_sources_request.data() + i);
+                        this->comm_sm,
+                        requests.data() + i);
           }
 
         // 2) start receiving form (remote) processes
@@ -1151,8 +1355,9 @@ namespace hyperdeal
                       MPI_DOUBLE,
                       recv_ranks[i],
                       communication_channel + 22,
-                      comm_all,
-                      recv_requests.data() + i);
+                      comm,
+                      requests.data() + i + sm_sources.size() +
+                        sm_targets.size());
         }
 
         // 3) fill buffers and start sending to (remote) processes
@@ -1184,8 +1389,9 @@ namespace hyperdeal
                        MPI_DOUBLE,
                        send_ranks[c],
                        communication_channel + 22,
-                       comm_all,
-                       send_requests.data() + c);
+                       comm,
+                       requests.data() + c + sm_sources.size() +
+                         sm_targets.size() + recv_ranks.size());
           }
       }
 
@@ -1193,22 +1399,72 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner<Number>::update_ghost_values_finish(
-        double *               data_this,
-        std::vector<double *> &data_others) const
+      Partitioner::export_to_ghosted_array_finish_impl(
+        Number *const                data_this,
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
       {
-        // 1) deal with shared faces
-        if (do_buffering)
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
+
+        if (do_buffering) // deal with shared faces if buffering is requested
           {
             // update ghost values of shared cells (if requested)
-            for (unsigned int c = 0; c < sm_sources_request.size(); c++)
+            for (unsigned int c = 0; c < sm_sources.size(); c++)
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_sources_request.size(),
-                                              sm_sources_request.data(),
-                                              &i,
-                                              &status);
+                const auto ierr =
+                  MPI_Waitany(sm_sources.size(), requests.data(), &i, &status);
+                AssertThrowMPI(ierr);
+
+                for (unsigned int j = sm_send_ptr[i]; j < sm_send_ptr[i + 1];
+                     j++)
+                  if (dofs_per_ghost == dofs_per_face)
+                    {
+                      auto *__restrict dst = data_this + sm_send_offset_1[j];
+                      const auto *__restrict src =
+                        data_others[sm_send_rank[i]] + sm_send_offset_2[j];
+                      const auto *__restrict idx =
+                        face_to_cell_index_nodal[sm_send_no[j]].data();
+
+                      for (unsigned int i = 0; i < dofs_per_face; i++)
+                        dst[i] = src[idx[i]];
+                    }
+                  else if (dofs_per_ghost == dofs_per_cell)
+                    {
+                      AssertThrow(
+                        false, dealii::StandardExceptions::ExcNotImplemented());
+                    }
+              }
+          }
+
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
+      }
+
+
+
+      template <typename Number>
+      void
+      Partitioner::export_to_ghosted_array_finish_0(
+        Number *const                data_this,
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
+      {
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
+
+        if (do_buffering) // deal with shared faces if buffering is requested
+          {
+            // update ghost values of shared cells (if requested)
+            for (unsigned int c = 0; c < sm_sources.size(); c++)
+              {
+                int        i;
+                MPI_Status status;
+                const auto ierr =
+                  MPI_Waitany(sm_sources.size(), requests.data(), &i, &status);
                 AssertThrowMPI(ierr);
 
                 for (unsigned int j = sm_send_ptr[i]; j < sm_send_ptr[i + 1];
@@ -1233,52 +1489,64 @@ namespace hyperdeal
           }
         else
           {
-            MPI_Waitall(sm_sources_request.size(),
-                        sm_sources_request.data(),
+            MPI_Waitall(sm_sources.size(),
+                        requests.data(),
                         MPI_STATUSES_IGNORE);
           }
-
-        MPI_Waitall(sm_targets_request.size(),
-                    sm_targets_request.data(),
-                    MPI_STATUSES_IGNORE);
-
-        // 2) finish send/recv
-        MPI_Waitall(recv_requests.size(),
-                    recv_requests.data(),
-                    MPI_STATUSES_IGNORE);
-        MPI_Waitall(send_requests.size(),
-                    send_requests.data(),
-                    MPI_STATUSES_IGNORE);
       }
 
 
 
       template <typename Number>
       void
-      Partitioner<Number>::compress(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
-        dealii::VectorOperation::values operation) const
+      Partitioner::export_to_ghosted_array_finish_1(
+        Number *const                data_this,
+        const std::vector<Number *> &data_others,
+        std::vector<MPI_Request> &   requests) const
       {
-        this->compress_start(data_this, data_others, 0, operation);
-        this->compress_finish(data_this, data_others, operation);
+        (void)data_this;
+        (void)data_others;
+
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
+
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
       }
 
 
 
       template <typename Number>
       void
-      Partitioner<Number>::compress_start(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
-        const unsigned int              communication_channel,
-        dealii::VectorOperation::values operation) const
+      Partitioner::import_from_ghosted_array_start_impl(
+        const dealii::VectorOperation::values operation,
+        const unsigned int                    communication_channel,
+        Number *const                         data_this,
+        const std::vector<Number *> &         data_others,
+        dealii::AlignedVector<Number> &       send_buffer_data,
+        std::vector<MPI_Request> &            requests) const
       {
         (void)data_others;
         (void)communication_channel;
 
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
+
+        if (send_buffer_data.size() == 0)
+          {
+            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
+          }
+        else
+          {
+            AssertThrow(send_buffer_data.size() ==
+                          send_ptr.back() * dofs_per_ghost,
+                        dealii::StandardExceptions::ExcDimensionMismatch(
+                          send_buffer_data.size(),
+                          send_ptr.back() * dofs_per_ghost));
+          }
+
+        requests.resize(sm_sources.size() + sm_targets.size() +
+                        recv_ranks.size() + send_ranks.size());
 
         // 1) notify relevant shared processes that data is available
         if (sm_size > 1)
@@ -1291,8 +1559,8 @@ namespace hyperdeal
                         MPI_INT,
                         sm_sources[i],
                         communication_channel + 21,
-                        sm_comm,
-                        sm_sources_request.data() + i);
+                        this->comm_sm,
+                        requests.data() + i);
 
             for (unsigned int i = 0; i < sm_targets.size(); i++)
               MPI_Irecv(&dummy,
@@ -1300,8 +1568,8 @@ namespace hyperdeal
                         MPI_INT,
                         sm_targets[i],
                         communication_channel + 21,
-                        sm_comm,
-                        sm_targets_request.data() + i);
+                        this->comm_sm,
+                        requests.data() + i + sm_sources.size());
           }
 
         // request receive
@@ -1312,8 +1580,9 @@ namespace hyperdeal
                       MPI_DOUBLE,
                       recv_ranks[i],
                       0,
-                      comm_all,
-                      recv_requests.data() + i);
+                      comm,
+                      requests.data() + i + sm_sources.size() +
+                        sm_targets.size());
         }
 
         // fill buffers and request send
@@ -1323,33 +1592,46 @@ namespace hyperdeal
                     MPI_DOUBLE,
                     send_ranks[i],
                     0,
-                    comm_all,
-                    send_requests.data() + i);
+                    comm,
+                    requests.data() + i + sm_sources.size() +
+                      sm_targets.size() + recv_ranks.size());
       }
 
 
 
       template <typename Number>
       void
-      Partitioner<Number>::compress_finish(
-        double *                        data_this,
-        std::vector<double *> &         data_others,
-        dealii::VectorOperation::values operation) const
+      Partitioner::import_from_ghosted_array_finish_impl(
+        const dealii::VectorOperation::values operation,
+        Number *const                         data_this,
+        const std::vector<Number *> &         data_others,
+        const dealii::AlignedVector<Number> & send_buffer_data,
+        std::vector<MPI_Request> &            requests) const
       {
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
+        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+                    dealii::StandardExceptions::ExcDimensionMismatch(
+                      send_buffer_data.size(),
+                      send_ptr.back() * dofs_per_ghost));
+
+        AssertDimension(requests.size(),
+                        sm_sources.size() + sm_targets.size() +
+                          recv_ranks.size() + send_ranks.size());
+
         // 1) compress for shared faces
         if (do_buffering)
           {
-            for (unsigned int c = 0; c < sm_targets_request.size(); c++)
+            for (unsigned int c = 0; c < sm_targets.size(); c++)
               {
                 int        i;
                 MPI_Status status;
-                const auto ierr = MPI_Waitany(sm_targets_request.size(),
-                                              sm_targets_request.data(),
-                                              &i,
-                                              &status);
+                const auto ierr =
+                  MPI_Waitany(sm_targets.size(),
+                              requests.data() + sm_sources.size(),
+                              &i,
+                              &status);
                 AssertThrowMPI(ierr);
 
                 for (unsigned int j = sm_recv_ptr[i]; j < sm_recv_ptr[i + 1];
@@ -1378,10 +1660,12 @@ namespace hyperdeal
           {
             int        r;
             MPI_Status status;
-            const auto ierr = MPI_Waitany(send_requests.size(),
-                                          send_requests.data(),
-                                          &r,
-                                          &status);
+            const auto ierr =
+              MPI_Waitany(send_ranks.size(),
+                          requests.data() + sm_sources.size() +
+                            sm_targets.size() + recv_ranks.size(),
+                          &r,
+                          &status);
             AssertThrowMPI(ierr);
 
             auto buffer =
@@ -1406,79 +1690,44 @@ namespace hyperdeal
                 }
           }
 
-        MPI_Waitall(sm_sources_request.size(),
-                    sm_sources_request.data(),
-                    MPI_STATUSES_IGNORE);
-
-        // 3) make sure data has been sent to remote process
-        MPI_Waitall(recv_requests.size(),
-                    &recv_requests[0],
-                    MPI_STATUSES_IGNORE);
+        MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
       }
 
 
 
-      template <typename Number>
-      MPI_Comm &
-      Partitioner<Number>::get_mpi_communicator()
-      {
-        return comm_all;
-      }
-
-
-
-      template <typename Number>
-      MPI_Comm &
-      Partitioner<Number>::get_mpi_sub_communicator()
-      {
-        return sm_comm;
-      }
-
-
-
-      template <typename Number>
       const std::map<dealii::types::global_dof_index,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner<Number>::get_maps() const
+      Partitioner::get_maps() const
       {
         return maps;
       }
 
 
 
-      template <typename Number>
       const std::map<std::pair<dealii::types::global_dof_index, unsigned int>,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner<Number>::get_maps_ghost() const
+      Partitioner::get_maps_ghost() const
       {
         return maps_ghost;
       }
 
 
 
-      template <typename Number>
       std::size_t
-      Partitioner<Number>::memory_consumption() const
+      Partitioner::memory_consumption() const
       {
         // [TODO] not counting maps and maps_ghost
 
         return dealii::MemoryConsumption::memory_consumption(send_ranks) +
                dealii::MemoryConsumption::memory_consumption(send_ptr) +
-               dealii::MemoryConsumption::memory_consumption(send_buffer_data) +
                dealii::MemoryConsumption::memory_consumption(send_data_id) +
                dealii::MemoryConsumption::memory_consumption(
                  send_data_face_no) +
-               dealii::MemoryConsumption::memory_consumption(send_requests) +
                dealii::MemoryConsumption::memory_consumption(recv_ranks) +
                dealii::MemoryConsumption::memory_consumption(recv_ptr) +
                dealii::MemoryConsumption::memory_consumption(recv_size) +
-               dealii::MemoryConsumption::memory_consumption(recv_requests) +
                dealii::MemoryConsumption::memory_consumption(sm_targets) +
                dealii::MemoryConsumption::memory_consumption(sm_sources) +
-               dealii::MemoryConsumption::memory_consumption(
-                 sm_targets_request) +
-               dealii::MemoryConsumption::memory_consumption(
-                 sm_sources_request) +
                dealii::MemoryConsumption::memory_consumption(sm_send_ptr) +
                dealii::MemoryConsumption::memory_consumption(sm_send_rank) +
                dealii::MemoryConsumption::memory_consumption(sm_send_offset_1) +

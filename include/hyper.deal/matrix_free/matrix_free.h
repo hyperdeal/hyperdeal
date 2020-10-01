@@ -304,23 +304,19 @@ namespace hyperdeal
     const internal::MatrixFreeFunctions::ShapeInfo<Number> &
     get_shape_info() const;
 
+    /**
+     * Return an estimate for the memory consumption, in bytes, of this object.
+     */
     MemoryConsumption
-    memory_consumption() const
-    {
-      MemoryConsumption mem("matrix_free");
-      mem.insert("partitioner", partitioner->memory_consumption());
-      mem.insert("dof_info", dof_info.memory_consumption());
-      mem.insert("face_info", face_info.memory_consumption());
-      mem.insert("shape_info", shape_info.memory_consumption());
-
-      return mem;
-    }
+    memory_consumption() const;
 
     /**
      * Return partitioner of the vectors.
      */
-    const std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>> &
+    const std::shared_ptr<
+      const dealii::LinearAlgebra::SharedMPI::PartitionerBase> &
     get_vector_partitioner() const;
+
 
   private:
     /**
@@ -363,7 +359,7 @@ namespace hyperdeal
     /**
      * Partitioner for ghost_value_update() and compress().
      */
-    mutable std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>>
+    std::shared_ptr<const dealii::LinearAlgebra::SharedMPI::PartitionerBase>
       partitioner;
 
     /**
@@ -380,6 +376,13 @@ namespace hyperdeal
      * Shape info.
      */
     internal::MatrixFreeFunctions::ShapeInfo<Number> shape_info;
+
+    /**
+     * Partitions for ECL.
+     *
+     * TODO: more details
+     */
+    std::array<std::vector<ID>, 3> partitions;
   };
 
 } // namespace hyperdeal
