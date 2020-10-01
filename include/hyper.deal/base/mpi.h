@@ -45,7 +45,7 @@ namespace hyperdeal
      *
      * @note As ID the rank in @comm is used.
      */
-    std::vector<int>
+    std::vector<unsigned int>
     procs_of_sm(const MPI_Comm &comm, const MPI_Comm &comm_shared);
 
     /**

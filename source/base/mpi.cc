@@ -61,21 +61,23 @@ namespace hyperdeal
 
 
 
-    std::vector<int>
+    std::vector<unsigned int>
     procs_of_sm(const MPI_Comm &comm, const MPI_Comm &comm_shared)
     {
       // extract information from comm
-      int rank;
-      MPI_Comm_rank(comm, &rank);
+      int rank_;
+      MPI_Comm_rank(comm, &rank_);
+
+      const unsigned int rank = rank_;
 
       // extract information from sm-comm
       int size_shared;
       MPI_Comm_size(comm_shared, &size_shared);
 
       // gather ranks
-      std::vector<int> ranks_shared(size_shared);
+      std::vector<unsigned int> ranks_shared(size_shared);
       MPI_Allgather(
-        &rank, 1, MPI_INT, ranks_shared.data(), 1, MPI_INT, comm_shared);
+        &rank, 1, MPI_UNSIGNED, ranks_shared.data(), 1, MPI_INT, comm_shared);
 
       return ranks_shared;
     }
