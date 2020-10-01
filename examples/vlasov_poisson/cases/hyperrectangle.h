@@ -133,6 +133,11 @@ namespace hyperdeal
               "v-space: number of subdivisions in z-direction.");
           prm.leave_subsection();
 
+          prm.add_parameter(
+            "DeformMesh",
+            deform_mesh,
+            "Deform Cartesian mesh with an arbitrary non-linear manifold.");
+
           prm.leave_subsection();
         }
 
@@ -158,7 +163,7 @@ namespace hyperdeal
           // clang-format off
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
               n_refinements_x, n_subdivisions_x, p1_x, p2_x, do_periodic_x,
-              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v);
+              n_refinements_v, n_subdivisions_v, p1_v, p2_v, do_periodic_v, deform_mesh);
           // clang-format on
         }
 
@@ -201,6 +206,8 @@ namespace hyperdeal
 
         std::vector<unsigned int> n_subdivisions_x;
         std::vector<unsigned int> n_subdivisions_v;
+
+        bool deform_mesh = false;
       };
     } // namespace hyperrectangle
   }   // namespace vp
