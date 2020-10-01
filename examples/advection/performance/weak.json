@@ -1,0 +1,52 @@
+{
+    "General": {
+        "DimX": "3",
+        "DimV": "3",
+        "DegreeX": "3",
+        "DegreeV": "3",
+        "PartitionX": "12",
+        "PartitionV": "8",
+        "UseVirtualTopology": "true",
+        "UseSharedMemory": "true",
+        "Verbose": "true",
+        "Case": "hyperrectangle"
+    },
+    "SpatialDiscretization": {
+        "MappingX": "1",
+        "MappingV": "1",
+        "DoCollocation": "false"
+    },
+    "Triangulation": {
+        "Type": "fullydistributed",
+        "OutputGrid": "false"
+    },
+    "TemporalDiscretization": {
+        "TimeStep": "0.1",
+        "StartTime": "0",
+        "FinalTime": "2.00",
+        "MaxTimeStepNumber": "20",
+        "RKType": "rk45",
+        "CFLNumber": "0.05",
+        "DiagnosticsEnabled": "false",
+        "DiagnosticsTick": "1.0",
+        "PerformanceLogAllCalls": "false",
+        "DiagnosticsWarmUpIterations": "10"
+    },
+    "AdvectionOperation": {
+        "SkewFactor": "0.5"
+    },
+    "Matrixfree": {
+        "GhostFaces": "true",
+        "DoBuffering": "false",
+        "UseECL": "true", 
+        "OverlappingLevel" : "2"
+    },
+    "Case": {
+        "NRefinementsX": "0",
+        "NRefinementsV": "0",
+        "PeriodicX": "true",
+        "PeriodicV": "true",
+        "NSubdivisionsX": {"X": "4", "Y": "4"},
+        "NSubdivisionsV": {"X": "4", "Y": "4"}
+    }
+}

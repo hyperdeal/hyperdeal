@@ -1,0 +1,47 @@
+{
+    "TemporalDiscretization": {
+        "MaxTimeStepNumber": "20",
+        "FinalTime": "2.00",
+        "RKType": "rk45",
+        "TimeStep": "0.1",
+        "DiagnosticsTick": "1.0",
+        "PerformanceLogAllCalls": "false",
+        "CFLNumber": "0.05",
+        "DiagnosticsWarmUpIterations": "10",
+        "DiagnosticsEnabled": "false",
+        "StartTime": "0"
+    },
+    "Case": {
+        "NRefinementsX": 1,
+        "NRefinementsV": 1
+    },
+    "Matrixfree": {
+        "DoBuffering": "false",
+        "UseECL": "true",
+        "GhostFaces": "true"
+    },
+    "SpatialDiscretization": {
+        "MappingV": "2",
+        "MappingX": "2",
+        "DoCollocation": "false"
+    },
+    "AdvectionOperation": {
+        "SkewFactor": "0.0"
+    },
+    "General": {
+        "Case": "torus",
+        "Verbose": "true",
+        "UseSharedMemory": "true",
+        "DegreeV": 3,
+        "PartitionX": 1,
+        "DimV": 3,
+        "DimX": 3,
+        "UseVirtualTopology": "true",
+        "PartitionV": 1,
+        "DegreeX": 3
+    },
+    "Triangulation": {
+        "OutputGrid": "false",
+        "Type": "fullydistributed"
+    }
+}
