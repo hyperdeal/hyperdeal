@@ -90,8 +90,11 @@ namespace hyperdeal
           values_cells.resize(data.n_cell_batches() * n_points_cell);
 
         if (values_faces_int.size() !=
-            data.n_inner_face_batches() * n_points_face)
-          values_faces_int.resize(data.n_inner_face_batches() * n_points_face);
+            (data.n_inner_face_batches() + data.n_boundary_face_batches()) *
+              n_points_face)
+          values_faces_int.resize(
+            (data.n_inner_face_batches() + data.n_boundary_face_batches()) *
+            n_points_face);
 
         if (values_faces_ext.size() !=
             data.n_inner_face_batches() * n_points_face)
@@ -201,8 +204,6 @@ namespace hyperdeal
               }
           },
           [&](const auto &, auto &, const auto &src, const auto range) {
-            AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-
             // boundary faces
             for (auto face = range.first; face < range.second; ++face)
               {
