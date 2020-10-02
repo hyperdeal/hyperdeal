@@ -22,6 +22,8 @@
 
 #include <fstream>
 
+#include "poisson.h"
+
 namespace hyperdeal
 {
   namespace vp
@@ -186,11 +188,11 @@ namespace hyperdeal
         return dealii::Tensor<1, dim_x + dim_v>();
       }
 
-      virtual bool
-      is_poisson_problem_singular() const
+      virtual LaplaceOperatorBCType
+      get_poisson_problem_bc_type() const
       {
         AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-        return false;
+        return LaplaceOperatorBCType::NBC;
       }
     };
   } // namespace vp

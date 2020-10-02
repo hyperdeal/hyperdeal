@@ -42,6 +42,13 @@
 #include <deal.II/multigrid/mg_transfer_matrix_free.h>
 #include <deal.II/multigrid/multigrid.h>
 
+enum class LaplaceOperatorBCType
+{
+  DBC,
+  NBC,
+  PBC
+};
+
 template <int dim_,
           int fe_degree,
           int n_q_points_1d,
@@ -58,10 +65,16 @@ public:
   void
   initialize(
     const dealii::MatrixFree<dim, Number, VectorizedArrayType> &matrix_free,
-    const bool do_zero_mean = false)
+    const LaplaceOperatorBCType                                 bc_type)
   {
-    this->matrix_free  = &matrix_free;
-    this->do_zero_mean = do_zero_mean;
+    this->matrix_free = &matrix_free;
+
+    this->bc_type = bc_type;
+
+    if ((bc_type == LaplaceOperatorBCType::NBC ||
+         bc_type == LaplaceOperatorBCType::PBC) &&
+        (matrix_free.get_mg_level() == dealii::numbers::invalid_unsigned_int))
+      this->do_zero_mean = do_zero_mean;
   }
 
   bool
@@ -259,12 +272,29 @@ private:
 
         for (unsigned int q = 0; q < fe_eval.n_q_points; ++q)
           {
-            VectorizedArrayType average_value = fe_eval.get_value(q);
-            VectorizedArrayType average_valgrad =
-              -fe_eval.get_normal_derivative(q);
-            average_valgrad += average_value * sigmaF * 2.0;
-            fe_eval.submit_normal_derivative(-average_value, q);
-            fe_eval.submit_value(average_valgrad, q);
+            if (bc_type == LaplaceOperatorBCType::NBC)
+              {
+                VectorizedArrayType jump_value       = 0.0;
+                VectorizedArrayType average_gradient = 0.0;
+                average_gradient = average_gradient - jump_value * sigmaF;
+
+                fe_eval.submit_normal_derivative(-0.5 * jump_value, q);
+                fe_eval.submit_value(-average_gradient, q);
+              }
+            else if (bc_type == LaplaceOperatorBCType::DBC)
+              {
+                VectorizedArrayType average_value = fe_eval.get_value(q);
+                VectorizedArrayType average_valgrad =
+                  -fe_eval.get_normal_derivative(q);
+                average_valgrad += average_value * sigmaF * 2.0;
+                fe_eval.submit_normal_derivative(-average_value, q);
+                fe_eval.submit_value(average_valgrad, q);
+              }
+            else
+              {
+                AssertThrow(false,
+                            dealii::StandardExceptions::ExcNotImplemented());
+              }
           }
 
         fe_eval.integrate(true, true);
@@ -440,12 +470,29 @@ private:
 
             for (unsigned int q = 0; q < phi.n_q_points; ++q)
               {
-                VectorizedArrayType average_value = phi.get_value(q);
-                VectorizedArrayType average_valgrad =
-                  -phi.get_normal_derivative(q);
-                average_valgrad += average_value * sigmaF * 2.0;
-                phi.submit_normal_derivative(-average_value, q);
-                phi.submit_value(average_valgrad, q);
+                if (bc_type == LaplaceOperatorBCType::NBC)
+                  {
+                    VectorizedArrayType jump_value       = 0.0;
+                    VectorizedArrayType average_gradient = 0.0;
+                    average_gradient = average_gradient - jump_value * sigmaF;
+
+                    phi.submit_normal_derivative(-0.5 * jump_value, q);
+                    phi.submit_value(-average_gradient, q);
+                  }
+                else if (bc_type == LaplaceOperatorBCType::DBC)
+                  {
+                    VectorizedArrayType average_value = phi.get_value(q);
+                    VectorizedArrayType average_valgrad =
+                      -phi.get_normal_derivative(q);
+                    average_valgrad += average_value * sigmaF * 2.0;
+                    phi.submit_normal_derivative(-average_value, q);
+                    phi.submit_value(average_valgrad, q);
+                  }
+                else
+                  {
+                    AssertThrow(
+                      false, dealii::StandardExceptions::ExcNotImplemented());
+                  }
               }
 
             phi.integrate(true, true);
@@ -460,6 +507,8 @@ private:
   const dealii::MatrixFree<dim, Number, VectorizedArrayType> *matrix_free;
 
   bool do_zero_mean;
+
+  LaplaceOperatorBCType bc_type;
 };
 
 template <int dim, typename LAPLACEOPERATOR>
