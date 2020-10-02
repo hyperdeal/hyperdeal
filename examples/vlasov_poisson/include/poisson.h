@@ -74,7 +74,9 @@ public:
     if ((bc_type == LaplaceOperatorBCType::NBC ||
          bc_type == LaplaceOperatorBCType::PBC) &&
         (matrix_free.get_mg_level() == dealii::numbers::invalid_unsigned_int))
-      this->do_zero_mean = do_zero_mean;
+      this->do_zero_mean = true;
+    else
+      this->do_zero_mean = false;
   }
 
   bool
@@ -506,7 +508,7 @@ private:
 
   const dealii::MatrixFree<dim, Number, VectorizedArrayType> *matrix_free;
 
-  bool do_zero_mean;
+  bool do_zero_mean = false;
 
   LaplaceOperatorBCType bc_type;
 };

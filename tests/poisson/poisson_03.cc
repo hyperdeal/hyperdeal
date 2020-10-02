@@ -147,7 +147,7 @@ test(const bool do_test_multigrid)
 
   // create operator
   MatrixType fine_matrix;
-  fine_matrix.initialize(matrix_free);
+  fine_matrix.initialize(matrix_free, LaplaceOperatorBCType::DBC);
 
   std::shared_ptr<PoissonSolverBase<VectorType>> solver;
 
@@ -178,7 +178,8 @@ test(const bool do_test_multigrid)
             mapping, dof, constraints, quad, data);
 
           // ... initialize level operator
-          mg_matrices[level].initialize(level_matrix_free[level]);
+          mg_matrices[level].initialize(level_matrix_free[level],
+                                        LaplaceOperatorBCType::DBC);
         }
 
       solver.reset(new PoissonSolverMG<MatrixType>(fine_matrix,
