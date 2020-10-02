@@ -247,7 +247,8 @@ namespace hyperdeal
             // Poisson solver: [TODO] not a great place here...
             {
               const bool use_multigrid = true; // [TODO]: parameter file
-              const bool is_singular   = true; // [TODO]: initializer
+              const bool is_singular =
+                initializer->is_poisson_problem_singular();
 
               poisson_matrix.initialize(matrix_free_x, is_singular);
 
@@ -525,7 +526,8 @@ namespace hyperdeal
               ScopedTimerWrapper timer(timers, "id_step2");
 
               // subtract mean (why is this necessary?)
-              particle_density.add(-particle_density.mean_value());
+              if (poisson_matrix.is_singular())
+                particle_density.add(-particle_density.mean_value());
 
               // test the particle density to obtain the right-hand-side
               // for the Poisson problem
@@ -552,7 +554,8 @@ namespace hyperdeal
                 particle_density);
 
               // subtract mean needed by Poisson solver
-              particle_density.add(-particle_density.mean_value());
+              if (poisson_matrix.is_singular())
+                particle_density.add(-particle_density.mean_value());
             }
 
             {
