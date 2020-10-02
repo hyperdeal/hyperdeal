@@ -22,6 +22,8 @@
 
 #include <fstream>
 
+#include "poisson.h"
+
 namespace hyperdeal
 {
   namespace vp
@@ -47,6 +49,7 @@ namespace hyperdeal
         time_loop_parameters.add_parameters(prm);
         rk_parameters.add_parameters(prm);
         prm.add_parameter("CFLNumber", cfl_number);
+        prm.add_parameter("DiagnosticsVTK", dignostics_vtk);
         prm.add_parameter("DiagnosticsEnabled", dignostics_enabled);
         prm.add_parameter("DiagnosticsTick", dignostics_tick);
         prm.add_parameter("DiagnosticsFileName", diag_file);
@@ -94,6 +97,7 @@ namespace hyperdeal
 
       // ... diagnostic
       bool        dignostics_enabled = true;
+      bool        dignostics_vtk     = false;
       Number      dignostics_tick    = 0.1;
       std::string diag_file          = "time_history_diagnostics.out";
 
@@ -186,11 +190,11 @@ namespace hyperdeal
         return dealii::Tensor<1, dim_x + dim_v>();
       }
 
-      virtual bool
-      is_poisson_problem_singular() const
+      virtual LaplaceOperatorBCType
+      get_poisson_problem_bc_type() const
       {
         AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-        return false;
+        return LaplaceOperatorBCType::NBC;
       }
     };
   } // namespace vp

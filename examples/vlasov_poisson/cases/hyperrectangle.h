@@ -198,10 +198,10 @@ namespace hyperdeal
             .get_transport_direction();
         }
 
-        bool
-        is_poisson_problem_singular() const override
+        LaplaceOperatorBCType
+        get_poisson_problem_bc_type() const override
         {
-          return true;
+          return LaplaceOperatorBCType::PBC;
         }
 
       private:

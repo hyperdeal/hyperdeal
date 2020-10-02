@@ -27,6 +27,8 @@
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/tools.h>
 
+#include <deal.II/numerics/data_out.h>
+
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/base/time_loop.h>
@@ -247,10 +249,9 @@ namespace hyperdeal
             // Poisson solver: [TODO] not a great place here...
             {
               const bool use_multigrid = true; // [TODO]: parameter file
-              const bool is_singular =
-                initializer->is_poisson_problem_singular();
 
-              poisson_matrix.initialize(matrix_free_x, is_singular);
+              poisson_matrix.initialize(
+                matrix_free_x, initializer->get_poisson_problem_bc_type());
 
               if (!use_multigrid) // solve with PCG + Chebychev preconditioner
                 {
@@ -285,7 +286,8 @@ namespace hyperdeal
 
                       // ... initialize level operator
                       (*mg_matrices)[level].initialize(
-                        (*level_matrix_free)[level]);
+                        (*level_matrix_free)[level],
+                        initializer->get_poisson_problem_bc_type());
                     }
 
                   poisson_solver.reset(new PoissonSolverMG<PoissonMatrixType>(
@@ -615,6 +617,9 @@ namespace hyperdeal
               phase_space_diagnostics<degree, n_points>(matrix_free,
                                                         vct_solution);
 
+            if (pcout.is_active())
+              fprintf(stdout, "   Time:%10.3e \n", cur_time);
+
             if (dealii::Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
               {
                 std::ofstream diag_file;
@@ -644,6 +649,80 @@ namespace hyperdeal
                               << diag_val[2] << " " << diag_val[3] << " "
                               << diag_val[4] << " " << diag_val[5] << std::endl;
                   }
+              }
+
+            // temporal particle density vector since the actual particle
+            // vector is overwritten in the Poisson solver
+            VectorType2 particle_density_temp;
+            matrix_free_x.initialize_dof_vector(particle_density_temp);
+
+            // compute particle density and potiential again
+            if (param.dignostics_vtk)
+              {
+                VectorTools::velocity_space_integration<degree, n_points>(
+                  matrix_free,
+                  particle_density,
+                  vct_solution,
+                  0 /* dof_no_x*/,
+                  0 /*dof_no_v*/,
+                  2 /* quad_no_v */);
+
+                if (poisson_matrix.is_singular())
+                  particle_density.add(-particle_density.mean_value());
+
+                particle_density_temp.copy_locally_owned_data_from(
+                  particle_density);
+
+                dealii::FEEvaluation<dim_x, degree, n_points, 1, Number> phi_x(
+                  matrix_free_x);
+
+                matrix_free_x.template cell_loop<VectorType2, VectorType2>(
+                  [&](const auto &,
+                      auto &      dst,
+                      const auto &src,
+                      const auto  range) mutable {
+                    for (unsigned int cell = range.first; cell < range.second;
+                         ++cell)
+                      {
+                        phi_x.reinit(cell);
+                        phi_x.gather_evaluate(src, true, false);
+                        for (unsigned int q = 0; q < phi_x.n_q_points; ++q)
+                          phi_x.submit_value(-phi_x.get_value(q), q);
+                        phi_x.integrate(true, false);
+                        phi_x.set_dof_values(dst);
+                      }
+                  },
+                  particle_density,
+                  particle_density);
+
+                // subtract mean needed by Poisson solver
+                if (poisson_matrix.is_singular())
+                  particle_density.add(-particle_density.mean_value());
+
+                potential = 0.0;
+                poisson_solver->solve(potential, particle_density);
+              }
+
+            // output VTK files once
+            if (dealii::Utilities::MPI::this_mpi_process(comm_column) == 0)
+              {
+                dealii::DataOutBase::VtkFlags flags;
+                flags.write_higher_order_cells = true;
+
+                dealii::DataOut<dim_x> data_out;
+                data_out.set_flags(flags);
+
+                data_out.attach_dof_handler(*dof_handler_x);
+                data_out.add_data_vector(particle_density_temp,
+                                         "particle_density");
+                data_out.add_data_vector(potential, "potential");
+                data_out.build_patches(
+                  dealii::MappingQGeneric<dim_x>(3),
+                  3,
+                  dealii::DataOut<dim_x>::CurvedCellRegion::curved_inner_cells);
+                const std::string filename =
+                  "solution_" + std::to_string(time_step_counter) + ".vtu";
+                data_out.write_vtu_in_parallel(filename, comm_row);
               }
           });
 
