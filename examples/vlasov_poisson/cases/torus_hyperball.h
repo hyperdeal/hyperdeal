@@ -26,6 +26,10 @@ namespace hyperdeal
   {
     namespace torus_hyperball
     {
+      static const double torus_R = 6.2; // ITER
+      static const double torus_r = 2.0;
+      static const double ball_R  = 5.0;
+
       template <int dim_x, int dim_v, typename Number = double>
       class ExactSolution : public dealii::Function<dim_x + dim_v, Number>
       {
@@ -44,8 +48,22 @@ namespace hyperdeal
         value(const dealii::Point<dim_x + dim_v> &p,
               const unsigned int = 1) const
         {
-          return (5 - std::abs(p[3])) * (5 - std::abs(p[4])) *
-                 (5 - std::abs(p[5])) / 125;
+          // project p on x-z plane -> direction vector
+          const dealii::Point<dim_x> pp(p[0], 0.0, p[2]);
+
+          // normalized and scale direction vector, s.t, its length equals to R
+          // and subtract from point -> distance from the center of the tube
+          const double distance = (torus_R * (pp / pp.norm()) -
+                                   dealii::Point<dim_x>(p[0], p[1], p[2]))
+                                    .norm();
+
+          double result = std::exp(-1.0 * pow(distance, 2));
+
+          for (unsigned int d = dim_x; d < dim_x + dim_v; ++d)
+            result = result * std::exp(-0.5 * pow(p[d], 2)) /
+                     std::sqrt(2.0 * dealii::numbers::PI);
+
+          return result;
         }
 
         dealii::Tensor<1, dim_x + dim_v>
@@ -86,7 +104,7 @@ namespace hyperdeal
         {
           const auto fu_x = [&](auto &tria) {
             if constexpr (dim_x == 3)
-              dealii::GridGenerator::torus(tria, 6.2, 2.0); // ITER
+              dealii::GridGenerator::torus(tria, torus_R, torus_r);
             else
               AssertThrow(false,
                           dealii::StandardExceptions::ExcNotImplemented());
@@ -97,7 +115,7 @@ namespace hyperdeal
             if constexpr (dim_v == 3)
               dealii::GridGenerator::hyper_ball_balanced(tria,
                                                          dealii::Point<dim_v>(),
-                                                         5.0);
+                                                         ball_R);
             else
               AssertThrow(false,
                           dealii::StandardExceptions::ExcNotImplemented());
@@ -132,10 +150,10 @@ namespace hyperdeal
             .get_transport_direction();
         }
 
-        bool
-        is_poisson_problem_singular() const override
+        LaplaceOperatorBCType
+        get_poisson_problem_bc_type() const override
         {
-          return false;
+          return LaplaceOperatorBCType::NBC;
         }
 
       private:
