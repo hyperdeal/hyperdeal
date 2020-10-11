@@ -36,7 +36,7 @@ namespace hyperdeal
         &                function,
       const unsigned int n_lanes)
     {
-      VectorizedArrayType result;
+      VectorizedArrayType result = 0;
 
       for (unsigned int v = 0; v < n_lanes; ++v)
         {
