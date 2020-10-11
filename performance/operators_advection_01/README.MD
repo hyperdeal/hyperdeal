@@ -33,25 +33,25 @@ cd node_level_basic_cache/
 sbatch job.cmd
 cd ..
 
-# Cache analysis of the cell-local part of the advection operator (for k=3/5, 2<=d<=6)
+# Cache analysis of FCL execution of the advection operator (for k=3/5, 2<=d<=6)
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_01/node_level_basic.py --fcl
 cd node_level_basic_fcl/
 sbatch job.cmd
 cd ..
 
-# Cache analysis of the cell-local part of the advection operator (for k=3/5, 2<=d<=6)
+# Cache analysis of collocation execution of the advection operator (for k=3/5, 2<=d<=6)
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_01/node_level_basic.py --co
 cd node_level_basic_co/
 sbatch job.cmd
 cd ..
 
-# Cache analysis of the cell-local part of the advection operator (for k=3/5, 2<=d<=6)
+# Cache analysis of advection operator for different SIMD lengths (for k=3, 2<=d<=6)
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_01/node_level_basic.py --simd3
 cd node_level_basic_simd_k3/
 sbatch job.cmd
 cd ..
 
-# Cache analysis of the cell-local part of the advection operator (for k=3/5, 2<=d<=6)
+# Cache analysis of advection operator for different SIMD lengths (for k=4, 2<=d<=6)
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_01/node_level_basic.py --simd4
 cd node_level_basic_simd_k4/
 sbatch job.cmd
@@ -66,15 +66,15 @@ cd operators_advection_02_results
 
 
 
-# TODO
+# Cache analysis of purelly Cartesian mesh
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_02/node_level_basic.py --cartesian
-cd node_level_basic_simd_cartesian/
+cd node_level_basic_cartesian/
 sbatch job.cmd
 cd ..
 
-# TODO
+# Cache analysis of mesh with full mapping description
 python ~/sw-hyperdeal-update/hyperdeal/performance/operators_advection_02/node_level_basic.py --full
-cd node_level_basic_simd_full/
+cd node_level_basic_full/
 sbatch job.cmd
 cd ..
 
