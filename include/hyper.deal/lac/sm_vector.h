@@ -16,6 +16,21 @@
 #ifndef HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
 #define HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
 
-#include <deal.II/lac/la_sm_vector.h>
+#include <deal.II/lac/la_parallel_vector.h>
+
+DEAL_II_NAMESPACE_OPEN
+
+namespace LinearAlgebra
+{
+  namespace SharedMPI
+  {
+    template <typename Number, typename MemorySpace = MemorySpace::Host>
+    using Vector =
+      dealii::LinearAlgebra::distributed::Vector<Number, MemorySpace>;
+  } // namespace SharedMPI
+} // namespace LinearAlgebra
+
+
+DEAL_II_NAMESPACE_CLOSE
 
 #endif

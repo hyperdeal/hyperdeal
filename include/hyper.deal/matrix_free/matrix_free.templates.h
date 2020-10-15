@@ -1245,9 +1245,10 @@ namespace hyperdeal
                 dealii::ExcMessage("Partitioner has not been initialized!"));
 
     // setup vector
-    vec.reinit(std::make_shared<dealii::Utilities::MPI::Partitioner>(),
-               partitioner,
-               do_ghosts);
+    vec.reinit(partitioner->local_size(),
+               do_ghosts ? partitioner->n_ghost_indices() : 0,
+               comm,
+               comm_sm);
 
     // zero out values
     if (zero_out_values)
@@ -1274,8 +1275,6 @@ namespace hyperdeal
     // perform test compression (working for FCL)
     if (zero_out_values && do_ghosts && !use_ecl)
       {
-        vec.compress(dealii::VectorOperation::values::add);
-
         dealii::AlignedVector<Number> buffer;
         std::vector<MPI_Request>      requests;
 
@@ -1546,7 +1545,17 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        src.update_ghost_values(); // TODO: use partitioner directly
+        dealii::AlignedVector<Number> buffer;
+        std::vector<MPI_Request>      requests;
+
+        auto &src_ = const_cast<InVector &>(src);
+
+        this->partitioner->export_to_ghosted_array_start(
+          0, src_.begin(), src_.other_values(), buffer, requests);
+
+        this->partitioner->export_to_ghosted_array_finish(src_.begin(),
+                                                          src_.other_values(),
+                                                          requests);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1625,8 +1634,23 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "compress");
 
-        dst.compress(
-          dealii::VectorOperation::add); // TODO: use partitioner directly
+        dealii::AlignedVector<Number> buffer;
+        std::vector<MPI_Request>      requests;
+
+        this->partitioner->import_from_ghosted_array_start(
+          dealii::VectorOperation::values::add,
+          0,
+          dst.begin(),
+          dst.other_values(),
+          buffer,
+          requests);
+
+        this->partitioner->import_from_ghosted_array_finish(
+          dealii::VectorOperation::values::add,
+          dst.begin(),
+          dst.other_values(),
+          buffer,
+          requests);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
