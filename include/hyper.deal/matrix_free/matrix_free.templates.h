@@ -979,14 +979,20 @@ namespace hyperdeal
       return partitioner;
     }();
 
+    /**
+     * Global ID of cell each face/cell is related to.
+     *
+     * @note (0) FCL (interior); (1) FCL (exterior);
+     *       (2) cell; (3) ECL (exterior)
+     */
+    std::array<std::vector<unsigned int>, 4> dof_indices_contiguous;
 
     // set up rest of dof_info and face_info (1)
     {
       auto &n_vectorization_lanes_filled =
         dof_info.n_vectorization_lanes_filled;
-      auto &dof_indices_contiguous = dof_info.dof_indices_contiguous;
-      auto &no_faces               = face_info.no_faces;
-      auto &face_orientations      = face_info.face_orientations;
+      auto &no_faces          = face_info.no_faces;
+      auto &face_orientations = face_info.face_orientations;
 
       // 1) collect gids (dof_indices) according to vectorization
       {
@@ -1055,9 +1061,8 @@ namespace hyperdeal
     {
       // given information
       const auto &vectorization_length = dof_info.n_vectorization_lanes_filled;
-      const auto &dof_indices_contiguous = dof_info.dof_indices_contiguous;
-      const auto &no_faces               = face_info.no_faces;
-      const auto &face_orientations      = face_info.face_orientations;
+      const auto &no_faces             = face_info.no_faces;
+      const auto &face_orientations    = face_info.face_orientations;
 
       const auto &maps       = partitioner->get_maps();
       const auto &maps_ghost = partitioner->get_maps_ghost();
