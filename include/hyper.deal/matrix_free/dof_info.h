@@ -28,14 +28,6 @@ namespace hyperdeal
         std::array<std::vector<unsigned char>, 4> n_vectorization_lanes_filled;
 
         /**
-         * Global ID of cell each face/cell is related to.
-         *
-         * @note (0) FCL (interior); (1) FCL (exterior);
-         *       (2) cell; (3) ECL (exterior)
-         */
-        std::array<std::vector<unsigned int>, 4> dof_indices_contiguous;
-
-        /**
          * Stores the indices of the degrees of freedom for each face/cell
          * in the shared-memory domain. The first number of the pair
          * is the rank within the shared-memory communicator and the
@@ -60,8 +52,6 @@ namespace hyperdeal
         {
           return dealii::MemoryConsumption::memory_consumption(
                    n_vectorization_lanes_filled) +
-                 dealii::MemoryConsumption::memory_consumption(
-                   dof_indices_contiguous) +
                  dealii::MemoryConsumption::memory_consumption(
                    dof_indices_contiguous_ptr);
         }
