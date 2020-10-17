@@ -913,8 +913,8 @@ namespace hyperdeal
       AssertThrow(do_ghost_faces,
                   dealii::StandardExceptions::ExcNotImplemented());
 
-      auto partitioner =
-        new internal::MatrixFreeFunctions::Partitioner(shape_info);
+      auto partitioner = new dealii::internal::MatrixFreeFunctions::
+        VectorDataExchange::Contiguous(shape_info);
 
       // create a list of inner cells and ghost faces
       std::vector<dealii::types::global_dof_index> local_list;
@@ -1062,12 +1062,12 @@ namespace hyperdeal
       const auto &face_orientations      = face_info.face_orientations;
 
       const auto &maps =
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
           ->get_maps();
       const auto &maps_ghost =
-        dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-          partitioner.get())
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
           ->get_maps_ghost();
 
       static const int v_len = VectorizedArrayType::size();
@@ -1414,8 +1414,8 @@ namespace hyperdeal
                 dealii::StandardExceptions::ExcNotImplemented());
 
     const auto part =
-      dynamic_cast<const internal::MatrixFreeFunctions::Partitioner *>(
-        partitioner.get());
+      dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                     VectorDataExchange::Contiguous *>(partitioner.get());
 
     {
       ScopedTimerWrapper timer(timers, "loop");

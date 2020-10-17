@@ -39,17 +39,19 @@
 #include <vector>
 
 
-namespace hyperdeal
+DEAL_II_NAMESPACE_OPEN
+
+namespace internal
 {
-  namespace internal
+  namespace MatrixFreeFunctions
   {
-    namespace MatrixFreeFunctions
+    namespace VectorDataExchange
     {
       /**
        * Partitioner for discontinuous Galerkin discretizations, exploiting
        * shared memory.
        */
-      class Partitioner
+      class Contiguous
         : public dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base
       {
         const dealii::types::global_dof_index         dofs_per_cell;
@@ -65,8 +67,8 @@ namespace hyperdeal
         /**
          * Constructor.
          */
-        template <typename Number>
-        Partitioner(const ShapeInfo<Number> &shape_info);
+        template <typename ShapeInfo>
+        Contiguous(const ShapeInfo &shape_info);
 
         /**
          * Initialize partitioner with a list of locally owned cells and
@@ -313,7 +315,7 @@ namespace hyperdeal
          * Synchronize.
          */
         void
-        sync() const;
+        sync(const unsigned int tag = 0) const;
 
       private:
         /**
@@ -382,7 +384,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::export_to_ghosted_array_start(
+      Contiguous::export_to_ghosted_array_start(
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const double> &locally_owned_array,
         const std::vector<dealii::ArrayView<const double>> &shared_arrays,
@@ -401,7 +403,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::export_to_ghosted_array_finish(
+      Contiguous::export_to_ghosted_array_finish(
         const dealii::ArrayView<const double> &             locally_owned_array,
         const std::vector<dealii::ArrayView<const double>> &shared_arrays,
         const dealii::ArrayView<double> &                   ghost_array,
@@ -416,7 +418,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::import_from_ghosted_array_start(
+      Contiguous::import_from_ghosted_array_start(
         const dealii::VectorOperation::values  vector_operation,
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const double> &locally_owned_array,
@@ -437,7 +439,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::import_from_ghosted_array_finish(
+      Contiguous::import_from_ghosted_array_finish(
         const dealii::VectorOperation::values vector_operation,
         const dealii::ArrayView<double> &     locally_owned_storage,
         const std::vector<dealii::ArrayView<const double>> &shared_arrays,
@@ -456,7 +458,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::export_to_ghosted_array_start(
+      Contiguous::export_to_ghosted_array_start(
         const unsigned int                    communication_channel,
         const dealii::ArrayView<const float> &locally_owned_array,
         const std::vector<dealii::ArrayView<const float>> &shared_arrays,
@@ -475,7 +477,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::export_to_ghosted_array_finish(
+      Contiguous::export_to_ghosted_array_finish(
         const dealii::ArrayView<const float> &             locally_owned_array,
         const std::vector<dealii::ArrayView<const float>> &shared_arrays,
         const dealii::ArrayView<float> &                   ghost_array,
@@ -490,7 +492,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::import_from_ghosted_array_start(
+      Contiguous::import_from_ghosted_array_start(
         const dealii::VectorOperation::values vector_operation,
         const unsigned int                    communication_channel,
         const dealii::ArrayView<const float> &locally_owned_array,
@@ -511,7 +513,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::import_from_ghosted_array_finish(
+      Contiguous::import_from_ghosted_array_finish(
         const dealii::VectorOperation::values vector_operation,
         const dealii::ArrayView<float> &      locally_owned_storage,
         const std::vector<dealii::ArrayView<const float>> &shared_arrays,
@@ -530,7 +532,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::sync() const
+      Contiguous::sync(const unsigned int tag) const
       {
         std::vector<MPI_Request> req(sm_targets.size() + sm_sources.size());
 
@@ -541,7 +543,7 @@ namespace hyperdeal
                       0,
                       MPI_INT,
                       sm_targets[i],
-                      mpi::internal::Tags::partitioner_sync,
+                      tag,
                       this->comm_sm,
                       req.data() + i);
           }
@@ -553,7 +555,7 @@ namespace hyperdeal
                       0,
                       MPI_INT,
                       sm_sources[i],
-                      mpi::internal::Tags::partitioner_sync,
+                      tag,
                       this->comm_sm,
                       req.data() + i + sm_targets.size());
           }
@@ -639,8 +641,8 @@ namespace hyperdeal
 
 
 
-      template <typename Number>
-      Partitioner::Partitioner(const ShapeInfo<Number> &shape_info)
+      template <typename ShapeInfo>
+      Contiguous::Contiguous(const ShapeInfo &shape_info)
         : dofs_per_cell(shape_info.dofs_per_cell)
         , dofs_per_face(shape_info.dofs_per_face)
         , face_to_cell_index_nodal(shape_info.face_to_cell_index_nodal)
@@ -649,7 +651,7 @@ namespace hyperdeal
 
 
       void
-      Partitioner::reinit(
+      Contiguous::reinit(
         const std::vector<dealii::types::global_dof_index> local_cells,
         const std::vector<
           std::pair<dealii::types::global_dof_index, std::vector<unsigned int>>>
@@ -1376,7 +1378,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::export_to_ghosted_array_start_impl(
+      Contiguous::export_to_ghosted_array_start_impl(
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const Number> &data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
@@ -1479,7 +1481,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::export_to_ghosted_array_finish_impl(
+      Contiguous::export_to_ghosted_array_finish_impl(
         const dealii::ArrayView<const Number> &             data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
         const dealii::ArrayView<Number> &                   ghost_array,
@@ -1533,7 +1535,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::export_to_ghosted_array_finish_0(
+      Contiguous::export_to_ghosted_array_finish_0(
         const dealii::ArrayView<const Number> &             data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
         std::vector<MPI_Request> &                          requests) const
@@ -1588,7 +1590,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::export_to_ghosted_array_finish_1(
+      Contiguous::export_to_ghosted_array_finish_1(
         const dealii::ArrayView<const Number> &             data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
         std::vector<MPI_Request> &                          requests) const
@@ -1607,7 +1609,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::import_from_ghosted_array_start_impl(
+      Contiguous::import_from_ghosted_array_start_impl(
         const dealii::VectorOperation::values  operation,
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const Number> &data_this,
@@ -1692,7 +1694,7 @@ namespace hyperdeal
 
       template <typename Number>
       void
-      Partitioner::import_from_ghosted_array_finish_impl(
+      Contiguous::import_from_ghosted_array_finish_impl(
         const dealii::VectorOperation::values               operation,
         const dealii::ArrayView<Number> &                   data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
@@ -1795,7 +1797,7 @@ namespace hyperdeal
 
       const std::map<dealii::types::global_dof_index,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner::get_maps() const
+      Contiguous::get_maps() const
       {
         return maps;
       }
@@ -1804,7 +1806,7 @@ namespace hyperdeal
 
       const std::map<std::pair<dealii::types::global_dof_index, unsigned int>,
                      std::pair<unsigned int, unsigned int>> &
-      Partitioner::get_maps_ghost() const
+      Contiguous::get_maps_ghost() const
       {
         return maps_ghost;
       }
@@ -1812,7 +1814,7 @@ namespace hyperdeal
 
 
       std::size_t
-      Partitioner::memory_consumption() const
+      Contiguous::memory_consumption() const
       {
         // [TODO] not counting maps and maps_ghost
 
@@ -1838,9 +1840,10 @@ namespace hyperdeal
                dealii::MemoryConsumption::memory_consumption(sm_recv_no);
       }
 
+    } // namespace VectorDataExchange
+  }   // namespace MatrixFreeFunctions
+} // namespace internal
 
-    } // namespace MatrixFreeFunctions
-  }   // namespace internal
-} // namespace hyperdeal
+DEAL_II_NAMESPACE_CLOSE
 
 #endif
