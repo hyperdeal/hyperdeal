@@ -314,7 +314,7 @@ namespace hyperdeal
      * Return partitioner of the vectors.
      */
     const std::shared_ptr<
-      const dealii::LinearAlgebra::SharedMPI::PartitionerBase> &
+      const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base> &
     get_vector_partitioner() const;
 
 
@@ -359,7 +359,8 @@ namespace hyperdeal
     /**
      * Partitioner for ghost_value_update() and compress().
      */
-    std::shared_ptr<const dealii::LinearAlgebra::SharedMPI::PartitionerBase>
+    std::shared_ptr<
+      const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base>
       partitioner;
 
     /**

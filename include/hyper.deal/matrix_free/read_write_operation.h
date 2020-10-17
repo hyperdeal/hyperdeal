@@ -54,10 +54,11 @@ namespace hyperdeal
                   typename VectorOperation,
                   typename VectorizedArrayType>
         void
-        process_cell(const VectorOperation &      operation,
-                     const std::vector<double *> &data_others,
-                     VectorizedArrayType *        dst,
-                     const unsigned int           cell_batch_number) const;
+        process_cell(
+          const VectorOperation &                             operation,
+          const std::vector<dealii::ArrayView<const Number>> &data_others,
+          VectorizedArrayType *                               dst,
+          const unsigned int cell_batch_number) const;
 
 
         /**
@@ -84,16 +85,17 @@ namespace hyperdeal
                   typename VectorOperation,
                   typename VectorizedArrayType>
         void
-        process_face(const VectorOperation &      operation,
-                     const std::vector<double *> &data_others,
-                     VectorizedArrayType *        dst,
-                     const unsigned int *         face_no,
-                     const unsigned int *         face_orientation,
-                     const unsigned int           face_orientation_offset,
-                     const unsigned int           cell_batch_number,
-                     const unsigned int           cell_side,
-                     const unsigned int           face_batch_number,
-                     const unsigned int           face_side) const;
+        process_face(
+          const VectorOperation &                             operation,
+          const std::vector<dealii::ArrayView<const Number>> &data_others,
+          VectorizedArrayType *                               dst,
+          const unsigned int *                                face_no,
+          const unsigned int *                                face_orientation,
+          const unsigned int face_orientation_offset,
+          const unsigned int cell_batch_number,
+          const unsigned int cell_side,
+          const unsigned int face_batch_number,
+          const unsigned int face_side) const;
 
       private:
         const std::array<std::vector<unsigned char>, 4>
@@ -132,10 +134,10 @@ namespace hyperdeal
                 typename VectorizedArrayType>
       void
       ReadWriteOperation<Number>::process_cell(
-        const VectorOperation &      operation,
-        const std::vector<double *> &global,
-        VectorizedArrayType *        local,
-        const unsigned int           cell_batch_number) const
+        const VectorOperation &                             operation,
+        const std::vector<dealii::ArrayView<const Number>> &global,
+        VectorizedArrayType *                               local,
+        const unsigned int cell_batch_number) const
       {
         static const unsigned int v_len = VectorizedArrayType::size();
         static const unsigned int n_dofs_per_cell =
@@ -152,7 +154,8 @@ namespace hyperdeal
           {
             const auto sm_ptr =
               dof_indices_contiguous_ptr[2][v_len * cell_batch_number + v];
-            global_ptr[v] = global[sm_ptr.first] + sm_ptr.second;
+            global_ptr[v] =
+              const_cast<Number *>(global[sm_ptr.first].data()) + sm_ptr.second;
           }
 
         // step 2: process dofs
@@ -181,16 +184,16 @@ namespace hyperdeal
                 typename VectorizedArrayType>
       void
       ReadWriteOperation<Number>::process_face(
-        const VectorOperation &      operation,
-        const std::vector<double *> &global,
-        VectorizedArrayType *        local,
-        const unsigned int *         face_no,
-        const unsigned int *         face_orientation,
-        const unsigned int           face_orientation_offset,
-        const unsigned int           cell_batch_number,
-        const unsigned int           cell_side,
-        const unsigned int           face_batch_number,
-        const unsigned int           face_side) const
+        const VectorOperation &                             operation,
+        const std::vector<dealii::ArrayView<const Number>> &global,
+        VectorizedArrayType *                               local,
+        const unsigned int *                                face_no,
+        const unsigned int *                                face_orientation,
+        const unsigned int face_orientation_offset,
+        const unsigned int cell_batch_number,
+        const unsigned int cell_side,
+        const unsigned int face_batch_number,
+        const unsigned int face_side) const
       {
         static const unsigned int dim   = dim_x + dim_v;
         static const unsigned int v_len = VectorizedArrayType::size();
@@ -208,7 +211,8 @@ namespace hyperdeal
             const auto sm_ptr =
               dof_indices_contiguous_ptr[face_side]
                                         [v_len * face_batch_number + v];
-            global_ptr[v] = global[sm_ptr.first] + sm_ptr.second;
+            global_ptr[v] =
+              const_cast<Number *>(global[sm_ptr.first].data()) + sm_ptr.second;
           }
 
         if (n_vectorization_lanes_filled[cell_side][cell_batch_number] ==

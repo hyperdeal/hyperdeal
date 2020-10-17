@@ -29,7 +29,7 @@
 #  include <deal.II/base/mpi_consensus_algorithms.templates.h>
 #endif
 
-#include <deal.II/lac/la_sm_partitioner.h>
+#include <deal.II/matrix_free/vector_data_exchange.h>
 
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/base/mpi_tags.h>
@@ -50,7 +50,7 @@ namespace hyperdeal
        * shared memory.
        */
       class Partitioner
-        : public dealii::LinearAlgebra::SharedMPI::PartitionerBase
+        : public dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base
       {
         const dealii::types::global_dof_index         dofs_per_cell;
         const dealii::types::global_dof_index         dofs_per_face;
@@ -69,16 +69,6 @@ namespace hyperdeal
         Partitioner(const ShapeInfo<Number> &shape_info);
 
         /**
-         * Constructor.
-         *
-         * @note Not implemented. Use the other reinit function.
-         */
-        void
-        reinit(const dealii::IndexSet &is_locally_owned,
-               const dealii::IndexSet &is_locally_ghost,
-               const MPI_Comm &        communicator) override;
-
-        /**
          * Initialize partitioner with a list of locally owned cells and
          * a list of ghost faces (cell and face no).
          */
@@ -91,91 +81,133 @@ namespace hyperdeal
                const MPI_Comm comm_sm,
                const bool     do_buffering);
 
-        /**
-         * Start to export to ghost array.
-         */
-        void
-        export_to_ghosted_array_start(
-          const unsigned int             communication_channel,
-          double *const                  data_this,
-          const std::vector<double *> &  data_others,
-          dealii::AlignedVector<double> &buffer,
-          std::vector<MPI_Request> &     requests) const override;
+        unsigned int
+        local_size() const override
+        {
+          return n_local_elements;
+        }
 
-        /**
-         * Finish to export to ghost array.
-         */
-        void
-        export_to_ghosted_array_finish(
-          double *const                data_this,
-          const std::vector<double *> &data_others,
-          std::vector<MPI_Request> &   requests) const override;
+        unsigned int
+        n_ghost_indices() const override
+        {
+          return n_ghost_elements;
+        }
 
-        /**
-         * Start to import from ghost array.
-         */
-        void
-        import_from_ghosted_array_start(
-          const dealii::VectorOperation::values operation,
-          const unsigned int                    communication_channel,
-          double *const                         data_this,
-          const std::vector<double *> &         data_others,
-          dealii::AlignedVector<double> &       buffer,
-          std::vector<MPI_Request> &            requests) const override;
+        unsigned int
+        n_import_indices() const override
+        {
+          return send_ptr.back() * dofs_per_ghost;
+        }
 
-        /**
-         * Finish to import from ghost array.
-         */
         void
-        import_from_ghosted_array_finish(
-          const dealii::VectorOperation::values operation,
-          double *const                         data_this,
-          const std::vector<double *> &         data_others,
-          const dealii::AlignedVector<double> & buffer,
-          std::vector<MPI_Request> &            requests) const override;
+        reset_ghost_values(
+          const dealii::ArrayView<double> &ghost_array) const override
+        {
+          (void)ghost_array;
+          // TODO
+        }
+
+        void
+        reset_ghost_values(
+          const dealii::ArrayView<float> &ghost_array) const override
+        {
+          (void)ghost_array;
+          // TODO
+        }
 
         /**
          * Start to export to ghost array.
          */
         void
         export_to_ghosted_array_start(
-          const unsigned int            communication_channel,
-          float *const                  data_this,
-          const std::vector<float *> &  data_others,
-          dealii::AlignedVector<float> &buffer,
-          std::vector<MPI_Request> &    requests) const override;
+          const unsigned int                     communication_channel,
+          const dealii::ArrayView<const double> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+          const dealii::ArrayView<double> &                   ghost_array,
+          const dealii::ArrayView<double> &                   temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
 
         /**
          * Finish to export to ghost array.
          */
         void
         export_to_ghosted_array_finish(
-          float *const                data_this,
-          const std::vector<float *> &data_others,
-          std::vector<MPI_Request> &  requests) const override;
+          const dealii::ArrayView<const double> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+          const dealii::ArrayView<double> &                   ghost_array,
+          std::vector<MPI_Request> &requests) const override;
 
         /**
          * Start to import from ghost array.
          */
         void
         import_from_ghosted_array_start(
-          const dealii::VectorOperation::values operation,
-          const unsigned int                    communication_channel,
-          float *const                          data_this,
-          const std::vector<float *> &          data_others,
-          dealii::AlignedVector<float> &        buffer,
-          std::vector<MPI_Request> &            requests) const override;
+          const dealii::VectorOperation::values  vector_operation,
+          const unsigned int                     communication_channel,
+          const dealii::ArrayView<const double> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+          const dealii::ArrayView<double> &                   ghost_array,
+          const dealii::ArrayView<double> &                   temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
 
         /**
          * Finish to import from ghost array.
          */
         void
         import_from_ghosted_array_finish(
-          const dealii::VectorOperation::values operation,
-          float *const                          data_this,
-          const std::vector<float *> &          data_others,
-          const dealii::AlignedVector<float> &  buffer,
-          std::vector<MPI_Request> &            requests) const override;
+          const dealii::VectorOperation::values vector_operation,
+          const dealii::ArrayView<double> &     locally_owned_storage,
+          const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+          const dealii::ArrayView<double> &                   ghost_array,
+          const dealii::ArrayView<const double> &             temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
+
+        /**
+         * Start to export to ghost array.
+         */
+        void
+        export_to_ghosted_array_start(
+          const unsigned int                    communication_channel,
+          const dealii::ArrayView<const float> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+          const dealii::ArrayView<float> &                   ghost_array,
+          const dealii::ArrayView<float> &                   temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
+
+        /**
+         * Finish to export to ghost array.
+         */
+        void
+        export_to_ghosted_array_finish(
+          const dealii::ArrayView<const float> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+          const dealii::ArrayView<float> &                   ghost_array,
+          std::vector<MPI_Request> &requests) const override;
+
+        /**
+         * Start to import from ghost array.
+         */
+        void
+        import_from_ghosted_array_start(
+          const dealii::VectorOperation::values vector_operation,
+          const unsigned int                    communication_channel,
+          const dealii::ArrayView<const float> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+          const dealii::ArrayView<float> &                   ghost_array,
+          const dealii::ArrayView<float> &                   temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
+
+        /**
+         * Finish to import from ghost array.
+         */
+        void
+        import_from_ghosted_array_finish(
+          const dealii::VectorOperation::values vector_operation,
+          const dealii::ArrayView<float> &      locally_owned_storage,
+          const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+          const dealii::ArrayView<float> &                   ghost_array,
+          const dealii::ArrayView<const float> &             temporary_storage,
+          std::vector<MPI_Request> &requests) const override;
 
         /**
          * TODO.
@@ -183,9 +215,9 @@ namespace hyperdeal
         template <typename Number>
         void
         export_to_ghosted_array_finish_0(
-          Number *const                data_this,
-          const std::vector<Number *> &data_others,
-          std::vector<MPI_Request> &   requests) const;
+          const dealii::ArrayView<const Number> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          std::vector<MPI_Request> &                          requests) const;
 
         /**
          * TODO.
@@ -193,9 +225,9 @@ namespace hyperdeal
         template <typename Number>
         void
         export_to_ghosted_array_finish_1(
-          Number *const                data_this,
-          const std::vector<Number *> &data_others,
-          std::vector<MPI_Request> &   requests) const;
+          const dealii::ArrayView<const Number> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          std::vector<MPI_Request> &                          requests) const;
 
       private:
         /**
@@ -205,11 +237,12 @@ namespace hyperdeal
         template <typename Number>
         void
         export_to_ghosted_array_start_impl(
-          const unsigned int             communication_channel,
-          Number *const                  data_this,
-          const std::vector<Number *> &  data_others,
-          dealii::AlignedVector<Number> &buffer,
-          std::vector<MPI_Request> &     requests) const;
+          const unsigned int                     communication_channel,
+          const dealii::ArrayView<const Number> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
+          const dealii::ArrayView<Number> &                   temporary_storage,
+          std::vector<MPI_Request> &                          requests) const;
 
         /**
          * Actual type-independent implementation of
@@ -218,9 +251,10 @@ namespace hyperdeal
         template <typename Number>
         void
         export_to_ghosted_array_finish_impl(
-          Number *const                data_this,
-          const std::vector<Number *> &data_others,
-          std::vector<MPI_Request> &   requests) const;
+          const dealii::ArrayView<const Number> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
+          std::vector<MPI_Request> &                          requests) const;
 
         /**
          * Actual type-independent implementation of
@@ -229,12 +263,13 @@ namespace hyperdeal
         template <typename Number>
         void
         import_from_ghosted_array_start_impl(
-          const dealii::VectorOperation::values operation,
-          const unsigned int                    communication_channel,
-          Number *const                         data_this,
-          const std::vector<Number *> &         data_others,
-          dealii::AlignedVector<Number> &       buffer,
-          std::vector<MPI_Request> &            requests) const;
+          const dealii::VectorOperation::values  vector_operation,
+          const unsigned int                     communication_channel,
+          const dealii::ArrayView<const Number> &locally_owned_array,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
+          const dealii::ArrayView<Number> &                   temporary_storage,
+          std::vector<MPI_Request> &                          requests) const;
 
         /**
          * Actual type-independent implementation of
@@ -243,11 +278,12 @@ namespace hyperdeal
         template <typename Number>
         void
         import_from_ghosted_array_finish_impl(
-          const dealii::VectorOperation::values operation,
-          Number *const                         data_this,
-          const std::vector<Number *> &         data_others,
-          const dealii::AlignedVector<Number> & buffer,
-          std::vector<MPI_Request> &            requests) const;
+          const dealii::VectorOperation::values vector_operation,
+          const dealii::ArrayView<Number> &     locally_owned_storage,
+          const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
+          const dealii::ArrayView<const Number> &             temporary_storage,
+          std::vector<MPI_Request> &                          requests) const;
 
       public:
         /**
@@ -280,6 +316,31 @@ namespace hyperdeal
         sync() const;
 
       private:
+        /**
+         * Global communicator.
+         */
+        MPI_Comm comm;
+
+        /**
+         * Shared-memory sub-communicator.
+         */
+        MPI_Comm comm_sm;
+
+        /**
+         * Number of processes in comm.
+         */
+        unsigned int n_mpi_processes_;
+
+        /**
+         * Number of locally-owned vector entries.
+         */
+        unsigned int n_local_elements;
+
+        /**
+         * Number of ghost vector entries.
+         */
+        unsigned int n_ghost_elements;
+
         // I) configuration parameters
         bool         do_buffering;   // buffering vs. non-buffering modus
         unsigned int dofs_per_ghost; // ghost face or ghost cell
@@ -322,120 +383,148 @@ namespace hyperdeal
 
       void
       Partitioner::export_to_ghosted_array_start(
-        const unsigned int             communication_channel,
-        double *const                  data_this,
-        const std::vector<double *> &  data_others,
-        dealii::AlignedVector<double> &buffer,
-        std::vector<MPI_Request> &     requests) const
+        const unsigned int                     communication_channel,
+        const dealii::ArrayView<const double> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+        const dealii::ArrayView<double> &                   ghost_array,
+        const dealii::ArrayView<double> &                   temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
-        this->export_to_ghosted_array_start_impl(
-          communication_channel, data_this, data_others, buffer, requests);
+        export_to_ghosted_array_start_impl(communication_channel,
+                                           locally_owned_array,
+                                           shared_arrays,
+                                           ghost_array,
+                                           temporary_storage,
+                                           requests);
       }
 
 
 
       void
       Partitioner::export_to_ghosted_array_finish(
-        double *const                data_this,
-        const std::vector<double *> &data_others,
-        std::vector<MPI_Request> &   requests) const
+        const dealii::ArrayView<const double> &             locally_owned_array,
+        const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+        const dealii::ArrayView<double> &                   ghost_array,
+        std::vector<MPI_Request> &                          requests) const
       {
-        this->export_to_ghosted_array_finish_impl(data_this,
-                                                  data_others,
-                                                  requests);
+        export_to_ghosted_array_finish_impl(locally_owned_array,
+                                            shared_arrays,
+                                            ghost_array,
+                                            requests);
       }
 
 
 
       void
       Partitioner::import_from_ghosted_array_start(
-        const dealii::VectorOperation::values operation,
-        const unsigned int                    communication_channel,
-        double *const                         data_this,
-        const std::vector<double *> &         data_others,
-        dealii::AlignedVector<double> &       buffer,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::VectorOperation::values  vector_operation,
+        const unsigned int                     communication_channel,
+        const dealii::ArrayView<const double> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+        const dealii::ArrayView<double> &                   ghost_array,
+        const dealii::ArrayView<double> &                   temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
-        this->import_from_ghosted_array_start_impl(operation,
-                                                   communication_channel,
-                                                   data_this,
-                                                   data_others,
-                                                   buffer,
-                                                   requests);
+        import_from_ghosted_array_start_impl(vector_operation,
+                                             communication_channel,
+                                             locally_owned_array,
+                                             shared_arrays,
+                                             ghost_array,
+                                             temporary_storage,
+                                             requests);
       }
 
 
 
       void
       Partitioner::import_from_ghosted_array_finish(
-        const dealii::VectorOperation::values operation,
-        double *const                         data_this,
-        const std::vector<double *> &         data_others,
-        const dealii::AlignedVector<double> & buffer,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::VectorOperation::values vector_operation,
+        const dealii::ArrayView<double> &     locally_owned_storage,
+        const std::vector<dealii::ArrayView<const double>> &shared_arrays,
+        const dealii::ArrayView<double> &                   ghost_array,
+        const dealii::ArrayView<const double> &             temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
-        this->import_from_ghosted_array_finish_impl(
-          operation, data_this, data_others, buffer, requests);
+        import_from_ghosted_array_finish_impl(vector_operation,
+                                              locally_owned_storage,
+                                              shared_arrays,
+                                              ghost_array,
+                                              temporary_storage,
+                                              requests);
       }
 
 
 
       void
       Partitioner::export_to_ghosted_array_start(
-        const unsigned int            communication_channel,
-        float *const                  data_this,
-        const std::vector<float *> &  data_others,
-        dealii::AlignedVector<float> &buffer,
-        std::vector<MPI_Request> &    requests) const
+        const unsigned int                    communication_channel,
+        const dealii::ArrayView<const float> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+        const dealii::ArrayView<float> &                   ghost_array,
+        const dealii::ArrayView<float> &                   temporary_storage,
+        std::vector<MPI_Request> &                         requests) const
       {
-        export_to_ghosted_array_start_impl(
-          communication_channel, data_this, data_others, buffer, requests);
+        export_to_ghosted_array_start_impl(communication_channel,
+                                           locally_owned_array,
+                                           shared_arrays,
+                                           ghost_array,
+                                           temporary_storage,
+                                           requests);
       }
 
 
 
       void
       Partitioner::export_to_ghosted_array_finish(
-        float *const                data_this,
-        const std::vector<float *> &data_others,
-        std::vector<MPI_Request> &  requests) const
+        const dealii::ArrayView<const float> &             locally_owned_array,
+        const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+        const dealii::ArrayView<float> &                   ghost_array,
+        std::vector<MPI_Request> &                         requests) const
       {
-        this->export_to_ghosted_array_finish_impl(data_this,
-                                                  data_others,
-                                                  requests);
+        export_to_ghosted_array_finish_impl(locally_owned_array,
+                                            shared_arrays,
+                                            ghost_array,
+                                            requests);
       }
 
 
 
       void
       Partitioner::import_from_ghosted_array_start(
-        const dealii::VectorOperation::values operation,
+        const dealii::VectorOperation::values vector_operation,
         const unsigned int                    communication_channel,
-        float *const                          data_this,
-        const std::vector<float *> &          data_others,
-        dealii::AlignedVector<float> &        buffer,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::ArrayView<const float> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+        const dealii::ArrayView<float> &                   ghost_array,
+        const dealii::ArrayView<float> &                   temporary_storage,
+        std::vector<MPI_Request> &                         requests) const
       {
-        this->import_from_ghosted_array_start_impl(operation,
-                                                   communication_channel,
-                                                   data_this,
-                                                   data_others,
-                                                   buffer,
-                                                   requests);
+        import_from_ghosted_array_start_impl(vector_operation,
+                                             communication_channel,
+                                             locally_owned_array,
+                                             shared_arrays,
+                                             ghost_array,
+                                             temporary_storage,
+                                             requests);
       }
 
 
 
       void
       Partitioner::import_from_ghosted_array_finish(
-        const dealii::VectorOperation::values operation,
-        float *const                          data_this,
-        const std::vector<float *> &          data_others,
-        const dealii::AlignedVector<float> &  buffer,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::VectorOperation::values vector_operation,
+        const dealii::ArrayView<float> &      locally_owned_storage,
+        const std::vector<dealii::ArrayView<const float>> &shared_arrays,
+        const dealii::ArrayView<float> &                   ghost_array,
+        const dealii::ArrayView<const float> &             temporary_storage,
+        std::vector<MPI_Request> &                         requests) const
       {
-        this->import_from_ghosted_array_finish_impl(
-          operation, data_this, data_others, buffer, requests);
+        import_from_ghosted_array_finish_impl(vector_operation,
+                                              locally_owned_storage,
+                                              shared_arrays,
+                                              ghost_array,
+                                              temporary_storage,
+                                              requests);
       }
 
 
@@ -552,24 +641,10 @@ namespace hyperdeal
 
       template <typename Number>
       Partitioner::Partitioner(const ShapeInfo<Number> &shape_info)
-        : dealii::LinearAlgebra::SharedMPI::PartitionerBase(false)
-        , dofs_per_cell(shape_info.dofs_per_cell)
+        : dofs_per_cell(shape_info.dofs_per_cell)
         , dofs_per_face(shape_info.dofs_per_face)
         , face_to_cell_index_nodal(shape_info.face_to_cell_index_nodal)
       {}
-
-
-      void
-      Partitioner::reinit(const dealii::IndexSet &is_locally_owned,
-                          const dealii::IndexSet &is_locally_ghost,
-                          const MPI_Comm &        communicator)
-      {
-        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-
-        (void)is_locally_owned;
-        (void)is_locally_ghost;
-        (void)communicator;
-      }
 
 
 
@@ -1302,24 +1377,28 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_start_impl(
-        const unsigned int communication_channel,
-        Number *const      data_this,
-        const std::vector<Number *> & /*data_others*/,
-        dealii::AlignedVector<Number> &send_buffer_data,
-        std::vector<MPI_Request> &     requests) const
+        const unsigned int                     communication_channel,
+        const dealii::ArrayView<const Number> &data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<Number> &                   temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
-        if (send_buffer_data.size() == 0)
-          {
-            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
-          }
-        else
-          {
-            AssertThrow(send_buffer_data.size() ==
-                          send_ptr.back() * dofs_per_ghost,
-                        dealii::StandardExceptions::ExcDimensionMismatch(
-                          send_buffer_data.size(),
-                          send_ptr.back() * dofs_per_ghost));
-          }
+        (void)data_others;
+        (void)temporary_storage;
+
+        // if (send_buffer_data.size() == 0)
+        //  {
+        //    send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost); //
+        //    TODO
+        //  }
+        // else
+        //  {
+        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+                    dealii::StandardExceptions::ExcDimensionMismatch(
+                      send_buffer_data.size(),
+                      send_ptr.back() * dofs_per_ghost));
+        //  }
 
         requests.resize(sm_sources.size() + sm_targets.size() +
                         recv_ranks.size() + send_ranks.size());
@@ -1350,7 +1429,7 @@ namespace hyperdeal
         // 2) start receiving form (remote) processes
         {
           for (unsigned int i = 0; i < recv_ranks.size(); i++)
-            MPI_Irecv(data_this + recv_ptr[i],
+            MPI_Irecv(const_cast<Number *>(data_this.data()) + recv_ptr[i],
                       recv_size[i],
                       MPI_DOUBLE,
                       recv_ranks[i],
@@ -1370,8 +1449,9 @@ namespace hyperdeal
                  i++, buffer += dofs_per_ghost)
               if (dofs_per_ghost == dofs_per_face)
                 {
-                  auto *__restrict dst       = buffer;
-                  const auto *__restrict src = data_this + send_data_id[i];
+                  auto *__restrict dst = buffer;
+                  const auto *__restrict src =
+                    data_this.data() + send_data_id[i];
                   const auto *__restrict idx =
                     face_to_cell_index_nodal[send_data_face_no[i]].data();
 
@@ -1400,10 +1480,13 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_finish_impl(
-        Number *const                data_this,
-        const std::vector<Number *> &data_others,
-        std::vector<MPI_Request> &   requests) const
+        const dealii::ArrayView<const Number> &             data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   ghost_array,
+        std::vector<MPI_Request> &                          requests) const
       {
+        (void)ghost_array;
+
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
                           recv_ranks.size() + send_ranks.size());
@@ -1423,9 +1506,12 @@ namespace hyperdeal
                      j++)
                   if (dofs_per_ghost == dofs_per_face)
                     {
-                      auto *__restrict dst = data_this + sm_send_offset_1[j];
+                      auto *__restrict dst =
+                        const_cast<Number *>(data_this.data()) +
+                        sm_send_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_send_rank[i]] + sm_send_offset_2[j];
+                        data_others[sm_send_rank[i]].data() +
+                        sm_send_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_send_no[j]].data();
 
@@ -1448,9 +1534,9 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_finish_0(
-        Number *const                data_this,
-        const std::vector<Number *> &data_others,
-        std::vector<MPI_Request> &   requests) const
+        const dealii::ArrayView<const Number> &             data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        std::vector<MPI_Request> &                          requests) const
       {
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1471,9 +1557,12 @@ namespace hyperdeal
                      j++)
                   if (dofs_per_ghost == dofs_per_face)
                     {
-                      auto *__restrict dst = data_this + sm_send_offset_1[j];
+                      auto *__restrict dst =
+                        const_cast<Number *>(data_this.data()) +
+                        sm_send_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_send_rank[i]] + sm_send_offset_2[j];
+                        data_others[sm_send_rank[i]].data() +
+                        sm_send_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_send_no[j]].data();
 
@@ -1500,9 +1589,9 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::export_to_ghosted_array_finish_1(
-        Number *const                data_this,
-        const std::vector<Number *> &data_others,
-        std::vector<MPI_Request> &   requests) const
+        const dealii::ArrayView<const Number> &             data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        std::vector<MPI_Request> &                          requests) const
       {
         (void)data_this;
         (void)data_others;
@@ -1519,31 +1608,33 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::import_from_ghosted_array_start_impl(
-        const dealii::VectorOperation::values operation,
-        const unsigned int                    communication_channel,
-        Number *const                         data_this,
-        const std::vector<Number *> &         data_others,
-        dealii::AlignedVector<Number> &       send_buffer_data,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::VectorOperation::values  operation,
+        const unsigned int                     communication_channel,
+        const dealii::ArrayView<const Number> &data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<Number> &                   temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
         (void)data_others;
         (void)communication_channel;
+        (void)temporary_storage;
 
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
-        if (send_buffer_data.size() == 0)
-          {
-            send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
-          }
-        else
-          {
-            AssertThrow(send_buffer_data.size() ==
-                          send_ptr.back() * dofs_per_ghost,
-                        dealii::StandardExceptions::ExcDimensionMismatch(
-                          send_buffer_data.size(),
-                          send_ptr.back() * dofs_per_ghost));
-          }
+        // if (send_buffer_data.size() == 0)
+        //  {
+        //     send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
+        //     // TODO
+        //  }
+        // else
+        //  {
+        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+                    dealii::StandardExceptions::ExcDimensionMismatch(
+                      send_buffer_data.size(),
+                      send_ptr.back() * dofs_per_ghost));
+        //  }
 
         requests.resize(sm_sources.size() + sm_targets.size() +
                         recv_ranks.size() + send_ranks.size());
@@ -1575,7 +1666,7 @@ namespace hyperdeal
         // request receive
         {
           for (unsigned int i = 0; i < recv_ranks.size(); i++)
-            MPI_Isend(data_this + recv_ptr[i],
+            MPI_Isend(data_this.data() + recv_ptr[i],
                       recv_size[i],
                       MPI_DOUBLE,
                       recv_ranks[i],
@@ -1602,12 +1693,15 @@ namespace hyperdeal
       template <typename Number>
       void
       Partitioner::import_from_ghosted_array_finish_impl(
-        const dealii::VectorOperation::values operation,
-        Number *const                         data_this,
-        const std::vector<Number *> &         data_others,
-        const dealii::AlignedVector<Number> & send_buffer_data,
-        std::vector<MPI_Request> &            requests) const
+        const dealii::VectorOperation::values               operation,
+        const dealii::ArrayView<Number> &                   data_this,
+        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<const Number> &             temporary_storage,
+        std::vector<MPI_Request> &                          requests) const
       {
+        (void)temporary_storage;
+
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
@@ -1638,9 +1732,12 @@ namespace hyperdeal
                      j++)
                   if (dofs_per_ghost == dofs_per_face)
                     {
-                      auto *__restrict dst = data_this + sm_recv_offset_1[j];
+                      auto *__restrict dst =
+                        const_cast<Number *>(data_this.data()) +
+                        sm_recv_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_recv_rank[i]] + sm_recv_offset_2[j];
+                        data_others[sm_recv_rank[i]].data() +
+                        sm_recv_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_recv_no[j]].data();
 
@@ -1675,7 +1772,8 @@ namespace hyperdeal
                  i++, buffer += dofs_per_ghost)
               if (dofs_per_ghost == dofs_per_face)
                 {
-                  auto *__restrict dst       = data_this + send_data_id[i];
+                  auto *__restrict dst =
+                    const_cast<Number *>(data_this.data()) + send_data_id[i];
                   const auto *__restrict src = buffer;
                   const auto *__restrict idx =
                     face_to_cell_index_nodal[send_data_face_no[i]].data();
