@@ -1266,22 +1266,22 @@ namespace hyperdeal
 
         this->partitioner->export_to_ghosted_array_start(
           0,
-          dealii::ArrayView<const Number>(
-            vec.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->export_to_ghosted_array_finish(
-          dealii::ArrayView<const Number>(
-            vec.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           requests);
 
         vec.zero_out_ghosts();
@@ -1297,22 +1297,23 @@ namespace hyperdeal
         this->partitioner->import_from_ghosted_array_start(
           dealii::VectorOperation::values::add,
           0,
-          dealii::ArrayView<const Number>(
-            vec.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->import_from_ghosted_array_finish(
           dealii::VectorOperation::values::add,
           dealii::ArrayView<Number>(vec.begin(),
-                                    this->partitioner->local_size() +
-                                      this->partitioner->n_ghost_indices()),
+                                    this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<const Number>(buffer.begin(), buffer.size()),
           requests);
       }
@@ -1440,11 +1441,11 @@ namespace hyperdeal
                   part->export_to_ghosted_array_start(
                     0,
                     dealii::ArrayView<const Number>(
-                      src_.begin(),
-                      this->partitioner->local_size() +
-                        this->partitioner->n_ghost_indices()),
+                      src_.begin(), this->partitioner->local_size()),
                     src_.shared_vector_data(),
-                    dealii::ArrayView<Number>(),
+                    dealii::ArrayView<Number>(
+                      src_.begin() + this->partitioner->local_size(),
+                      this->partitioner->n_ghost_indices()),
                     dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
                     requests);
 
@@ -1458,10 +1459,11 @@ namespace hyperdeal
                   // domain:
                   part->export_to_ghosted_array_finish_0(
                     dealii::ArrayView<const Number>(
-                      src_.begin(),
-                      this->partitioner->local_size() +
-                        this->partitioner->n_ghost_indices()),
+                      src_.begin(), this->partitioner->local_size()),
                     src_.shared_vector_data(),
+                    dealii::ArrayView<Number>(
+                      src_.begin() + this->partitioner->local_size(),
+                      this->partitioner->n_ghost_indices()),
                     requests);
 
                   if (timers != nullptr)
@@ -1475,10 +1477,11 @@ namespace hyperdeal
                   // ... src.update_ghost_values_finish() for remote domain:
                   part->export_to_ghosted_array_finish_1(
                     dealii::ArrayView<const Number>(
-                      src_.begin(),
-                      this->partitioner->local_size() +
-                        this->partitioner->n_ghost_indices()),
+                      src_.begin(), this->partitioner->local_size()),
                     src_.shared_vector_data(),
+                    dealii::ArrayView<Number>(
+                      src_.begin() + this->partitioner->local_size(),
+                      this->partitioner->n_ghost_indices()),
                     requests);
 
                   if (timers != nullptr)
@@ -1593,22 +1596,22 @@ namespace hyperdeal
 
         this->partitioner->export_to_ghosted_array_start(
           0,
-          dealii::ArrayView<const Number>(
-            src_.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(src_.begin(),
+                                          this->partitioner->local_size()),
           src_.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(src_.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->export_to_ghosted_array_finish(
-          dealii::ArrayView<const Number>(
-            src_.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(src_.begin(),
+                                          this->partitioner->local_size()),
           src_.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(src_.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           requests);
       }
     else
@@ -1695,22 +1698,23 @@ namespace hyperdeal
         this->partitioner->import_from_ghosted_array_start(
           dealii::VectorOperation::values::add,
           0,
-          dealii::ArrayView<const Number>(
-            dst.begin(),
-            this->partitioner->local_size() +
-              this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(dst.begin(),
+                                          this->partitioner->local_size()),
           dst.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(dst.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->import_from_ghosted_array_finish(
           dealii::VectorOperation::values::add,
           dealii::ArrayView<Number>(dst.begin(),
-                                    this->partitioner->local_size() +
-                                      this->partitioner->n_ghost_indices()),
+                                    this->partitioner->local_size()),
           dst.shared_vector_data(),
-          dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(dst.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
           dealii::ArrayView<const Number>(buffer.begin(), buffer.size()),
           requests);
       }

@@ -219,6 +219,7 @@ namespace internal
         export_to_ghosted_array_finish_0(
           const dealii::ArrayView<const Number> &locally_owned_array,
           const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
           std::vector<MPI_Request> &                          requests) const;
 
         /**
@@ -229,6 +230,7 @@ namespace internal
         export_to_ghosted_array_finish_1(
           const dealii::ArrayView<const Number> &locally_owned_array,
           const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
+          const dealii::ArrayView<Number> &                   ghost_array,
           std::vector<MPI_Request> &                          requests) const;
 
       private:
@@ -1061,10 +1063,11 @@ namespace internal
          &distributed_local_ghost_faces_remote_pairs_global,
          &sm_rank,
          &comm,
-         &dofs_per_ghost](auto &      requests_from_relevant_precomp,
-                          auto &      receive_info,
-                          const auto &maps,
-                          const auto &maps_ghost) {
+         &dofs_per_ghost,
+         this](auto &      requests_from_relevant_precomp,
+               auto &      receive_info,
+               const auto &maps,
+               const auto &maps_ghost) {
           // determine of the owner of cells of remote ghost faces
           const auto n_total_cells = dealii::Utilities::MPI::sum(
             static_cast<dealii::types::global_dof_index>(local_cells.size()),
@@ -1250,7 +1253,8 @@ namespace internal
             {
               recv_ranks.push_back(i.first);
               recv_size.push_back(i.second.first);
-              recv_ptr.push_back(i.second.second);
+              recv_ptr.push_back(i.second.second -
+                                 local_cells.size() * dofs_per_cell);
             }
         }
 
@@ -1319,7 +1323,8 @@ namespace internal
 
                 for (const auto &v : temp_[i])
                   {
-                    sm_send_offset_1.push_back(v[2]);
+                    sm_send_offset_1.push_back(v[2] - local_cells.size() *
+                                                        dofs_per_cell);
                     sm_send_offset_2.push_back(v[0]);
                     sm_send_no.push_back(v[1]);
                   }
@@ -1387,7 +1392,6 @@ namespace internal
         std::vector<MPI_Request> &                          requests) const
       {
         (void)data_others;
-        (void)ghost_array;
 
         AssertThrow(temporary_storage.size() ==
                       send_ptr.back() * dofs_per_ghost,
@@ -1424,7 +1428,7 @@ namespace internal
         // 2) start receiving form (remote) processes
         {
           for (unsigned int i = 0; i < recv_ranks.size(); i++)
-            MPI_Irecv(const_cast<Number *>(data_this.data()) + recv_ptr[i],
+            MPI_Irecv(ghost_array.data() + recv_ptr[i],
                       recv_size[i],
                       MPI_DOUBLE,
                       recv_ranks[i],
@@ -1480,7 +1484,7 @@ namespace internal
         const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)ghost_array;
+        (void)data_this;
 
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1502,8 +1506,7 @@ namespace internal
                   if (dofs_per_ghost == dofs_per_face)
                     {
                       auto *__restrict dst =
-                        const_cast<Number *>(data_this.data()) +
-                        sm_send_offset_1[j];
+                        ghost_array.data() + sm_send_offset_1[j];
                       const auto *__restrict src =
                         data_others[sm_send_rank[i]].data() +
                         sm_send_offset_2[j];
@@ -1531,8 +1534,11 @@ namespace internal
       Contiguous::export_to_ghosted_array_finish_0(
         const dealii::ArrayView<const Number> &             data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
+        (void)data_this;
+
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
                           recv_ranks.size() + send_ranks.size());
@@ -1553,8 +1559,7 @@ namespace internal
                   if (dofs_per_ghost == dofs_per_face)
                     {
                       auto *__restrict dst =
-                        const_cast<Number *>(data_this.data()) +
-                        sm_send_offset_1[j];
+                        ghost_array.data() + sm_send_offset_1[j];
                       const auto *__restrict src =
                         data_others[sm_send_rank[i]].data() +
                         sm_send_offset_2[j];
@@ -1586,10 +1591,12 @@ namespace internal
       Contiguous::export_to_ghosted_array_finish_1(
         const dealii::ArrayView<const Number> &             data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
         (void)data_this;
         (void)data_others;
+        (void)ghost_array;
 
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1611,6 +1618,7 @@ namespace internal
         const dealii::ArrayView<Number> &                   temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
+        (void)data_this;
         (void)data_others;
         (void)communication_channel;
         (void)ghost_array;
@@ -1654,7 +1662,7 @@ namespace internal
         // request receive
         {
           for (unsigned int i = 0; i < recv_ranks.size(); i++)
-            MPI_Isend(data_this.data() + recv_ptr[i],
+            MPI_Isend(ghost_array.data() + recv_ptr[i],
                       recv_size[i],
                       MPI_DOUBLE,
                       recv_ranks[i],
@@ -1722,8 +1730,7 @@ namespace internal
                   if (dofs_per_ghost == dofs_per_face)
                     {
                       auto *__restrict dst =
-                        const_cast<Number *>(data_this.data()) +
-                        sm_recv_offset_1[j];
+                        data_this.data() + sm_recv_offset_1[j];
                       const auto *__restrict src =
                         data_others[sm_recv_rank[i]].data() +
                         sm_recv_offset_2[j];
@@ -1761,8 +1768,7 @@ namespace internal
                  i++, buffer += dofs_per_ghost)
               if (dofs_per_ghost == dofs_per_face)
                 {
-                  auto *__restrict dst =
-                    const_cast<Number *>(data_this.data()) + send_data_id[i];
+                  auto *__restrict dst = data_this.data() + send_data_id[i];
                   const auto *__restrict src = buffer;
                   const auto *__restrict idx =
                     face_to_cell_index_nodal[send_data_face_no[i]].data();
