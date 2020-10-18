@@ -1382,12 +1382,12 @@ namespace internal
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const Number> &data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
-        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<Number> &                   temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
         (void)data_others;
-        (void)temporary_storage;
+        (void)ghost_array;
 
         // if (send_buffer_data.size() == 0)
         //  {
@@ -1396,9 +1396,10 @@ namespace internal
         //  }
         // else
         //  {
-        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+        AssertThrow(temporary_storage.size() ==
+                      send_ptr.back() * dofs_per_ghost,
                     dealii::StandardExceptions::ExcDimensionMismatch(
-                      send_buffer_data.size(),
+                      temporary_storage.size(),
                       send_ptr.back() * dofs_per_ghost));
         //  }
 
@@ -1445,7 +1446,7 @@ namespace internal
         for (unsigned int c = 0; c < send_ranks.size(); c++)
           {
             auto buffer =
-              send_buffer_data.data() + send_ptr[c] * dofs_per_ghost;
+              temporary_storage.data() + send_ptr[c] * dofs_per_ghost;
 
             for (unsigned int i = send_ptr[c]; i < send_ptr[c + 1];
                  i++, buffer += dofs_per_ghost)
@@ -1466,7 +1467,7 @@ namespace internal
                               dealii::StandardExceptions::ExcNotImplemented());
                 }
 
-            MPI_Issend(send_buffer_data.data() + send_ptr[c] * dofs_per_ghost,
+            MPI_Issend(temporary_storage.data() + send_ptr[c] * dofs_per_ghost,
                        (send_ptr[c + 1] - send_ptr[c]) * dofs_per_ghost,
                        MPI_DOUBLE,
                        send_ranks[c],

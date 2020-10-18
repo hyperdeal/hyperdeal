@@ -1271,8 +1271,8 @@ namespace hyperdeal
             this->partitioner->local_size() +
               this->partitioner->n_ghost_indices()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->export_to_ghosted_array_finish(
@@ -1444,8 +1444,8 @@ namespace hyperdeal
                       this->partitioner->local_size() +
                         this->partitioner->n_ghost_indices()),
                     src_.shared_vector_data(),
-                    dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
                     dealii::ArrayView<Number>(),
+                    dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
                     requests);
 
                   // zero out ghost of destination vector
@@ -1598,8 +1598,8 @@ namespace hyperdeal
             this->partitioner->local_size() +
               this->partitioner->n_ghost_indices()),
           src_.shared_vector_data(),
-          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           dealii::ArrayView<Number>(),
+          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
           requests);
 
         this->partitioner->export_to_ghosted_array_finish(
