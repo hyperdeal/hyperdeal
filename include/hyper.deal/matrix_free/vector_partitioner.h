@@ -1389,19 +1389,11 @@ namespace internal
         (void)data_others;
         (void)ghost_array;
 
-        // if (send_buffer_data.size() == 0)
-        //  {
-        //    send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost); //
-        //    TODO
-        //  }
-        // else
-        //  {
         AssertThrow(temporary_storage.size() ==
                       send_ptr.back() * dofs_per_ghost,
                     dealii::StandardExceptions::ExcDimensionMismatch(
                       temporary_storage.size(),
                       send_ptr.back() * dofs_per_ghost));
-        //  }
 
         requests.resize(sm_sources.size() + sm_targets.size() +
                         recv_ranks.size() + send_ranks.size());
@@ -1615,29 +1607,22 @@ namespace internal
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const Number> &data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
-        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<Number> &                   temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
         (void)data_others;
         (void)communication_channel;
-        (void)temporary_storage;
+        (void)ghost_array;
 
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
-        // if (send_buffer_data.size() == 0)
-        //  {
-        //     send_buffer_data.resize_fast(send_ptr.back() * dofs_per_ghost);
-        //     // TODO
-        //  }
-        // else
-        //  {
-        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+        AssertThrow(temporary_storage.size() ==
+                      send_ptr.back() * dofs_per_ghost,
                     dealii::StandardExceptions::ExcDimensionMismatch(
-                      send_buffer_data.size(),
+                      temporary_storage.size(),
                       send_ptr.back() * dofs_per_ghost));
-        //  }
 
         requests.resize(sm_sources.size() + sm_targets.size() +
                         recv_ranks.size() + send_ranks.size());
@@ -1681,7 +1666,7 @@ namespace internal
 
         // fill buffers and request send
         for (unsigned int i = 0; i < send_ranks.size(); i++)
-          MPI_Irecv(send_buffer_data.data() + send_ptr[i] * dofs_per_ghost,
+          MPI_Irecv(temporary_storage.data() + send_ptr[i] * dofs_per_ghost,
                     (send_ptr[i + 1] - send_ptr[i]) * dofs_per_ghost,
                     MPI_DOUBLE,
                     send_ranks[i],
@@ -1699,18 +1684,19 @@ namespace internal
         const dealii::VectorOperation::values               operation,
         const dealii::ArrayView<Number> &                   data_this,
         const std::vector<dealii::ArrayView<const Number>> &data_others,
-        const dealii::ArrayView<Number> &                   send_buffer_data,
+        const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<const Number> &             temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)temporary_storage;
+        (void)ghost_array;
 
         AssertThrow(operation == dealii::VectorOperation::add,
                     dealii::ExcMessage("Not yet implemented."));
 
-        AssertThrow(send_buffer_data.size() == send_ptr.back() * dofs_per_ghost,
+        AssertThrow(temporary_storage.size() ==
+                      send_ptr.back() * dofs_per_ghost,
                     dealii::StandardExceptions::ExcDimensionMismatch(
-                      send_buffer_data.size(),
+                      temporary_storage.size(),
                       send_ptr.back() * dofs_per_ghost));
 
         AssertDimension(requests.size(),
@@ -1769,7 +1755,7 @@ namespace internal
             AssertThrowMPI(ierr);
 
             auto buffer =
-              send_buffer_data.data() + send_ptr[r] * dofs_per_ghost;
+              temporary_storage.data() + send_ptr[r] * dofs_per_ghost;
 
             for (unsigned int i = send_ptr[r]; i < send_ptr[r + 1];
                  i++, buffer += dofs_per_ghost)
