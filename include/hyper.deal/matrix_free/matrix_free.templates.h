@@ -1252,7 +1252,7 @@ namespace hyperdeal
           dealii::ArrayView<const Number>(vec.begin(),
                                           this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(vec.begin() +
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
                                       this->partitioner->local_size(),
                                     this->partitioner->n_ghost_indices()),
           dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
@@ -1269,7 +1269,43 @@ namespace hyperdeal
           dealii::ArrayView<const Number>(vec.begin(),
                                           this->partitioner->local_size()),
           vec.shared_vector_data(),
-          dealii::ArrayView<Number>(vec.begin() +
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_finish_0(VectorType &vec)
+      {
+        const auto part =
+          dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                         VectorDataExchange::Contiguous *>(partitioner.get());
+
+        part->export_to_ghosted_array_finish_0(
+          dealii::ArrayView<const Number>(const_cast<Number *>(vec.begin()),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_finish_1(VectorType &vec)
+      {
+        const auto part =
+          dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                         VectorDataExchange::Contiguous *>(partitioner.get());
+
+        part->export_to_ghosted_array_finish_1(
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
                                       this->partitioner->local_size(),
                                     this->partitioner->n_ghost_indices()),
           requests);
@@ -1465,17 +1501,10 @@ namespace hyperdeal
                   src_vector_face_access == DataAccessOnFaces::none,
                 dealii::StandardExceptions::ExcNotImplemented());
 
-    const auto part =
-      dynamic_cast<const dealii::internal::MatrixFreeFunctions::
-                     VectorDataExchange::Contiguous *>(partitioner.get());
-
     {
       ScopedTimerWrapper timer(timers, "loop");
 
-      InVector &                    src_ = const_cast<InVector &>(src);
-      dealii::AlignedVector<Number> buffer(
-        this->partitioner->n_import_indices());
-      std::vector<MPI_Request> requests;
+      internal::VectorDataExchange<Number> data_exchanger(partitioner);
 
       // loop over all partitions
       for (unsigned int i = 0; i < this->partitions.size(); ++i)
@@ -1489,16 +1518,7 @@ namespace hyperdeal
                     timers->operator[]("update_ghost_values_0").start();
 
                   // perform src.update_ghost_values_start()
-                  part->export_to_ghosted_array_start(
-                    0,
-                    dealii::ArrayView<const Number>(
-                      src_.begin(), this->partitioner->local_size()),
-                    src_.shared_vector_data(),
-                    dealii::ArrayView<Number>(
-                      src_.begin() + this->partitioner->local_size(),
-                      this->partitioner->n_ghost_indices()),
-                    dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
-                    requests);
+                  data_exchanger.export_to_ghosted_array_start(src);
 
                   // zero out ghost of destination vector
                   if (dst.has_ghost_elements())
@@ -1508,14 +1528,7 @@ namespace hyperdeal
                 {
                   // ... src.update_ghost_values_finish() for shared-memory
                   // domain:
-                  part->export_to_ghosted_array_finish_0(
-                    dealii::ArrayView<const Number>(
-                      src_.begin(), this->partitioner->local_size()),
-                    src_.shared_vector_data(),
-                    dealii::ArrayView<Number>(
-                      src_.begin() + this->partitioner->local_size(),
-                      this->partitioner->n_ghost_indices()),
-                    requests);
+                  data_exchanger.export_to_ghosted_array_finish_0(src);
 
                   if (timers != nullptr)
                     {
@@ -1526,14 +1539,7 @@ namespace hyperdeal
               else if (i == 2)
                 {
                   // ... src.update_ghost_values_finish() for remote domain:
-                  part->export_to_ghosted_array_finish_1(
-                    dealii::ArrayView<const Number>(
-                      src_.begin(), this->partitioner->local_size()),
-                    src_.shared_vector_data(),
-                    dealii::ArrayView<Number>(
-                      src_.begin() + this->partitioner->local_size(),
-                      this->partitioner->n_ghost_indices()),
-                    requests);
+                  data_exchanger.export_to_ghosted_array_finish_1(src);
 
                   if (timers != nullptr)
                     {
@@ -1561,7 +1567,10 @@ namespace hyperdeal
         src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "barrier");
-        part->sync();
+
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
+          ->sync();
       }
   }
 
@@ -1639,12 +1648,10 @@ namespace hyperdeal
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
 
-        auto &src_ = const_cast<InVector &>(src);
-
         internal::VectorDataExchange<Number> data_exchanger(partitioner);
 
-        data_exchanger.export_to_ghosted_array_start(src_);
-        data_exchanger.export_to_ghosted_array_finish(src_);
+        data_exchanger.export_to_ghosted_array_start(src);
+        data_exchanger.export_to_ghosted_array_finish(src);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
