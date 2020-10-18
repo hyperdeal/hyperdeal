@@ -1385,13 +1385,13 @@ namespace internal
       void
       Contiguous::export_to_ghosted_array_start_impl(
         const unsigned int                     communication_channel,
-        const dealii::ArrayView<const Number> &data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<const Number> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<Number> &                   temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)data_others;
+        (void)shared_arrays;
 
         AssertThrow(temporary_storage.size() ==
                       send_ptr.back() * dofs_per_ghost,
@@ -1450,7 +1450,7 @@ namespace internal
                 {
                   auto *__restrict dst = buffer;
                   const auto *__restrict src =
-                    data_this.data() + send_data_id[i];
+                    locally_owned_array.data() + send_data_id[i];
                   const auto *__restrict idx =
                     face_to_cell_index_nodal[send_data_face_no[i]].data();
 
@@ -1479,12 +1479,12 @@ namespace internal
       template <typename Number>
       void
       Contiguous::export_to_ghosted_array_finish_impl(
-        const dealii::ArrayView<const Number> &             data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<const Number> &             locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)data_this;
+        (void)locally_owned_array;
 
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1508,7 +1508,7 @@ namespace internal
                       auto *__restrict dst =
                         ghost_array.data() + sm_send_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_send_rank[i]].data() +
+                        shared_arrays[sm_send_rank[i]].data() +
                         sm_send_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_send_no[j]].data();
@@ -1532,12 +1532,12 @@ namespace internal
       template <typename Number>
       void
       Contiguous::export_to_ghosted_array_finish_0(
-        const dealii::ArrayView<const Number> &             data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<const Number> &             locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)data_this;
+        (void)locally_owned_array;
 
         AssertDimension(requests.size(),
                         sm_sources.size() + sm_targets.size() +
@@ -1561,7 +1561,7 @@ namespace internal
                       auto *__restrict dst =
                         ghost_array.data() + sm_send_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_send_rank[i]].data() +
+                        shared_arrays[sm_send_rank[i]].data() +
                         sm_send_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_send_no[j]].data();
@@ -1589,13 +1589,13 @@ namespace internal
       template <typename Number>
       void
       Contiguous::export_to_ghosted_array_finish_1(
-        const dealii::ArrayView<const Number> &             data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<const Number> &             locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)data_this;
-        (void)data_others;
+        (void)locally_owned_array;
+        (void)shared_arrays;
         (void)ghost_array;
 
         AssertDimension(requests.size(),
@@ -1612,14 +1612,14 @@ namespace internal
       Contiguous::import_from_ghosted_array_start_impl(
         const dealii::VectorOperation::values  operation,
         const unsigned int                     communication_channel,
-        const dealii::ArrayView<const Number> &data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<const Number> &locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<Number> &                   temporary_storage,
         std::vector<MPI_Request> &                          requests) const
       {
-        (void)data_this;
-        (void)data_others;
+        (void)locally_owned_array;
+        (void)shared_arrays;
         (void)communication_channel;
         (void)ghost_array;
 
@@ -1690,8 +1690,8 @@ namespace internal
       void
       Contiguous::import_from_ghosted_array_finish_impl(
         const dealii::VectorOperation::values               operation,
-        const dealii::ArrayView<Number> &                   data_this,
-        const std::vector<dealii::ArrayView<const Number>> &data_others,
+        const dealii::ArrayView<Number> &                   locally_owned_array,
+        const std::vector<dealii::ArrayView<const Number>> &shared_arrays,
         const dealii::ArrayView<Number> &                   ghost_array,
         const dealii::ArrayView<const Number> &             temporary_storage,
         std::vector<MPI_Request> &                          requests) const
@@ -1730,9 +1730,9 @@ namespace internal
                   if (dofs_per_ghost == dofs_per_face)
                     {
                       auto *__restrict dst =
-                        data_this.data() + sm_recv_offset_1[j];
+                        locally_owned_array.data() + sm_recv_offset_1[j];
                       const auto *__restrict src =
-                        data_others[sm_recv_rank[i]].data() +
+                        shared_arrays[sm_recv_rank[i]].data() +
                         sm_recv_offset_2[j];
                       const auto *__restrict idx =
                         face_to_cell_index_nodal[sm_recv_no[j]].data();
@@ -1768,7 +1768,8 @@ namespace internal
                  i++, buffer += dofs_per_ghost)
               if (dofs_per_ghost == dofs_per_face)
                 {
-                  auto *__restrict dst = data_this.data() + send_data_id[i];
+                  auto *__restrict dst =
+                    locally_owned_array.data() + send_data_id[i];
                   const auto *__restrict src = buffer;
                   const auto *__restrict idx =
                     face_to_cell_index_nodal[send_data_face_no[i]].data();
