@@ -116,18 +116,18 @@ namespace internal
           (void)ghost_array;
           // TODO
         }
-        
+
         unsigned int
         n_import_sm_procs() const
         {
-          AssertThrow(false, ExcNotImplemented ());
+          AssertThrow(false, ExcNotImplemented());
           return 0; // TODO
         }
 
         types::global_dof_index
         size() const
         {
-          AssertThrow(false, ExcNotImplemented ());
+          AssertThrow(false, ExcNotImplemented());
           return 0; // TODO
         }
 
