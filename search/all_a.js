@@ -1,7 +1,12 @@
 var searchData=
 [
-  ['n_5fghost_5fentries_89',['n_ghost_entries',['../classLinearAlgebra_1_1SharedMPI_1_1Vector.html#aa69d0c1ff20920f687df7ce495f79bec',1,'LinearAlgebra::SharedMPI::Vector']]],
-  ['n_5fghost_5findices_90',['n_ghost_indices',['../classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html#aa7f8e4df7dc858814c1f78ab669a7c19',1,'hyperdeal::internal::MatrixFreeFunctions::Partitioner']]],
-  ['n_5fvectorization_5flanes_5ffilled_91',['n_vectorization_lanes_filled',['../structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1DoFInfo.html#aec0e9f47b91879d1d6e4db05efd5a6d0',1,'hyperdeal::internal::MatrixFreeFunctions::DoFInfo::n_vectorization_lanes_filled()'],['../classhyperdeal_1_1FEEvaluation.html#a3433d33a9de66a2ebaa13a3d62a4ac87',1,'hyperdeal::FEEvaluation::n_vectorization_lanes_filled()'],['../classhyperdeal_1_1FEFaceEvaluation.html#a4a3d4cb2790257cc58ca85912ad2823a',1,'hyperdeal::FEFaceEvaluation::n_vectorization_lanes_filled()']]],
-  ['no_5ffaces_92',['no_faces',['../structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1FaceInfo.html#a0bcd7437f069b75a7f0d72a35b688daf',1,'hyperdeal::internal::MatrixFreeFunctions::FaceInfo']]]
+  ['macro_75',['macro',['../structhyperdeal_1_1TensorID.html#a4cc3859ea0e2e123f2b45169a0c67d9f',1,'hyperdeal::TensorID']]],
+  ['matrix_5ffree_76',['matrix_free',['../classhyperdeal_1_1FEEvaluationBase.html#a918f79fc729eb07ed7a28f2df56502fb',1,'hyperdeal::FEEvaluationBase']]],
+  ['matrix_5ffree_5fv_77',['matrix_free_v',['../classhyperdeal_1_1FEEvaluationBase.html#a9fd2c8450ff5af786f69e41d93959643',1,'hyperdeal::FEEvaluationBase']]],
+  ['matrix_5ffree_5fx_78',['matrix_free_x',['../classhyperdeal_1_1FEEvaluationBase.html#ab50d9d9b0fdec75b18d93156d330329e',1,'hyperdeal::FEEvaluationBase']]],
+  ['matrixfree_79',['MatrixFree',['../classhyperdeal_1_1MatrixFree.html',1,'hyperdeal::MatrixFree&lt; dim_x, dim_v, Number, VectorizedArrayType &gt;'],['../classhyperdeal_1_1MatrixFree.html#a412a654b33c14bc14b3dbd83b8389c09',1,'hyperdeal::MatrixFree::MatrixFree()']]],
+  ['max_5ftime_5fstep_5fnumber_80',['max_time_step_number',['../classhyperdeal_1_1TimeLoop.html#a6ee33797c3e8b7b4201fd5ed686e4d3c',1,'hyperdeal::TimeLoop']]],
+  ['memory_5fconsumption_81',['memory_consumption',['../classhyperdeal_1_1MatrixFree.html#a2c2a9e8becab1f50c5700fa87489de04',1,'hyperdeal::MatrixFree::memory_consumption()'],['../classinternal_1_1MatrixFreeFunctions_1_1VectorDataExchange_1_1Contiguous.html#a66bc52fcbde44373bc72f4ba17ba92ad',1,'internal::MatrixFreeFunctions::VectorDataExchange::Contiguous::memory_consumption()']]],
+  ['memoryconsumption_82',['MemoryConsumption',['../classhyperdeal_1_1MemoryConsumption.html',1,'hyperdeal']]],
+  ['memorystatmonitor_83',['MemoryStatMonitor',['../classhyperdeal_1_1MemoryStatMonitor.html',1,'hyperdeal']]]
 ];

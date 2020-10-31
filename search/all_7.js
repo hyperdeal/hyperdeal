@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['initialize_5fdof_5fvector_71',['initialize_dof_vector',['../classhyperdeal_1_1MatrixFree.html#ac1f8334310f290d9081d0c01cdcbdbb7',1,'hyperdeal::MatrixFree']]],
-  ['is_5fecl_5fsupported_72',['is_ecl_supported',['../classhyperdeal_1_1MatrixFree.html#a4d5485c0d6daeda24e84063c9b05f27b',1,'hyperdeal::MatrixFree']]]
+  ['gridgenerator_64',['GridGenerator',['../namespacehyperdeal_1_1GridGenerator.html',1,'hyperdeal']]],
+  ['hyper_5fcube_65',['hyper_cube',['../namespacehyperdeal_1_1GridGenerator.html#a423a874410ab0bba3ae0927932100238',1,'hyperdeal::GridGenerator::hyper_cube(std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const double left_x, const double right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const double left_v, const double right_v, const bool do_periodic_v)'],['../namespacehyperdeal_1_1GridGenerator.html#aee5ed003e1b6ce555821b85441a6e88d',1,'hyperdeal::GridGenerator::hyper_cube(std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const bool do_periodic, const unsigned int &amp;n_refinements, const double left=0.0, const double right=1.0)']]],
+  ['matrixfreetools_66',['MatrixFreeTools',['../namespacehyperdeal_1_1MatrixFreeTools.html',1,'hyperdeal']]]
 ];

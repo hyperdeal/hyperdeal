@@ -146,11 +146,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac5a6bb10e9a7a4bacedae0ef79408877"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add4e3c070a4f36533490db08f4e72c1f"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ShapeInfo.html">internal::MatrixFreeFunctions::ShapeInfo</a>&lt; Number &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#add4e3c070a4f36533490db08f4e72c1f">get_shape_info</a> () const</td></tr>
 <tr class="separator:add4e3c070a4f36533490db08f4e72c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c2a9e8becab1f50c5700fa87489de04"><td class="memItemLeft" align="right" valign="top"><a id="a2c2a9e8becab1f50c5700fa87489de04"></a>
-<a class="el" href="classhyperdeal_1_1MemoryConsumption.html">MemoryConsumption</a>&#160;</td><td class="memItemRight" valign="bottom"><b>memory_consumption</b> () const</td></tr>
+<tr class="memitem:a2c2a9e8becab1f50c5700fa87489de04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhyperdeal_1_1MemoryConsumption.html">MemoryConsumption</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#a2c2a9e8becab1f50c5700fa87489de04">memory_consumption</a> () const</td></tr>
 <tr class="separator:a2c2a9e8becab1f50c5700fa87489de04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6918a3540e763dfa7379b887d38d9a4d"><td class="memItemLeft" align="right" valign="top">const std::shared_ptr&lt; <a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html">internal::MatrixFreeFunctions::Partitioner</a>&lt; Number &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#a6918a3540e763dfa7379b887d38d9a4d">get_vector_partitioner</a> () const</td></tr>
-<tr class="separator:a6918a3540e763dfa7379b887d38d9a4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9c796fa1159cd419cf6ad0c9dfb6584"><td class="memItemLeft" align="right" valign="top">const std::shared_ptr&lt; const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#ab9c796fa1159cd419cf6ad0c9dfb6584">get_vector_partitioner</a> () const</td></tr>
+<tr class="separator:ab9c796fa1159cd419cf6ad0c9dfb6584"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;int dim_x, int dim_v, typename Number, typename VectorizedArrayType&gt;<br />
@@ -485,8 +484,8 @@ template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType
 
 </div>
 </div>
-<a id="a6918a3540e763dfa7379b887d38d9a4d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6918a3540e763dfa7379b887d38d9a4d">&#9670;&nbsp;</a></span>get_vector_partitioner()</h2>
+<a id="ab9c796fa1159cd419cf6ad0c9dfb6584"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9c796fa1159cd419cf6ad0c9dfb6584">&#9670;&nbsp;</a></span>get_vector_partitioner()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -494,7 +493,7 @@ template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType
 template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">const std::shared_ptr&lt; <a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1Partitioner.html">internal::MatrixFreeFunctions::Partitioner</a>&lt; Number &gt; &gt; &amp; <a class="el" href="classhyperdeal_1_1MatrixFree.html">hyperdeal::MatrixFree</a>&lt; dim_x, dim_v, Number, VectorizedArrayType &gt;::get_vector_partitioner</td>
+          <td class="memname">const std::shared_ptr&lt; const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base &gt; &amp; <a class="el" href="classhyperdeal_1_1MatrixFree.html">hyperdeal::MatrixFree</a>&lt; dim_x, dim_v, Number, VectorizedArrayType &gt;::get_vector_partitioner</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -812,6 +811,23 @@ template&lt;typename CLASS , typename OutVector , typename InVector &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>The same as above, but without std::function. </p>
+
+</div>
+</div>
+<a id="a2c2a9e8becab1f50c5700fa87489de04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c2a9e8becab1f50c5700fa87489de04">&#9670;&nbsp;</a></span>memory_consumption()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhyperdeal_1_1MemoryConsumption.html">MemoryConsumption</a> <a class="el" href="classhyperdeal_1_1MatrixFree.html">hyperdeal::MatrixFree</a>&lt; dim_x, dim_v, Number, VectorizedArrayType &gt;::memory_consumption</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return an estimate for the memory consumption, in bytes, of this object. </p>
 
 </div>
 </div>

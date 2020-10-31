@@ -79,12 +79,12 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a3c841f04bdd940179d267dd663caf752"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ReadWriteOperation.html#a3c841f04bdd940179d267dd663caf752">ReadWriteOperation</a> (const <a class="el" href="structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1DoFInfo.html">hyperdeal::internal::MatrixFreeFunctions::DoFInfo</a> &amp;dof_info, const <a class="el" href="structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1FaceInfo.html">hyperdeal::internal::MatrixFreeFunctions::FaceInfo</a> &amp;face_info, const <a class="el" href="structhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ShapeInfo.html">hyperdeal::internal::MatrixFreeFunctions::ShapeInfo</a>&lt; Number &gt; &amp;shape_info)</td></tr>
 <tr class="separator:a3c841f04bdd940179d267dd663caf752"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ab77a436baca2eaf0c015441c74dbf9"><td class="memTemplParams" colspan="2">template&lt;int dim, int degree, typename VectorOperation , typename VectorizedArrayType &gt; </td></tr>
-<tr class="memitem:a5ab77a436baca2eaf0c015441c74dbf9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ReadWriteOperation.html#a5ab77a436baca2eaf0c015441c74dbf9">process_cell</a> (const VectorOperation &amp;operation, const std::vector&lt; double * &gt; &amp;data_others, VectorizedArrayType *dst, const unsigned int cell_batch_number) const</td></tr>
-<tr class="separator:a5ab77a436baca2eaf0c015441c74dbf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fedf36e41f70e6b3dd0271ff5630d3e"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v, int degree, typename VectorOperation , typename VectorizedArrayType &gt; </td></tr>
-<tr class="memitem:a9fedf36e41f70e6b3dd0271ff5630d3e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ReadWriteOperation.html#a9fedf36e41f70e6b3dd0271ff5630d3e">process_face</a> (const VectorOperation &amp;operation, const std::vector&lt; double * &gt; &amp;data_others, VectorizedArrayType *dst, const unsigned int *face_no, const unsigned int *face_orientation, const unsigned int face_orientation_offset, const unsigned int cell_batch_number, const unsigned int cell_side, const unsigned int face_batch_number, const unsigned int face_side) const</td></tr>
-<tr class="separator:a9fedf36e41f70e6b3dd0271ff5630d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fa1eee47db1f040528643edb3263200"><td class="memTemplParams" colspan="2">template&lt;int dim, int degree, typename VectorOperation , typename VectorizedArrayType &gt; </td></tr>
+<tr class="memitem:a6fa1eee47db1f040528643edb3263200"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ReadWriteOperation.html#a6fa1eee47db1f040528643edb3263200">process_cell</a> (const VectorOperation &amp;operation, const std::vector&lt; dealii::ArrayView&lt; const Number &gt;&gt; &amp;data_others, VectorizedArrayType *dst, const unsigned int cell_batch_number) const</td></tr>
+<tr class="separator:a6fa1eee47db1f040528643edb3263200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0de70c7d527626960d8e14211585d3c"><td class="memTemplParams" colspan="2">template&lt;int dim_x, int dim_v, int degree, typename VectorOperation , typename VectorizedArrayType &gt; </td></tr>
+<tr class="memitem:ae0de70c7d527626960d8e14211585d3c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1internal_1_1MatrixFreeFunctions_1_1ReadWriteOperation.html#ae0de70c7d527626960d8e14211585d3c">process_face</a> (const VectorOperation &amp;operation, const std::vector&lt; dealii::ArrayView&lt; const Number &gt;&gt; &amp;data_others, VectorizedArrayType *dst, const unsigned int *face_no, const unsigned int *face_orientation, const unsigned int face_orientation_offset, const unsigned int cell_batch_number, const unsigned int cell_side, const unsigned int face_batch_number, const unsigned int face_side) const</td></tr>
+<tr class="separator:ae0de70c7d527626960d8e14211585d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename Number&gt;<br />
@@ -130,8 +130,8 @@ template&lt;typename Number &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a5ab77a436baca2eaf0c015441c74dbf9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ab77a436baca2eaf0c015441c74dbf9">&#9670;&nbsp;</a></span>process_cell()</h2>
+<a id="a6fa1eee47db1f040528643edb3263200"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fa1eee47db1f040528643edb3263200">&#9670;&nbsp;</a></span>process_cell()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,7 +149,7 @@ template&lt;int dim, int degree, typename VectorOperation , typename VectorizedA
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; double * &gt; &amp;&#160;</td>
+          <td class="paramtype">const std::vector&lt; dealii::ArrayView&lt; const Number &gt;&gt; &amp;&#160;</td>
           <td class="paramname"><em>data_others</em>, </td>
         </tr>
         <tr>
@@ -175,8 +175,8 @@ template&lt;int dim, int degree, typename VectorOperation , typename VectorizedA
 
 </div>
 </div>
-<a id="a9fedf36e41f70e6b3dd0271ff5630d3e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fedf36e41f70e6b3dd0271ff5630d3e">&#9670;&nbsp;</a></span>process_face()</h2>
+<a id="ae0de70c7d527626960d8e14211585d3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0de70c7d527626960d8e14211585d3c">&#9670;&nbsp;</a></span>process_face()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -194,7 +194,7 @@ template&lt;int dim_x, int dim_v, int degree, typename VectorOperation , typenam
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; double * &gt; &amp;&#160;</td>
+          <td class="paramtype">const std::vector&lt; dealii::ArrayView&lt; const Number &gt;&gt; &amp;&#160;</td>
           <td class="paramname"><em>data_others</em>, </td>
         </tr>
         <tr>

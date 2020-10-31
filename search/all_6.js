@@ -1,6 +1,30 @@
 var searchData=
 [
-  ['gridgenerator_68',['GridGenerator',['../namespacehyperdeal_1_1GridGenerator.html',1,'hyperdeal']]],
-  ['hyper_5fcube_69',['hyper_cube',['../namespacehyperdeal_1_1GridGenerator.html#a423a874410ab0bba3ae0927932100238',1,'hyperdeal::GridGenerator::hyper_cube(std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const unsigned int &amp;n_refinements_x, const double left_x, const double right_x, const bool do_periodic_x, const unsigned int &amp;n_refinements_v, const double left_v, const double right_v, const bool do_periodic_v)'],['../namespacehyperdeal_1_1GridGenerator.html#aee5ed003e1b6ce555821b85441a6e88d',1,'hyperdeal::GridGenerator::hyper_cube(std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_x &gt;&gt; &amp;tria_x, std::shared_ptr&lt; dealii::parallel::TriangulationBase&lt; dim_v &gt;&gt; &amp;tria_v, const bool do_periodic, const unsigned int &amp;n_refinements, const double left=0.0, const double right=1.0)']]],
-  ['matrixfreetools_70',['MatrixFreeTools',['../namespacehyperdeal_1_1MatrixFreeTools.html',1,'hyperdeal']]]
+  ['get_5fboundary_37',['get_boundary',['../structhyperdeal_1_1advection_1_1BoundaryDescriptor.html#a8eef933bbf8a49d7b0a1986453a43607',1,'hyperdeal::advection::BoundaryDescriptor']]],
+  ['get_5fboundary_5fid_38',['get_boundary_id',['../classhyperdeal_1_1MatrixFree.html#a6a6d711083a14d2497e5b9deb8d1d73e',1,'hyperdeal::MatrixFree']]],
+  ['get_5fboundary_5ftype_39',['get_boundary_type',['../structhyperdeal_1_1advection_1_1BoundaryDescriptor.html#a8e8d2daa84ed251f17af0cfdbfaee501',1,'hyperdeal::advection::BoundaryDescriptor']]],
+  ['get_5fcommunicator_40',['get_communicator',['../classhyperdeal_1_1MatrixFree.html#a0fb7ceefa4f5e64b5ec7c40b2e913749',1,'hyperdeal::MatrixFree']]],
+  ['get_5fdata_5fptr_41',['get_data_ptr',['../classhyperdeal_1_1FEEvaluationBase.html#a1a9021d6a59c7f158f2fbc5e1e5c9c28',1,'hyperdeal::FEEvaluationBase']]],
+  ['get_5fdof_5finfo_42',['get_dof_info',['../classhyperdeal_1_1MatrixFree.html#a5975e67b73abb39df7ed1ee2b9d38336',1,'hyperdeal::MatrixFree']]],
+  ['get_5fface_5finfo_43',['get_face_info',['../classhyperdeal_1_1MatrixFree.html#ac5a6bb10e9a7a4bacedae0ef79408877',1,'hyperdeal::MatrixFree']]],
+  ['get_5ffaces_5fby_5fcells_5fboundary_5fid_44',['get_faces_by_cells_boundary_id',['../classhyperdeal_1_1MatrixFree.html#a6b0d7c461d9bfe5e689d4458f9b4bb9f',1,'hyperdeal::MatrixFree']]],
+  ['get_5fghost_5ffaces_45',['get_ghost_faces',['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html#a421bf0c99d71b3c9f70e2422c7058aa4',1,'hyperdeal::internal::GlobalCellInfoProcessor']]],
+  ['get_5fgradient_5fv_46',['get_gradient_v',['../classhyperdeal_1_1FEEvaluation.html#aad1c6b175060d6db1ee608e3d847ca4f',1,'hyperdeal::FEEvaluation']]],
+  ['get_5fgradient_5fx_47',['get_gradient_x',['../classhyperdeal_1_1FEEvaluation.html#ad4f7da6f4cd85115792a2458fb219f14',1,'hyperdeal::FEEvaluation']]],
+  ['get_5finverse_5fshape_48',['get_inverse_shape',['../classhyperdeal_1_1FEEvaluationInverse.html#a6e754d08ed4636e864cfa31df34d8179',1,'hyperdeal::FEEvaluationInverse']]],
+  ['get_5fmaps_49',['get_maps',['../classinternal_1_1MatrixFreeFunctions_1_1VectorDataExchange_1_1Contiguous.html#af705df0fde778e12000e11bc21ba40bf',1,'internal::MatrixFreeFunctions::VectorDataExchange::Contiguous']]],
+  ['get_5fmaps_5fghost_50',['get_maps_ghost',['../classinternal_1_1MatrixFreeFunctions_1_1VectorDataExchange_1_1Contiguous.html#a549c41c75992086a57872e561dbbf811',1,'internal::MatrixFreeFunctions::VectorDataExchange::Contiguous']]],
+  ['get_5fmatrix_5ffree_5fv_51',['get_matrix_free_v',['../classhyperdeal_1_1MatrixFree.html#a1aa33844efe0cad22734d7f7225dab61',1,'hyperdeal::MatrixFree']]],
+  ['get_5fmatrix_5ffree_5fx_52',['get_matrix_free_x',['../classhyperdeal_1_1MatrixFree.html#a858d014500f60a039d3eb7a958f2fcf3',1,'hyperdeal::MatrixFree']]],
+  ['get_5fnormal_5fvector_5fv_53',['get_normal_vector_v',['../classhyperdeal_1_1FEFaceEvaluation.html#ae7a5671a308bf1b09fe1cca031488726',1,'hyperdeal::FEFaceEvaluation']]],
+  ['get_5fnormal_5fvector_5fx_54',['get_normal_vector_x',['../classhyperdeal_1_1FEFaceEvaluation.html#a520ef220abf1f1f2495bc576b6ba3172',1,'hyperdeal::FEFaceEvaluation']]],
+  ['get_5fquadrature_5fpoint_55',['get_quadrature_point',['../classhyperdeal_1_1FEEvaluation.html#a0434057d581dc5aeafd9cd82520db556',1,'hyperdeal::FEEvaluation::get_quadrature_point()'],['../classhyperdeal_1_1FEFaceEvaluation.html#ad40595b2aa8ea72bb493d26fce4a8045',1,'hyperdeal::FEFaceEvaluation::get_quadrature_point(const unsigned int q) const'],['../classhyperdeal_1_1FEFaceEvaluation.html#abd9956b340c1dd961099e7541047a9a3',1,'hyperdeal::FEFaceEvaluation::get_quadrature_point(const unsigned int qx, const unsigned int qv) const']]],
+  ['get_5fshape_5fgradients_56',['get_shape_gradients',['../classhyperdeal_1_1FEEvaluationBase.html#ac3b89c651f4f7ec7d7c6f56848d9fab0',1,'hyperdeal::FEEvaluationBase']]],
+  ['get_5fshape_5finfo_57',['get_shape_info',['../classhyperdeal_1_1MatrixFree.html#add4e3c070a4f36533490db08f4e72c1f',1,'hyperdeal::MatrixFree']]],
+  ['get_5fshape_5fvalues_58',['get_shape_values',['../classhyperdeal_1_1FEEvaluationBase.html#a05fcd06a759ca319b142d6df69519ac8',1,'hyperdeal::FEEvaluationBase']]],
+  ['get_5fvector_5fpartitioner_59',['get_vector_partitioner',['../classhyperdeal_1_1MatrixFree.html#ab9c796fa1159cd419cf6ad0c9dfb6584',1,'hyperdeal::MatrixFree']]],
+  ['gid_60',['gid',['../structhyperdeal_1_1internal_1_1CellInfo.html#a0f6d5e4e2d9c700f418eb25aabbf971a',1,'hyperdeal::internal::CellInfo']]],
+  ['globalcellinfo_61',['GlobalCellInfo',['../structhyperdeal_1_1internal_1_1GlobalCellInfo.html',1,'hyperdeal::internal']]],
+  ['globalcellinfoprocessor_62',['GlobalCellInfoProcessor',['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html',1,'hyperdeal::internal::GlobalCellInfoProcessor'],['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html#a8df92881d1d070d62f821b45f39fdb15',1,'hyperdeal::internal::GlobalCellInfoProcessor::GlobalCellInfoProcessor()']]],
+  ['globalecellidtranslator_63',['GlobaleCellIDTranslator',['../classhyperdeal_1_1internal_1_1GlobaleCellIDTranslator.html',1,'hyperdeal::internal::GlobaleCellIDTranslator'],['../classhyperdeal_1_1internal_1_1GlobaleCellIDTranslator.html#ad37b5fedbc422b7dfc262c7ce8877a6c',1,'hyperdeal::internal::GlobaleCellIDTranslator::GlobaleCellIDTranslator()']]]
 ];
