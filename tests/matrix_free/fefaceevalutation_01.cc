@@ -136,7 +136,7 @@ test(const MPI_Comm &comm, const unsigned int o1, const unsigned int o2)
       const auto &matrix_free = matrixfree_wrapper.get_matrix_free();
 
       VectorType vec;
-      matrix_free.initialize_dof_vector(vec, 0, false, true);
+      matrix_free.initialize_dof_vector(vec, 0, true, true);
 
       static const int dim = dim_x + dim_v;
 

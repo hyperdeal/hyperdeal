@@ -15,6 +15,7 @@
 
 #include <deal.II/fe/fe_dgq.h>
 
+#include <hyper.deal/base/mpi_tags.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
 
 namespace hyperdeal
@@ -912,9 +913,8 @@ namespace hyperdeal
       AssertThrow(do_ghost_faces,
                   dealii::StandardExceptions::ExcNotImplemented());
 
-      auto partitioner =
-        std::make_shared<internal::MatrixFreeFunctions::Partitioner<Number>>(
-          shape_info);
+      auto partitioner = new dealii::internal::MatrixFreeFunctions::
+        VectorDataExchange::Contiguous(shape_info);
 
       // create a list of inner cells and ghost faces
       std::vector<dealii::types::global_dof_index> local_list;
@@ -976,7 +976,9 @@ namespace hyperdeal
       // actually setup partitioner
       partitioner->reinit(local_list, ghost_list, comm, comm_sm, do_buffering);
 
-      return partitioner;
+      return std::shared_ptr<
+        const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base>(
+        partitioner);
     }();
 
     /**
@@ -1064,8 +1066,14 @@ namespace hyperdeal
       const auto &no_faces             = face_info.no_faces;
       const auto &face_orientations    = face_info.face_orientations;
 
-      const auto &maps       = partitioner->get_maps();
-      const auto &maps_ghost = partitioner->get_maps_ghost();
+      const auto &maps =
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
+          ->get_maps();
+      const auto &maps_ghost =
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
+          ->get_maps_ghost();
 
       static const int v_len = VectorizedArrayType::size();
 
@@ -1166,8 +1174,193 @@ namespace hyperdeal
       // are the same as for cells
       dof_info.n_vectorization_lanes_filled[3].clear();
     }
+
+    // partitions for ECL
+    if (this->use_ecl)
+      {
+        for (auto &partition : partitions)
+          partition.clear();
+
+        const unsigned int v_len = VectorizedArrayTypeV::size();
+        const auto my_rank = dealii::Utilities::MPI::this_mpi_process(comm);
+        const auto sm_ranks_vec = mpi::procs_of_sm(comm, comm_sm);
+        const std::set<unsigned int> sm_ranks(sm_ranks_vec.begin(),
+                                              sm_ranks_vec.end());
+
+        const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
+        const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
+
+        // 0: no overlapping
+        const unsigned int overlapping_level =
+          additional_data.overlapping_level;
+
+        for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
+          for (unsigned int v = 0;
+               v < matrix_free_v.n_active_entries_per_cell_batch(j);
+               v++)
+            for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
+              {
+                unsigned int flag = 0;
+                for (unsigned int d = 0;
+                     d < dealii::GeometryInfo<dim>::faces_per_cell;
+                     d++)
+                  for (unsigned int v = 0;
+                       v < dof_info.n_vectorization_lanes_filled[2][i0];
+                       v++)
+                    {
+                      const auto gid =
+                        info
+                          .cells_exterior_ecl
+                            [i0 * info.max_batch_size *
+                               dealii::GeometryInfo<dim>::faces_per_cell +
+                             d * info.max_batch_size + v]
+                          .rank;
+
+                      if (overlapping_level >= 1 && gid == my_rank)
+                        flag = std::max(flag, 0u);
+                      else if (overlapping_level == 2 &&
+                               sm_ranks.find(gid) != sm_ranks.end())
+                        flag = std::max(flag, 1u);
+                      else
+                        flag = std::max(flag, 2u);
+                    }
+
+                partitions[flag].emplace_back(i, j * v_len + v, i0);
+              }
+
+        if (dealii::Utilities::MPI::this_mpi_process(comm) == 0)
+          std::cout << partitions[0].size() << " " << partitions[1].size()
+                    << " " << partitions[2].size() << " " << std::endl;
+      }
   }
 
+  namespace internal
+  {
+    template <typename Number>
+    struct VectorDataExchange
+    {
+      VectorDataExchange(
+        std::shared_ptr<
+          const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base>
+          partitioner)
+        : partitioner(partitioner)
+      {}
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_start(VectorType &vec)
+      {
+        buffer.resize_fast(this->partitioner->n_import_indices());
+
+        this->partitioner->export_to_ghosted_array_start(
+          0,
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_finish(VectorType &vec)
+      {
+        AssertDimension(buffer.size(), this->partitioner->n_import_indices());
+
+        this->partitioner->export_to_ghosted_array_finish(
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_finish_0(VectorType &vec)
+      {
+        const auto part =
+          dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                         VectorDataExchange::Contiguous *>(partitioner.get());
+
+        part->export_to_ghosted_array_finish_0(
+          dealii::ArrayView<const Number>(const_cast<Number *>(vec.begin()),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      export_to_ghosted_array_finish_1(VectorType &vec)
+      {
+        const auto part =
+          dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                         VectorDataExchange::Contiguous *>(partitioner.get());
+
+        part->export_to_ghosted_array_finish_1(
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(const_cast<Number *>(vec.begin()) +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      import_from_ghosted_array_start(VectorType &vec)
+      {
+        buffer.resize_fast(this->partitioner->n_import_indices());
+
+        this->partitioner->import_from_ghosted_array_start(
+          dealii::VectorOperation::values::add,
+          0,
+          dealii::ArrayView<const Number>(vec.begin(),
+                                          this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<Number>(buffer.begin(), buffer.size()),
+          requests);
+      }
+
+      template <typename VectorType>
+      void
+      import_from_ghosted_array_finish(VectorType &vec)
+      {
+        AssertDimension(buffer.size(), this->partitioner->n_import_indices());
+
+        this->partitioner->import_from_ghosted_array_finish(
+          dealii::VectorOperation::values::add,
+          dealii::ArrayView<Number>(vec.begin(),
+                                    this->partitioner->local_size()),
+          vec.shared_vector_data(),
+          dealii::ArrayView<Number>(vec.begin() +
+                                      this->partitioner->local_size(),
+                                    this->partitioner->n_ghost_indices()),
+          dealii::ArrayView<const Number>(buffer.begin(), buffer.size()),
+          requests);
+      }
+
+      const std::shared_ptr<
+        const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base>
+        partitioner;
+
+      dealii::AlignedVector<Number> buffer;
+      std::vector<MPI_Request>      requests;
+    };
+  } // namespace internal
 
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
@@ -1186,29 +1379,35 @@ namespace hyperdeal
                 dealii::ExcMessage("Partitioner has not been initialized!"));
 
     // setup vector
-    vec.reinit(comm,
-               comm_sm,
-               partitioner->local_size(),
-               do_ghosts ? partitioner->n_ghost_indices() : 0);
+    vec.reinit(partitioner->local_size(),
+               do_ghosts ? partitioner->n_ghost_indices() : 0,
+               comm,
+               comm_sm);
 
     // zero out values
     if (zero_out_values)
-      vec.zero_out(true);
+      vec = 0.0;
 
-    // perform test ghost value update
+    // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
       {
-        // working for ECL/FCL
-        partitioner->update_ghost_values_start(vec.begin(), vec.other_values());
-        partitioner->update_ghost_values_finish(vec.begin(),
-                                                vec.other_values());
+        vec.zero_out_ghosts();
 
-        // working only for FCL
-        if (!use_ecl)
-          {
-            partitioner->compress_start(vec.begin(), vec.other_values());
-            partitioner->compress_finish(vec.begin(), vec.other_values());
-          }
+        internal::VectorDataExchange<Number> data_exchanger(partitioner);
+
+        data_exchanger.export_to_ghosted_array_start(vec);
+        data_exchanger.export_to_ghosted_array_finish(vec);
+
+        vec.zero_out_ghosts();
+      }
+
+    // perform test compression (working for FCL)
+    if (zero_out_values && do_ghosts && !use_ecl)
+      {
+        internal::VectorDataExchange<Number> data_exchanger(partitioner);
+
+        data_exchanger.import_from_ghosted_array_start(vec);
+        data_exchanger.import_from_ghosted_array_finish(vec);
       }
   }
 
@@ -1303,47 +1502,82 @@ namespace hyperdeal
     const DataAccessOnFaces src_vector_face_access,
     Timers *                timers) const
   {
-    if (src_vector_face_access == DataAccessOnFaces::values)
-      {
-        ScopedTimerWrapper timer(timers, "update_ghost_values");
-
-        InVector &src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values());
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values());
-      }
-    else
-      AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
-
-    {
-      ScopedTimerWrapper timer(timers, "zero_out_ghosts");
-      dst.zero_out_ghosts();
-    }
+    AssertThrow(src_vector_face_access == DataAccessOnFaces::values ||
+                  src_vector_face_access == DataAccessOnFaces::none,
+                dealii::StandardExceptions::ExcNotImplemented());
 
     {
       ScopedTimerWrapper timer(timers, "loop");
 
-      const unsigned int v_len            = VectorizedArrayTypeV::size();
-      const unsigned int n_cell_batches_x = matrix_free_x.n_cell_batches();
-      const unsigned int n_cell_batches_v = matrix_free_v.n_cell_batches();
+      internal::VectorDataExchange<Number> data_exchanger(partitioner);
 
-      for (unsigned int j = 0, i0 = 0; j < n_cell_batches_v; j++)
-        for (unsigned int v = 0;
-             v < matrix_free_v.n_active_entries_per_cell_batch(j);
-             v++)
-          for (unsigned int i = 0; i < n_cell_batches_x; i++, i0++)
-            cell_operation(*this, dst, src, ID(i, j * v_len + v, i0));
+      // loop over all partitions
+      for (unsigned int i = 0; i < this->partitions.size(); ++i)
+        {
+          // perform pre-processing step for partition
+          if (src_vector_face_access == DataAccessOnFaces::values)
+            {
+              if (i == 0)
+                {
+                  if (timers != nullptr)
+                    timers->operator[]("update_ghost_values_0").start();
+
+                  // perform src.update_ghost_values_start()
+                  data_exchanger.export_to_ghosted_array_start(src);
+
+                  // zero out ghost of destination vector
+                  if (dst.has_ghost_elements())
+                    dst.zero_out_ghosts();
+                }
+              else if (i == 1)
+                {
+                  // ... src.update_ghost_values_finish() for shared-memory
+                  // domain:
+                  data_exchanger.export_to_ghosted_array_finish_0(src);
+
+                  if (timers != nullptr)
+                    {
+                      timers->operator[]("update_ghost_values_0").stop();
+                      timers->operator[]("update_ghost_values_1").start();
+                    }
+                }
+              else if (i == 2)
+                {
+                  // ... src.update_ghost_values_finish() for remote domain:
+                  data_exchanger.export_to_ghosted_array_finish_1(src);
+
+                  if (timers != nullptr)
+                    {
+                      timers->operator[]("update_ghost_values_1").stop();
+                      timers->operator[]("update_ghost_values_2").start();
+                    }
+                }
+              else
+                {
+                  AssertThrow(false,
+                              dealii::StandardExceptions::ExcNotImplemented());
+                }
+            }
+
+          // loop over all cells in partition
+          for (const auto &id : this->partitions[i])
+            cell_operation(*this, dst, src, id);
+        }
     }
 
-    if (!do_buffering)
+    if (timers != nullptr)
+      timers->operator[]("update_ghost_values_2").stop();
+
+    if (do_buffering == false &&
+        src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "barrier");
-        partitioner->sync();
+
+        dynamic_cast<const dealii::internal::MatrixFreeFunctions::
+                       VectorDataExchange::Contiguous *>(partitioner.get())
+          ->sync();
       }
   }
-
-
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
   template <typename CLASS, typename OutVector, typename InVector>
@@ -1418,11 +1652,11 @@ namespace hyperdeal
     if (src_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "update_ghost_values");
-        InVector &         src_ = const_cast<InVector &>(src);
-        partitioner->update_ghost_values_start(src_.begin(),
-                                               src_.other_values());
-        partitioner->update_ghost_values_finish(src_.begin(),
-                                                src_.other_values());
+
+        internal::VectorDataExchange<Number> data_exchanger(partitioner);
+
+        data_exchanger.export_to_ghosted_array_start(src);
+        data_exchanger.export_to_ghosted_array_finish(src);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1500,8 +1734,11 @@ namespace hyperdeal
     if (dst_vector_face_access == DataAccessOnFaces::values)
       {
         ScopedTimerWrapper timer(timers, "compress");
-        partitioner->compress_start(dst.begin(), dst.other_values());
-        partitioner->compress_finish(dst.begin(), dst.other_values());
+
+        internal::VectorDataExchange<Number> data_exchanger(partitioner);
+
+        data_exchanger.import_from_ghosted_array_start(dst);
+        data_exchanger.import_from_ghosted_array_finish(dst);
       }
     else
       AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
@@ -1657,7 +1894,24 @@ namespace hyperdeal
 
 
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
-  const std::shared_ptr<internal::MatrixFreeFunctions::Partitioner<Number>> &
+  MemoryConsumption
+  MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::memory_consumption()
+    const
+  {
+    MemoryConsumption mem("matrix_free");
+    // mem.insert("partitioner", partitioner->memory_consumption()); // TODO
+    mem.insert("dof_info", dof_info.memory_consumption());
+    mem.insert("face_info", face_info.memory_consumption());
+    mem.insert("shape_info", shape_info.memory_consumption());
+
+    return mem;
+  }
+
+
+
+  template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
+  const std::shared_ptr<
+    const dealii::internal::MatrixFreeFunctions::VectorDataExchange::Base> &
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::
     get_vector_partitioner() const
   {

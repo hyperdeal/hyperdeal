@@ -123,7 +123,7 @@ namespace hyperdeal
         .template process_cell<dim, degree>(
           internal::MatrixFreeFunctions::VectorReader<Number,
                                                       VectorizedArrayType>(),
-          src.other_values(),
+          src.shared_vector_data(),
           data,
           this->macro);
     }
@@ -154,7 +154,7 @@ namespace hyperdeal
         .template process_cell<dim, degree>(
           internal::MatrixFreeFunctions::VectorSetter<Number,
                                                       VectorizedArrayType>(),
-          dst.other_values(),
+          dst.shared_vector_data(),
           &this->data[0],
           this->macro);
     }

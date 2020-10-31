@@ -13,24 +13,30 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
-#define HYPERDEAL_LINEARALGEBRA_SHAREDMPI_VECTOR
+#ifndef HYPERDEAL_BASE_MPI_TAGS
+#define HYPERDEAL_BASE_MPI_TAGS
 
-#include <deal.II/lac/la_parallel_vector.h>
+#include <hyper.deal/base/config.h>
 
-DEAL_II_NAMESPACE_OPEN
+#include <deal.II/base/mpi.h>
 
-namespace LinearAlgebra
+namespace hyperdeal
 {
-  namespace SharedMPI
+  namespace mpi
   {
-    template <typename Number, typename MemorySpace = MemorySpace::Host>
-    using Vector =
-      dealii::LinearAlgebra::distributed::Vector<Number, MemorySpace>;
-  } // namespace SharedMPI
-} // namespace LinearAlgebra
+    namespace internal
+    {
+      namespace Tags
+      {
+        enum enumeration : std::uint16_t
+        {
+          // Partitioner::sync() -> MPI_Isend/MPI_Irecv
+          partitioner_sync,
 
-
-DEAL_II_NAMESPACE_CLOSE
+        };
+      }
+    } // namespace internal
+  }   // namespace mpi
+} // namespace hyperdeal
 
 #endif

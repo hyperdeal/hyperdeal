@@ -261,7 +261,7 @@ namespace hyperdeal
             .template process_face<dim_x, dim_v, degree>(
               internal::MatrixFreeFunctions::
                 VectorReader<Number, VectorizedArrayType>(),
-              src.other_values(),
+              src.shared_vector_data(),
               data,
               (is_ecl == false || this->is_minus_face) ?
                 &this->face_no :
@@ -346,7 +346,7 @@ namespace hyperdeal
             .template process_face<dim_x, dim_v, degree>(
               internal::MatrixFreeFunctions::
                 VectorDistributorLocalToGlobal<Number, VectorizedArrayType>(),
-              dst.other_values(),
+              dst.shared_vector_data(),
               &this->data[0],
               &this->face_no,
               &face_orientation,
