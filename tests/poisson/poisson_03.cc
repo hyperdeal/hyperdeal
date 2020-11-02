@@ -27,6 +27,7 @@
 #include <deal.II/fe/mapping_q.h>
 
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/manifold_lib.h>
 
 #include <deal.II/lac/la_parallel_vector.h>
@@ -67,9 +68,21 @@ test(const bool do_test_multigrid)
   // create triangulation
   std::shared_ptr<Triangulation<dim>> tria;
 
-  auto create_grid = [](auto &tria) {
-    dealii::GridGenerator::torus(tria, 6.2, 2.0);
-    ;
+  const auto create_grid = [](auto &tria) {
+    const double R = 6.2;
+    const double r = 2.0;
+
+    dealii::GridGenerator::torus(tria, R, r);
+
+    tria.reset_all_manifolds();
+    tria.set_manifold(1, TorusManifold<3>(R, r));
+    tria.set_manifold(0,
+                      CylindricalManifold<3>(Tensor<1, 3>({0., 1., 0.}),
+                                             Point<3>()));
+    tria.set_manifold(2,
+                      CylindricalManifold<3>(Tensor<1, 3>({0., 1., 0.}),
+                                             Point<3>()));
+
     tria.refine_global(2);
   };
 
@@ -115,6 +128,11 @@ test(const bool do_test_multigrid)
           dim>::MeshSmoothing::limit_level_difference_at_vertices));
       create_grid(*tria);
     }
+
+#if true
+  dealii::GridOut grid_out;
+  grid_out.write_mesh_per_processor_as_vtu(*tria, "grid");
+#endif
 
   // create dof handler
   DoFHandler<dim> dof(*tria);

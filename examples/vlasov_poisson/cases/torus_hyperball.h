@@ -16,6 +16,8 @@
 #ifndef HYPERDEAL_ADVECTION_CASES_TORUS_HYPERBALL
 #define HYPERDEAL_ADVECTION_CASES_TORUS_HYPERBALL
 
+#include <deal.II/grid/manifold_lib.h>
+
 #include <hyper.deal/grid/grid_generator.h>
 
 #include "../include/parameters.h"
@@ -104,7 +106,21 @@ namespace hyperdeal
         {
           const auto fu_x = [&](auto &tria) {
             if constexpr (dim_x == 3)
-              dealii::GridGenerator::torus(tria, torus_R, torus_r);
+              {
+                dealii::GridGenerator::torus(tria, torus_R, torus_r);
+
+                tria.reset_all_manifolds();
+                tria.set_manifold(1,
+                                  dealii::TorusManifold<3>(torus_R, torus_r));
+                tria.set_manifold(0,
+                                  dealii::CylindricalManifold<3>(
+                                    dealii::Tensor<1, 3>({0., 1., 0.}),
+                                    dealii::Point<3>()));
+                tria.set_manifold(2,
+                                  dealii::CylindricalManifold<3>(
+                                    dealii::Tensor<1, 3>({0., 1., 0.}),
+                                    dealii::Point<3>()));
+              }
             else
               AssertThrow(false,
                           dealii::StandardExceptions::ExcNotImplemented());
