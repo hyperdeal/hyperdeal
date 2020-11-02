@@ -815,11 +815,6 @@ namespace hyperdeal
               {
                 auto manifold = tria.get_manifold(manifold_id).clone();
 
-                if (auto temp = dynamic_cast<
-                      dealii::TransfiniteInterpolationManifold<dim> *>(
-                      manifold.get()))
-                  temp->initialize(*triangulation);
-
                 triangulation->set_manifold(manifold_id, *manifold);
               }
 
