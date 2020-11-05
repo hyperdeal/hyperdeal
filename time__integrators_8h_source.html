@@ -90,48 +90,49 @@ $(function() {
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &lt;hyper.deal/base/config.h&gt;</span></div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">namespace </span>hyperdeal</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;{</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Number, <span class="keyword">typename</span> VectorType&gt;</div>
-<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">   37</a></span>&#160;  <span class="keyword">class </span><a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">LowStorageRungeKuttaIntegrator</a></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  {</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">   46</a></span>&#160;    <a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">LowStorageRungeKuttaIntegrator</a>(VectorType &amp;      vec_Ki,</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                                   VectorType &amp;      vec_Ti,</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                                   <span class="keyword">const</span> std::string type,</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                                   <span class="keyword">const</span> <span class="keywordtype">bool</span>        only_Ti_is_ghosted = <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">   58</a></span>&#160;    <a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">perform_time_step</a>(</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      VectorType &amp;  solution,</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      <span class="keyword">const</span> Number &amp;current_time,</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <span class="keyword">const</span> Number &amp;time_step,</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      <span class="keyword">const</span> std::function&lt;<span class="keywordtype">void</span>(<span class="keyword">const</span> VectorType &amp;, VectorType &amp;, <span class="keyword">const</span> Number)&gt;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        &amp;op);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    n_stages() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    VectorType &amp;vec_Ki;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    VectorType &amp;vec_Ti;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> only_Ti_is_ghosted;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    std::vector&lt;Number&gt; ai, bi;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  };</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">namespace </span>hyperdeal</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;{</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Number, <span class="keyword">typename</span> VectorType&gt;</div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">   38</a></span>&#160;  <span class="keyword">class </span><a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">LowStorageRungeKuttaIntegrator</a></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">   47</a></span>&#160;    <a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">LowStorageRungeKuttaIntegrator</a>(VectorType &amp;      vec_Ki,</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                                   VectorType &amp;      vec_Ti,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                                   <span class="keyword">const</span> std::string type,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                                   <span class="keyword">const</span> <span class="keywordtype">bool</span>        only_Ti_is_ghosted = <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">   59</a></span>&#160;    <a class="code" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">perform_time_step</a>(</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      VectorType &amp;  solution,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <span class="keyword">const</span> Number &amp;current_time,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      <span class="keyword">const</span> Number &amp;time_step,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <span class="keyword">const</span> std::function&lt;<span class="keywordtype">void</span>(<span class="keyword">const</span> VectorType &amp;, VectorType &amp;, <span class="keyword">const</span> Number)&gt;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        &amp;op);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    n_stages() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    VectorType &amp;vec_Ki;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    VectorType &amp;vec_Ti;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> only_Ti_is_ghosted;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    std::vector&lt;Number&gt; ai, bi;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  };</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;} <span class="comment">// namespace hyperdeal</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;} <span class="comment">// namespace hyperdeal</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html_afd5497392807cf193c8d9c28aa786cd6"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">hyperdeal::LowStorageRungeKuttaIntegrator::LowStorageRungeKuttaIntegrator</a></div><div class="ttdeci">LowStorageRungeKuttaIntegrator(VectorType &amp;vec_Ki, VectorType &amp;vec_Ti, const std::string type, const bool only_Ti_is_ghosted=true)</div></div>
 <div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html_aa4638a1eb696b67f59d6879d111cc351"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">hyperdeal::LowStorageRungeKuttaIntegrator::perform_time_step</a></div><div class="ttdeci">void perform_time_step(VectorType &amp;solution, const Number &amp;current_time, const Number &amp;time_step, const std::function&lt; void(const VectorType &amp;, VectorType &amp;, const Number)&gt; &amp;op)</div></div>
-<div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">hyperdeal::LowStorageRungeKuttaIntegrator</a></div><div class="ttdef"><b>Definition:</b> time_integrators.h:38</div></div>
+<div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">hyperdeal::LowStorageRungeKuttaIntegrator</a></div><div class="ttdef"><b>Definition:</b> time_integrators.h:39</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20
