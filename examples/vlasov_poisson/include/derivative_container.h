@@ -30,7 +30,7 @@ namespace hyperdeal
      * Data structure storing some information at cell/face quadrature points
      * (stored such a way as matrix-free needs it).
      *
-     * TODO: add support for ECL.
+     * TODO: add support for ECL for faces. Currently not needed for VP.
      */
     template <int dim, int n_points, typename UnitType>
     class QuadraturePointContainer
@@ -58,6 +58,8 @@ namespace hyperdeal
         get_value_face_interior(const unsigned int face_index,
                                 const unsigned int q_index) const
       {
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
+
         return values_faces_int[face_index * n_points_face + q_index];
       }
 
@@ -69,6 +71,8 @@ namespace hyperdeal
         get_value_face_exterior(const unsigned int face_index,
                                 const unsigned int q_index) const
       {
+        AssertThrow(false, dealii::StandardExceptions::ExcNotImplemented());
+
         return values_faces_ext[face_index * n_points_face + q_index];
       }
 
@@ -89,6 +93,7 @@ namespace hyperdeal
         if (values_cells.size() != data.n_cell_batches() * n_points_cell)
           values_cells.resize(data.n_cell_batches() * n_points_cell);
 
+#ifdef false
         if (values_faces_int.size() !=
             (data.n_inner_face_batches() + data.n_boundary_face_batches()) *
               n_points_face)
@@ -99,6 +104,7 @@ namespace hyperdeal
         if (values_faces_ext.size() !=
             data.n_inner_face_batches() * n_points_face)
           values_faces_ext.resize(data.n_inner_face_batches() * n_points_face);
+#endif
       }
 
 
@@ -185,7 +191,12 @@ namespace hyperdeal
               }
           },
           [&](const auto &, auto &, const auto &src, const auto range) {
-            // inner faces
+        // inner faces
+
+#if true
+            (void)src;
+            (void)range;
+#else
             for (auto face = range.first; face < range.second; ++face)
               {
                 // ... interior face
@@ -202,9 +213,15 @@ namespace hyperdeal
                   this->values_faces_ext[face * n_points_face + q] =
                     phi_rho_e.get_gradient(q);
               }
+#endif
           },
           [&](const auto &, auto &, const auto &src, const auto range) {
-            // boundary faces
+        // boundary faces
+
+#if true
+            (void)src;
+            (void)range;
+#else
             for (auto face = range.first; face < range.second; ++face)
               {
                 phi_rho_i.reinit(face);
@@ -213,6 +230,7 @@ namespace hyperdeal
                   this->values_faces_int[face * n_points_face + q] =
                     phi_rho_i.get_gradient(q);
               }
+#endif
           },
           dummy,
           src,

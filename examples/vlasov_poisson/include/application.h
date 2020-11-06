@@ -239,7 +239,7 @@ namespace hyperdeal
 
             // ensure that inner and boundary faces are not mixed in the
             // same macro cell
-            if (false /*TODO*/)
+            if (param.use_ecl)
               dealii::MatrixFreeTools::categorize_by_boundary_ids(
                 *triangulation_x, additional_data);
 
@@ -278,6 +278,11 @@ namespace hyperdeal
                     {
                       // ... initialize matrix_free
                       additional_data.mg_level = level;
+
+                      if (param.use_ecl)
+                        dealii::MatrixFreeTools::categorize_by_boundary_ids(
+                          *triangulation_x, additional_data);
+
                       (*level_matrix_free)[level].reinit(mapping_x,
                                                          dof_handlers,
                                                          constraints,
@@ -329,7 +334,7 @@ namespace hyperdeal
 
             // ensure that inner and boundary faces are not mixed in the
             // same macro cell
-            if (false /*TODO*/)
+            if (param.use_ecl)
               dealii::MatrixFreeTools::categorize_by_boundary_ids(
                 *triangulation_v, additional_data);
 
