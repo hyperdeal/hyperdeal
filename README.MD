@@ -23,7 +23,9 @@ If you use `hyper.deal`, please cite the release paper:
   primaryClass  = {cs.MS}
 }
 ```
-The paper has been submitted; the preprint can be found online on [arXiv](https://arxiv.org/abs/2002.08110).
+The paper has been submitted; the preprint can be found online on [arXiv](https://arxiv.org/abs/2002.08110)
+(with the corrspondint [hyper.deal](https://github.com/hyperdeal/hyperdeal/tree/paper_release) 
+and [deal.II](https://github.com/hyperdeal/dealii/tree/paper_release) branches).
 The full list of publications using or related to `hyper.deal` can be found
 [here](../../wiki/Publications).
 
