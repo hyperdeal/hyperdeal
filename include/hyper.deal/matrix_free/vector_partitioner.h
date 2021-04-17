@@ -84,7 +84,7 @@ namespace internal
                const bool     do_buffering);
 
         unsigned int
-        local_size() const override
+        locally_owned_size() const override
         {
           return n_local_elements;
         }

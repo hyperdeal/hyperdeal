@@ -313,7 +313,7 @@ namespace hyperdeal
           add_min_max_avg_table_entry(
             table,
             "info->partitioner->local_size",
-            matrix_free.get_vector_partitioner()->local_size(),
+            matrix_free.get_vector_partitioner()->locally_owned_size(),
             comm_global);
           add_min_max_avg_table_entry(
             table,
