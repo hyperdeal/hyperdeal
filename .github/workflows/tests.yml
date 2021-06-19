@@ -5,27 +5,41 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+  - cron:  '0 0 * * *'
+    
+env:
+  COMPILE_JOBS: 2
 
 jobs:
   build:
-
+    name: Build ${{ matrix.build_type }}-dealii:${{ matrix.dealii_version }}
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: setup
-      run: |
-         docker pull dealii/dealii:master-focal
-         command="git clone https://github.com/${{ github.repository }} && \
-                  cd hyperdeal && git fetch origin ${{ github.ref }} && \
-                  git checkout FETCH_HEAD && \
-                  git --no-pager  log | head -n50 && \
-                  mkdir build && \ 
-                  cd build && \
-                  cmake .. && \
-                  make -j2 && \
-                  ctest -V";
-         
-         echo $command
-         docker run -t dealii/dealii:master-focal /bin/sh -c "$command";
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: ["Release", "Debug"]
+        dealii_version: ["master"]
+    
+    container:
+      image: dealii/dealii:${{ matrix.dealii_version }}-focal
 
+    steps:
+      - name: Setup
+        run: |
+          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+          
+      - uses: actions/checkout@v2
+
+      - name: Compile
+        run: |
+          mkdir build
+          cd build
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          make -j${{ env.COMPILE_JOBS }}
+          
+      - name: Test
+        run: |
+          cd build
+          ctest -V

@@ -42,8 +42,6 @@ For getting started, check out the [following site](../../wiki/Getting-started).
 [![Doxygen](https://github.com/hyperdeal/hyperdeal/workflows/Doxygen/badge.svg)](https://github.com/hyperdeal/hyperdeal/actions?query=workflow%3ADoxygen)
 [![Indent](https://github.com/hyperdeal/hyperdeal/workflows/Indent/badge.svg)](https://github.com/hyperdeal/hyperdeal/actions?query=workflow%3AIndent)
 [![GitHub CI](https://github.com/hyperdeal/hyperdeal/workflows/GitHub%20CI/badge.svg)](https://github.com/hyperdeal/hyperdeal/actions?query=workflow%3A%22GitHub+CI%22)
-[![Nightly test](https://github.com/hyperdeal/hyperdeal/actions/workflows/nightly.yml/badge.svg)](https://github.com/hyperdeal/hyperdeal/actions/workflows/nightly.yml)
-[![Travis CI](https://img.shields.io/travis/hyperdeal/hyperdeal/master.svg?label=Travis+CI)](https://travis-ci.org/hyperdeal/hyperdeal)
 
 ## Authors
 
