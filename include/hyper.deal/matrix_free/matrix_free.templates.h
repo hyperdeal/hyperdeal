@@ -1392,14 +1392,14 @@ namespace hyperdeal
     // perform test ghost value update (working for ECL/FCL)
     if (zero_out_values && do_ghosts)
       {
-        vec.zero_out_ghosts();
+        vec.zero_out_ghost_values();
 
         internal::VectorDataExchange<Number> data_exchanger(partitioner);
 
         data_exchanger.export_to_ghosted_array_start(vec);
         data_exchanger.export_to_ghosted_array_finish(vec);
 
-        vec.zero_out_ghosts();
+        vec.zero_out_ghost_values();
       }
 
     // perform test compression (working for FCL)
@@ -1528,7 +1528,7 @@ namespace hyperdeal
 
                   // zero out ghost of destination vector
                   if (dst.has_ghost_elements())
-                    dst.zero_out_ghosts();
+                    dst.zero_out_ghost_values();
                 }
               else if (i == 1)
                 {
@@ -1664,7 +1664,7 @@ namespace hyperdeal
 
     {
       ScopedTimerWrapper timer(timers, "zero_out_ghosts");
-      dst.zero_out_ghosts();
+      dst.zero_out_ghost_values();
     }
 
     unsigned int v_len = VectorizedArrayTypeV::size();

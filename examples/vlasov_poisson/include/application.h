@@ -372,12 +372,12 @@ namespace hyperdeal
           memory_stat_monitor.monitor("vector_particle_density");
           matrix_free_x.initialize_dof_vector(particle_density);
           particle_density = 0.0;
-          particle_density.zero_out_ghosts();
+          particle_density.zero_out_ghost_values();
 
           memory_stat_monitor.monitor("vector_potential");
           matrix_free_x.initialize_dof_vector(potential);
           potential = 0.0;
-          potential.zero_out_ghosts();
+          potential.zero_out_ghost_values();
         }
 
         // step 6: set initial condition in Gauss-Lobatto points (quad_no_x = 2,
