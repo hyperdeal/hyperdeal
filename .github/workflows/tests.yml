@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ../ -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake ../ -DCMAKE_CXX_FLAGS="-Werror"  -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           make -j${{ env.COMPILE_JOBS }}
           
       - name: Test

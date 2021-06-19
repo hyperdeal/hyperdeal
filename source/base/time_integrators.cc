@@ -108,7 +108,7 @@ namespace hyperdeal
                                5198255086312. / 14908931495163.}};
 
     // cache local size
-    const unsigned int size = solution.local_size();
+    const unsigned int size = solution.locally_owned_size();
 
     // definition of a stage
     auto perform_stage = [&](const Number      current_time,

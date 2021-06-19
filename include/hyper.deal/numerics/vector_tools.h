@@ -318,7 +318,7 @@ namespace hyperdeal
       // collect global contributions
       MPI_Allreduce(MPI_IN_PLACE,
                     &*dst.begin(),
-                    dst.local_size(),
+                    dst.locally_owned_size(),
                     MPI_DOUBLE,
                     MPI_SUM,
                     comm);
