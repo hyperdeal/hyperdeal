@@ -17,13 +17,11 @@ If you use `hyper.deal`, please cite the release paper:
   title         = {hyper.deal: An efficient, matrix-free finite-element library for
                    high-dimensional partial differential equations},
   author        = {Munch, Peter and Kormann, Katharina and Kronbichler, Martin},
-  year          = {2020},
-  eprint        = {2020.08110},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.MS}
+  year          = {2021},
+  institution   = {accepted for publication in ACM Transactions on Mathematical Software}
 }
 ```
-The paper has been submitted; the preprint can be found online on [arXiv](https://arxiv.org/abs/2002.08110)
+The paper has been accepted; the preprint can be found online on [arXiv](https://arxiv.org/abs/2002.08110)
 (with the corrspondint [hyper.deal](https://github.com/hyperdeal/hyperdeal/tree/paper_release) 
 and [deal.II](https://github.com/hyperdeal/dealii/tree/paper_release) branches).
 The full list of publications using or related to `hyper.deal` can be found
