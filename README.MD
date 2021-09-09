@@ -45,9 +45,9 @@ For getting started, check out the [following site](../../wiki/Getting-started).
 
 The principal developers are (in alphabetical order):
 
-- [Katharina Kormann](https://www-m16.ma.tum.de/Allgemeines/KatharinaKormann) ([@kkormann](https://github.com/kkormann)), Max Planck Institute for Plasma Physics and Technical University of Munich, DE
-- [Martin Kronbichler](https://www.lnm.mw.tum.de/staff/martin-kronbichler/) ([@kronbichler](https://github.com/kronbichler)), Technical University of Munich, DE
-- [Peter Munch](https://www.lnm.mw.tum.de/staff/peter-muench/) ([@peterrum](https://github.com/peterrum)), Technical University of Munich and Helmholtz-Zentrum Geesthacht, DE
+- [Katharina Kormann](https://katalog.uu.se/profile/?id=N7-598) ([@kkormann](https://github.com/kkormann)), Uppsala University, SW
+- [Martin Kronbichler](https://www.it.uu.se/katalog/markr292) ([@kronbichler](https://github.com/kronbichler)), Uppsala University, SW
+- [Peter Munch](https://www.lnm.mw.tum.de/staff/peter-muench/) ([@peterrum](https://github.com/peterrum)), Technical University of Munich and Helmholtz-Zentrum Hereon, DE
 
 ## Philosophy
 
