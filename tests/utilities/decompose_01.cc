@@ -16,9 +16,9 @@
 
 // Test hyperdeal::Utilities::decompose.
 
-#include <hyper.deal/base/utilities.h>
+#include <deal.II/tests/tests.h>
 
-#include "../tests.h"
+#include <hyper.deal/base/utilities.h>
 
 int
 main()

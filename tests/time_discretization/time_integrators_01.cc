@@ -16,10 +16,10 @@
 
 // Test number of stages of time integrators.
 
+#include <deal.II/tests/tests.h>
+
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/lac/sm_vector.h>
-
-#include "../tests.h"
 
 int
 main()

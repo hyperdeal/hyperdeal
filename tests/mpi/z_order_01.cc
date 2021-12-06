@@ -18,10 +18,10 @@
 
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/tests/tests.h>
+
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/base/utilities.h>
-
-#include "../tests.h"
 
 using namespace dealii;
 

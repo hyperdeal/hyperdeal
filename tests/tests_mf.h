@@ -22,10 +22,10 @@
 
 #include <deal.II/matrix_free/matrix_free.h>
 
+#include <deal.II/tests/tests.h>
+
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
-
-#include "tests.h"
 
 namespace hyperdeal
 {

@@ -45,7 +45,7 @@
 
 #include <deal.II/numerics/vector_tools.h>
 
-#include "../tests.h"
+#include <deal.II/tests/tests.h>
 
 using namespace dealii;
 

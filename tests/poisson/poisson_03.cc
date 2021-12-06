@@ -45,7 +45,7 @@
 #include <deal.II/multigrid/mg_transfer_matrix_free.h>
 #include <deal.II/multigrid/multigrid.h>
 
-#include "../tests.h"
+#include <deal.II/tests/tests.h>
 
 using namespace dealii;
 

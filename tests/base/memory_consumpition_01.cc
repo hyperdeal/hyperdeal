@@ -18,9 +18,9 @@
 
 #include <deal.II/base/mpi.h>
 
-#include <hyper.deal/base/memory_consumption.h>
+#include <deal.II/tests/tests.h>
 
-#include "../tests.h"
+#include <hyper.deal/base/memory_consumption.h>
 
 using namespace dealii;
 
