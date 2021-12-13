@@ -401,7 +401,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<true, false>(1, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, false, false, face);
+                dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<true, false>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -456,7 +456,7 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(1, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, false, false, face);
+              dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, face);
             else
             {
                 Assert(false, dealii::StandardExceptions::ExcNotImplemented ());
@@ -1008,7 +1008,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<true, false>(1, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, false, false, face);
+                dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<true, false>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -1064,7 +1064,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
             {
-              dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(1, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, false, false, face);
+              dealii::internal::FEFaceNormalEvaluationImpl<dim, n_points - 1, VectorizedArrayType, true>::template interpolate_quadrature<false, true>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, face);
             }
             else
             {
