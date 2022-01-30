@@ -831,9 +831,6 @@ namespace internal
                         std::distance(local_cells.begin(), ptr);
                     }
                 },
-                [&](const auto other_rank, auto &recv_buffer) {
-                  recv_buffer.resize(shared_procs_to_cells[other_rank].size());
-                },
                 [&](const auto other_rank, const auto &recv_buffer) {
                   for (unsigned int i = 0; i < recv_buffer.size(); i++)
                     {
