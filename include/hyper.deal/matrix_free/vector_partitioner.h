@@ -765,8 +765,8 @@ namespace internal
             std::pair<dealii::types::global_dof_index,
                       dealii::types::global_dof_index>,
             unsigned int>
-            consensus_algorithm(process, comm);
-          consensus_algorithm.run();
+            consensus_algorithm;
+          consensus_algorithm.run(process, comm);
 
           std::map<unsigned int, std::vector<dealii::types::global_dof_index>>
             shared_procs_to_cells;
@@ -845,10 +845,9 @@ namespace internal
                       this->maps[cell] = {other_rank, offset * dofs_per_cell};
                     }
                 });
-          dealii::Utilities::MPI::ConsensusAlgorithms::Selector<
-            dealii::types::global_dof_index,
-            unsigned int>(temp, this->comm_sm)
-            .run();
+          dealii::Utilities::MPI::ConsensusAlgorithms::
+            Selector<dealii::types::global_dof_index, unsigned int>()
+              .run(temp, this->comm_sm);
         }
 
 
@@ -1053,10 +1052,9 @@ namespace internal
                           buffer_recv[i + 3],
                           buffer_recv[i + 4]}});
                   });
-            dealii::Utilities::MPI::ConsensusAlgorithms::Selector<LocalDoFType,
-                                                                  LocalDoFType>(
-              temp, this->comm_sm)
-              .run();
+            dealii::Utilities::MPI::ConsensusAlgorithms::
+              Selector<LocalDoFType, LocalDoFType>()
+                .run(temp, this->comm_sm);
 
             std::sort(maps_ghost_inverse_precomp.begin(),
                       maps_ghost_inverse_precomp.end());
@@ -1111,8 +1109,8 @@ namespace internal
               std::pair<dealii::types::global_dof_index,
                         dealii::types::global_dof_index>,
               unsigned int>
-              consensus_algorithm(process, comm);
-            consensus_algorithm.run();
+              consensus_algorithm;
+            consensus_algorithm.run(process, comm);
 
             return owning_ranks_of_ghosts;
           }();
