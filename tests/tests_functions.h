@@ -38,4 +38,19 @@ public:
   }
 };
 
+template <int DIM, typename Number>
+class DistanceFunction : public dealii::Function<DIM, Number>
+{
+public:
+  DistanceFunction()
+    : dealii::Function<DIM, Number>(1)
+  {}
+
+  virtual Number
+  value(const dealii::Point<DIM> &p, const unsigned int = 1) const
+  {
+    return std::max(0.0, (0.5 - p.norm()));
+  }
+};
+
 #endif
