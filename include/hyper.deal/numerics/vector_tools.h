@@ -324,6 +324,98 @@ namespace hyperdeal
                     comm);
     }
 
+    /**
+     * Perform integration along the x-space using the x-space quadrature rule
+     * specified by @p * quad_no_x and DoFHandlers specified by @p dof_no_x and
+     * @p dof_no_v.
+     */
+    template <int degree,
+              int n_points,
+              int dim_x,
+              int dim_v,
+              typename Number,
+              typename VectorizedArrayType,
+              typename Vector_Out,
+              typename Vector_In>
+    void
+    coordinate_space_integration(
+      const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &data,
+      Vector_Out &                                                 dst,
+      const Vector_In &                                            src,
+      const unsigned int                                           dof_no_x,
+      const unsigned int                                           dof_no_v,
+      const unsigned int                                           quad_no_x)
+    {
+      using MF =
+        hyperdeal::MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>;
+      using VectorizedArrayTypeX = typename MF::VectorizedArrayTypeX;
+      using VectorizedArrayTypeV = typename MF::VectorizedArrayTypeV;
+      static_assert(VectorizedArrayTypeV::size() == 1);
+
+      FEEvaluation<dim_x, dim_v, degree, n_points, Number, VectorizedArrayType>
+        phi(data, dof_no_x, dof_no_v, 0 /*dummy*/, 0 /*dummy*/);
+      dealii::
+        FEEvaluation<dim_x, degree, n_points, 1, Number, VectorizedArrayTypeX>
+          phi_x(data.get_matrix_free_x(), dof_no_x, quad_no_x);
+      dealii::
+        FEEvaluation<dim_v, degree, n_points, 1, Number, VectorizedArrayTypeV>
+          phi_v(data.get_matrix_free_v(), dof_no_v, 0 /*dummy*/);
+
+      // Clear destination vector
+      dst = 0.0;
+
+      constexpr auto N_v_points = dealii::Utilities::pow(n_points, dim_v);
+
+      dealii::AlignedVector<VectorizedArrayTypeX> scratch(N_v_points);
+
+      data.template cell_loop<Vector_Out, Vector_In>(
+        [&](const auto &,
+            Vector_Out &     dst,
+            const Vector_In &src,
+            const auto       cell) mutable {
+          phi.reinit(cell);
+          phi.read_dof_values(src);
+          phi_x.reinit(cell.x);
+          phi_v.reinit(cell.v);
+
+          const VectorizedArrayType *data_ptr_src = phi.get_data_ptr();
+          VectorizedArrayTypeV *     data_ptr_dst = phi_v.begin_dof_values();
+
+          const auto N_lanes_x = phi.n_vectorization_lanes_filled();
+
+          // reduce in x-direction in a vectorized fashion
+          for (unsigned int qv = 0; qv < phi_v.n_q_points; ++qv)
+            {
+              scratch[qv] = 0.0;
+              for (unsigned int qx = 0; qx < phi_x.n_q_points; ++qx)
+                scratch[qv] +=
+                  data_ptr_src[qx + qv * N_v_points] * phi_x.JxW(qx);
+            }
+
+          // perform cross-lane reduction
+          for (unsigned int qv = 0; qv < phi_v.n_q_points; ++qv)
+            {
+              data_ptr_dst[qv] = 0.0;
+              for (unsigned int lane = 0; lane < N_lanes_x; ++lane)
+                data_ptr_dst[qv] += scratch[qv][lane];
+            }
+
+          phi_v.distribute_local_to_global(dst);
+        },
+        dst,
+        src);
+
+      // Collect global contribution
+      const auto comm =
+        data.get_matrix_free_x().get_dof_handler().get_communicator();
+      MPI_Allreduce(MPI_IN_PLACE,
+                    &*dst.begin(),
+                    dst.locally_owned_size(),
+                    MPI_DOUBLE,
+                    MPI_SUM,
+                    comm);
+    }
+
   } // namespace VectorTools
 
 
