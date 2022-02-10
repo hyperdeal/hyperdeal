@@ -79,7 +79,7 @@ namespace hyperdeal
     /**
      * Compute the interpolation of the function @p analytical_solution at the
      * support points to the finite element space described by the DoFHandlers
-     * (@p dof_no_x and @p dof_no_v) and the Quadrature rule (@p quad_no_x and
+     * (@p dof_no_x and @p dof_no_v) and the quadrature rule (@p quad_no_x and
      * @p quad_no_v), which should correspond to the FiniteElement object in
      * use.
      */
@@ -143,7 +143,7 @@ namespace hyperdeal
      * Compute L2-norm and L2-norm of error for a given vector @p src and
      * solution @p analytical_solution. The DoFHandlers to be used can be
      * specified by @p dof_no_x and @p dof_no_v and the point in which the
-     * error is evaluated (coinciding with Quadrature points) by @p quad_no_x
+     * error is evaluated (coinciding with quadrature points) by @p quad_no_x
      * and @p quad_no_v.
      */
     template <int degree,
@@ -228,7 +228,7 @@ namespace hyperdeal
     }
 
     /**
-     * Perform integration along the v-space using the v-space Quadrature rule
+     * Perform integration along the v-space using the v-space quadrature rule
      * specified by @p quad_no_v and the DoFHandlers specified by @p dof_no_x
      * and @dof_no_v.
      */
@@ -288,7 +288,7 @@ namespace hyperdeal
 
           // get data and scratch
           const VectorizedArrayType *data_ptr_src = phi.get_data_ptr();
-          VectorizedArrayType *      data_ptr_dst = phi_x.begin_dof_values();
+          VectorizedArrayTypeX *     data_ptr_dst = phi_x.begin_dof_values();
 
           // loop over all x points and integrate over all v points
           for (unsigned int qx = 0; qx < phi_x.n_q_points; ++qx)
@@ -309,24 +309,19 @@ namespace hyperdeal
         dst,
         src);
 
-      const auto tria =
-        dynamic_cast<const dealii::parallel::TriangulationBase<dim_v> *>(
-          &data.get_matrix_free_v().get_dof_handler().get_triangulation());
-
-      const MPI_Comm comm = tria ? tria->get_communicator() : MPI_COMM_SELF;
-
       // collect global contributions
-      MPI_Allreduce(MPI_IN_PLACE,
-                    &*dst.begin(),
-                    dst.locally_owned_size(),
-                    MPI_DOUBLE,
-                    MPI_SUM,
-                    comm);
+      MPI_Allreduce(
+        MPI_IN_PLACE,
+        dst.get_values(),
+        dst.locally_owned_size(),
+        MPI_DOUBLE,
+        MPI_SUM,
+        data.get_matrix_free_v().get_dof_handler().get_communicator());
     }
 
     /**
      * Perform integration along the x-space using the x-space quadrature rule
-     * specified by @p * quad_no_x and DoFHandlers specified by @p dof_no_x and
+     * specified by @p quad_no_x and DoFHandlers specified by @p dof_no_x and
      * @p dof_no_v.
      */
     template <int degree,

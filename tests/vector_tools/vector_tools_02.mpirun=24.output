@@ -1,0 +1,431 @@
+
+DEAL:0::Early return, since some processes have no cells!
+Process #0
+Local range: [0, 4), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 8), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 4), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 8), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 4), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 1.388e-17 
+Process #0
+Local range: [0, 8), global size: 32
+Vector data:
+6.366e-01 6.329e-01 6.111e-01 5.882e-01 5.882e-01 5.583e-01 4.963e-01 4.502e-01 
+Process #0
+Local range: [0, 8), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 16), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 8), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 16), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 8), global size: 64
+Vector data:
+0.000e+00 5.204e-18 0.000e+00 1.388e-17 1.388e-17 2.082e-17 1.388e-17 0.000e+00 
+Process #0
+Local range: [0, 16), global size: 64
+Vector data:
+6.366e-01 6.357e-01 6.302e-01 6.244e-01 6.244e-01 6.167e-01 6.005e-01 5.882e-01 5.882e-01 5.741e-01 5.477e-01 5.293e-01 5.293e-01 5.094e-01 4.739e-01 4.502e-01 
+Process #0
+Local range: [0, 20), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 32), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #0
+Local range: [0, 20), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 32), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #0
+Local range: [0, 20), global size: 128
+Vector data:
+0.000e+00 2.602e-18 0.000e+00 0.000e+00 0.000e+00 1.041e-17 1.388e-17 6.939e-18 6.939e-18 6.939e-18 0.000e+00 0.000e+00 0.000e+00 2.776e-17 2.776e-17 0.000e+00 0.000e+00 1.388e-17 0.000e+00 2.776e-17 
+Process #0
+Local range: [0, 32), global size: 128
+Vector data:
+6.366e-01 6.364e-01 6.350e-01 6.336e-01 6.336e-01 6.316e-01 6.275e-01 6.244e-01 6.244e-01 6.208e-01 6.140e-01 6.092e-01 6.092e-01 6.040e-01 5.946e-01 5.882e-01 5.882e-01 5.813e-01 5.694e-01 5.614e-01 5.614e-01 5.531e-01 5.387e-01 5.293e-01 5.293e-01 5.195e-01 5.029e-01 4.921e-01 4.921e-01 4.810e-01 4.622e-01 4.502e-01 
+
+DEAL:1::Early return, since some processes have no cells!
+Process #1
+Local range: [4, 8), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [4, 8), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [4, 8), global size: 32
+Vector data:
+1.388e-17 0.000e+00 0.000e+00 5.551e-17 
+Process #1
+Local range: [8, 20), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [8, 20), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [8, 20), global size: 64
+Vector data:
+0.000e+00 1.388e-17 2.776e-17 2.776e-17 2.776e-17 -2.776e-17 2.776e-17 0.000e+00 0.000e+00 0.000e+00 0.000e+00 -5.551e-17 
+Process #1
+Local range: [20, 40), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [20, 40), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [20, 40), global size: 128
+Vector data:
+2.776e-17 1.388e-17 2.776e-17 5.551e-17 5.551e-17 2.776e-17 0.000e+00 5.551e-17 5.551e-17 0.000e+00 2.776e-17 2.776e-17 2.776e-17 5.551e-17 2.776e-17 5.551e-17 5.551e-17 5.551e-17 2.776e-17 0.000e+00 
+
+
+DEAL:2::Early return, since some processes have no cells!
+Process #2
+Local range: [8, 16), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [8, 16), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [8, 16), global size: 32
+Vector data:
+5.551e-17 2.776e-17 5.551e-17 5.551e-17 5.551e-17 0.000e+00 0.000e+00 5.551e-17 
+Process #2
+Local range: [20, 32), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [20, 32), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [20, 32), global size: 64
+Vector data:
+-5.551e-17 0.000e+00 2.776e-17 0.000e+00 0.000e+00 5.551e-17 -2.776e-17 2.776e-17 2.776e-17 0.000e+00 0.000e+00 -2.776e-17 
+Process #2
+Local range: [40, 64), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [40, 64), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [40, 64), global size: 128
+Vector data:
+0.000e+00 2.776e-17 2.776e-17 5.551e-17 5.551e-17 2.776e-17 0.000e+00 8.327e-17 8.327e-17 8.327e-17 -2.776e-17 8.327e-17 8.327e-17 8.327e-17 5.551e-17 8.327e-17 8.327e-17 0.000e+00 8.327e-17 0.000e+00 0.000e+00 2.776e-17 -2.776e-17 5.551e-17 
+
+
+DEAL:3::Early return, since some processes have no cells!
+Process #3
+Local range: [16, 20), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [16, 20), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [16, 20), global size: 32
+Vector data:
+5.551e-17 0.000e+00 5.551e-17 5.551e-17 
+Process #3
+Local range: [32, 40), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [32, 40), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [32, 40), global size: 64
+Vector data:
+-2.776e-17 0.000e+00 0.000e+00 2.776e-17 2.776e-17 -2.776e-17 0.000e+00 0.000e+00 
+Process #3
+Local range: [64, 84), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [64, 84), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [64, 84), global size: 128
+Vector data:
+5.551e-17 -2.776e-17 2.776e-17 5.551e-17 5.551e-17 8.327e-17 0.000e+00 8.327e-17 8.327e-17 5.551e-17 8.327e-17 8.327e-17 8.327e-17 -2.776e-17 8.327e-17 8.327e-17 8.327e-17 0.000e+00 2.776e-17 5.551e-17 
+
+
+DEAL:4::Early return, since some processes have no cells!
+Process #4
+Local range: [20, 24), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #4
+Local range: [20, 24), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #4
+Local range: [20, 24), global size: 32
+Vector data:
+5.551e-17 -2.776e-17 2.776e-17 0.000e+00 
+Process #4
+Local range: [40, 52), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #4
+Local range: [40, 52), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #4
+Local range: [40, 52), global size: 64
+Vector data:
+0.000e+00 0.000e+00 -2.776e-17 2.776e-17 2.776e-17 0.000e+00 0.000e+00 2.776e-17 2.776e-17 2.776e-17 0.000e+00 2.776e-17 
+Process #4
+Local range: [84, 104), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #4
+Local range: [84, 104), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #4
+Local range: [84, 104), global size: 128
+Vector data:
+5.551e-17 2.776e-17 8.327e-17 5.551e-17 5.551e-17 2.776e-17 5.551e-17 2.776e-17 2.776e-17 0.000e+00 5.551e-17 0.000e+00 0.000e+00 2.776e-17 2.776e-17 5.551e-17 5.551e-17 0.000e+00 5.551e-17 5.551e-17 
+
+
+DEAL:5::Early return, since some processes have no cells!
+Process #5
+Local range: [24, 32), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #5
+Local range: [24, 32), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #5
+Local range: [24, 32), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 4.163e-17 4.163e-17 0.000e+00 1.041e-17 6.163e-33 
+Process #5
+Local range: [52, 64), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #5
+Local range: [52, 64), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #5
+Local range: [52, 64), global size: 64
+Vector data:
+2.776e-17 1.388e-17 0.000e+00 0.000e+00 0.000e+00 2.776e-17 1.388e-17 6.939e-18 6.939e-18 6.939e-18 1.735e-18 0.000e+00 
+Process #5
+Local range: [104, 128), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #5
+Local range: [104, 128), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #5
+Local range: [104, 128), global size: 128
+Vector data:
+5.551e-17 2.776e-17 1.388e-17 0.000e+00 0.000e+00 2.776e-17 0.000e+00 4.163e-17 4.163e-17 1.388e-17 4.163e-17 2.776e-17 2.776e-17 2.776e-17 6.939e-18 1.388e-17 1.388e-17 6.939e-18 0.000e+00 6.939e-18 6.939e-18 0.000e+00 -8.674e-19 0.000e+00 
+
+
+DEAL:6::Early return, since some processes have no cells!
+Process #1
+Local range: [8, 16), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [8, 16), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [8, 16), global size: 32
+Vector data:
+4.502e-01 3.987e-01 3.059e-01 2.436e-01 2.436e-01 1.785e-01 6.896e-02 3.898e-17 
+Process #1
+Local range: [16, 32), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [16, 32), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [16, 32), global size: 64
+Vector data:
+4.502e-01 4.251e-01 3.819e-01 3.537e-01 3.537e-01 3.245e-01 2.752e-01 2.436e-01 2.436e-01 2.114e-01 1.579e-01 1.242e-01 1.242e-01 9.015e-02 3.453e-02 3.898e-17 
+Process #1
+Local range: [32, 64), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #1
+Local range: [32, 64), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #1
+Local range: [32, 64), global size: 128
+Vector data:
+4.502e-01 4.378e-01 4.171e-01 4.039e-01 4.039e-01 3.904e-01 3.679e-01 3.537e-01 3.537e-01 3.392e-01 3.152e-01 3.001e-01 3.001e-01 2.848e-01 2.595e-01 2.436e-01 2.436e-01 2.276e-01 2.013e-01 1.848e-01 1.848e-01 1.682e-01 1.411e-01 1.242e-01 1.242e-01 1.072e-01 7.957e-02 6.240e-02 6.240e-02 4.519e-02 1.727e-02 3.898e-17 
+
+
+DEAL:7::Early return, since some processes have no cells!
+
+
+DEAL:8::Early return, since some processes have no cells!
+
+
+DEAL:9::Early return, since some processes have no cells!
+
+
+DEAL:10::Early return, since some processes have no cells!
+
+
+DEAL:11::Early return, since some processes have no cells!
+
+
+DEAL:12::Early return, since some processes have no cells!
+Process #2
+Local range: [16, 24), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [16, 24), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [16, 24), global size: 32
+Vector data:
+3.898e-17 -6.896e-02 -1.785e-01 -2.436e-01 -2.436e-01 -3.059e-01 -3.987e-01 -4.502e-01 
+Process #2
+Local range: [32, 48), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [32, 48), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [32, 48), global size: 64
+Vector data:
+3.898e-17 -3.453e-02 -9.015e-02 -1.242e-01 -1.242e-01 -1.579e-01 -2.114e-01 -2.436e-01 -2.436e-01 -2.752e-01 -3.245e-01 -3.537e-01 -3.537e-01 -3.819e-01 -4.251e-01 -4.502e-01 
+Process #2
+Local range: [64, 96), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #2
+Local range: [64, 96), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #2
+Local range: [64, 96), global size: 128
+Vector data:
+3.898e-17 -1.727e-02 -4.519e-02 -6.240e-02 -6.240e-02 -7.957e-02 -1.072e-01 -1.242e-01 -1.242e-01 -1.411e-01 -1.682e-01 -1.848e-01 -1.848e-01 -2.013e-01 -2.276e-01 -2.436e-01 -2.436e-01 -2.595e-01 -2.848e-01 -3.001e-01 -3.001e-01 -3.152e-01 -3.392e-01 -3.537e-01 -3.537e-01 -3.679e-01 -3.904e-01 -4.039e-01 -4.039e-01 -4.171e-01 -4.378e-01 -4.502e-01 
+
+
+DEAL:13::Early return, since some processes have no cells!
+
+
+DEAL:14::Early return, since some processes have no cells!
+
+
+DEAL:15::Early return, since some processes have no cells!
+
+
+DEAL:16::Early return, since some processes have no cells!
+
+
+DEAL:17::Early return, since some processes have no cells!
+
+
+DEAL:18::Early return, since some processes have no cells!
+Process #3
+Local range: [24, 32), global size: 32
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [24, 32), global size: 32
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [24, 32), global size: 32
+Vector data:
+-4.502e-01 -4.963e-01 -5.583e-01 -5.882e-01 -5.882e-01 -6.111e-01 -6.329e-01 -6.366e-01 
+Process #3
+Local range: [48, 64), global size: 64
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [48, 64), global size: 64
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [48, 64), global size: 64
+Vector data:
+-4.502e-01 -4.739e-01 -5.094e-01 -5.293e-01 -5.293e-01 -5.477e-01 -5.741e-01 -5.882e-01 -5.882e-01 -6.005e-01 -6.167e-01 -6.244e-01 -6.244e-01 -6.302e-01 -6.357e-01 -6.366e-01 
+Process #3
+Local range: [96, 128), global size: 128
+Vector data:
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+Process #3
+Local range: [96, 128), global size: 128
+Vector data:
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+Process #3
+Local range: [96, 128), global size: 128
+Vector data:
+-4.502e-01 -4.622e-01 -4.810e-01 -4.921e-01 -4.921e-01 -5.029e-01 -5.195e-01 -5.293e-01 -5.293e-01 -5.387e-01 -5.531e-01 -5.614e-01 -5.614e-01 -5.694e-01 -5.813e-01 -5.882e-01 -5.882e-01 -5.946e-01 -6.040e-01 -6.092e-01 -6.092e-01 -6.140e-01 -6.208e-01 -6.244e-01 -6.244e-01 -6.275e-01 -6.316e-01 -6.336e-01 -6.336e-01 -6.350e-01 -6.364e-01 -6.366e-01 
+
+
+DEAL:19::Early return, since some processes have no cells!
+
+
+DEAL:20::Early return, since some processes have no cells!
+
+
+DEAL:21::Early return, since some processes have no cells!
+
+
+DEAL:22::Early return, since some processes have no cells!
+
+
+DEAL:23::Early return, since some processes have no cells!
+
