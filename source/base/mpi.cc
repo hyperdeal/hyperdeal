@@ -107,11 +107,11 @@ namespace hyperdeal
       std::vector<T> temp(displs.back());
       MPI_Allgatherv(data_in.data(),
                      data_in.size(),
-                     dealii::Utilities::MPI::internal::mpi_type_id(&temp[0]),
+                     dealii::Utilities::MPI::mpi_type_id(&temp[0]),
                      temp.data(),
                      recvcounts.data(),
                      displs.data(),
-                     dealii::Utilities::MPI::internal::mpi_type_id(&temp[0]),
+                     dealii::Utilities::MPI::mpi_type_id(&temp[0]),
                      comm);
 
 
