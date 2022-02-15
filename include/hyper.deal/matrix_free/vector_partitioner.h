@@ -609,8 +609,7 @@ namespace internal
                         MPI_INT,
                         &len_global[0],
                         1,
-                        dealii::Utilities::MPI::internal::mpi_type_id(
-                          &len_local),
+                        dealii::Utilities::MPI::mpi_type_id(&len_local),
                         comm);
 
 
@@ -627,24 +626,22 @@ namespace internal
 
           std::vector<T> dst_1(total_size);
           std::vector<U> dst_2(total_size);
-          MPI_Allgatherv(
-            &src_1[0],
-            len_local,
-            dealii::Utilities::MPI::internal::mpi_type_id(&src_1[0]),
-            &dst_1[0],
-            &len_global[0],
-            &displs[0],
-            dealii::Utilities::MPI::internal::mpi_type_id(&dst_1[0]),
-            comm);
-          MPI_Allgatherv(
-            &src_2[0],
-            len_local,
-            dealii::Utilities::MPI::internal::mpi_type_id(&src_2[0]),
-            &dst_2[0],
-            &len_global[0],
-            &displs[0],
-            dealii::Utilities::MPI::internal::mpi_type_id(&dst_2[0]),
-            comm);
+          MPI_Allgatherv(&src_1[0],
+                         len_local,
+                         dealii::Utilities::MPI::mpi_type_id(&src_1[0]),
+                         &dst_1[0],
+                         &len_global[0],
+                         &displs[0],
+                         dealii::Utilities::MPI::mpi_type_id(&dst_1[0]),
+                         comm);
+          MPI_Allgatherv(&src_2[0],
+                         len_local,
+                         dealii::Utilities::MPI::mpi_type_id(&src_2[0]),
+                         &dst_2[0],
+                         &len_global[0],
+                         &displs[0],
+                         dealii::Utilities::MPI::mpi_type_id(&dst_2[0]),
+                         comm);
 
           std::vector<std::pair<T, U>> dst(total_size);
 
@@ -958,14 +955,13 @@ namespace internal
              &my_offset]() {
               std::vector<unsigned int> offsets(sm_procs.size());
 
-              MPI_Allgather(
-                &my_offset,
-                1,
-                dealii::Utilities::MPI::internal::mpi_type_id(&my_offset),
-                offsets.data(),
-                1,
-                dealii::Utilities::MPI::internal::mpi_type_id(&my_offset),
-                this->comm_sm);
+              MPI_Allgather(&my_offset,
+                            1,
+                            dealii::Utilities::MPI::mpi_type_id(&my_offset),
+                            offsets.data(),
+                            1,
+                            dealii::Utilities::MPI::mpi_type_id(&my_offset),
+                            this->comm_sm);
 
               std::map<std::pair<unsigned int, unsigned int>,
                        std::pair<dealii::types::global_dof_index, unsigned int>>
@@ -1166,7 +1162,7 @@ namespace internal
               dealii::types::global_dof_index dummy;
               MPI_Isend(send_data[i].data(),
                         2 * send_data[i].size(),
-                        dealii::Utilities::MPI::internal::mpi_type_id(&dummy),
+                        dealii::Utilities::MPI::mpi_type_id(&dummy),
                         send_ranks[i],
                         105,
                         comm,
@@ -1195,8 +1191,7 @@ namespace internal
               int                             len;
               dealii::types::global_dof_index dummy;
               MPI_Get_count(&status,
-                            dealii::Utilities::MPI::internal::mpi_type_id(
-                              &dummy),
+                            dealii::Utilities::MPI::mpi_type_id(&dummy),
                             &len);
 
               AssertThrow(len % 2 == 0,
@@ -1209,14 +1204,13 @@ namespace internal
                 recv_data(len / 2);
 
               // receive data
-              ierr =
-                MPI_Recv(recv_data.data(),
-                         len,
-                         dealii::Utilities::MPI::internal::mpi_type_id(&dummy),
-                         status.MPI_SOURCE,
-                         status.MPI_TAG,
-                         comm,
-                         &status);
+              ierr = MPI_Recv(recv_data.data(),
+                              len,
+                              dealii::Utilities::MPI::mpi_type_id(&dummy),
+                              status.MPI_SOURCE,
+                              status.MPI_TAG,
+                              comm,
+                              &status);
               AssertThrowMPI(ierr);
 
               // setup pack and unpack info

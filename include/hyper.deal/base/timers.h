@@ -211,8 +211,7 @@ namespace hyperdeal
                     // considering pairs)
                     int len;
                     MPI_Get_count(&status,
-                                  dealii::Utilities::MPI::internal::mpi_type_id(
-                                    v.data()),
+                                  dealii::Utilities::MPI::mpi_type_id(v.data()),
                                   &len);
 
                     recv_data.resize(len);
@@ -220,8 +219,7 @@ namespace hyperdeal
                     // receive data
                     MPI_Recv(recv_data.data(),
                              len,
-                             dealii::Utilities::MPI::internal::mpi_type_id(
-                               v.data()),
+                             dealii::Utilities::MPI::mpi_type_id(v.data()),
                              status.MPI_SOURCE,
                              status.MPI_TAG,
                              comm_global,
@@ -238,7 +236,7 @@ namespace hyperdeal
           {
             MPI_Send(v.data(),
                      v.size(),
-                     dealii::Utilities::MPI::internal::mpi_type_id(v.data()),
+                     dealii::Utilities::MPI::mpi_type_id(v.data()),
                      0,
                      tag,
                      comm_global);
