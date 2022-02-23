@@ -27,6 +27,7 @@
 #include <deal.II/fe/mapping_q.h>
 
 #include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/grid_tools.h>
 
 #include <deal.II/lac/la_parallel_vector.h>
 #include <deal.II/lac/precondition.h>
