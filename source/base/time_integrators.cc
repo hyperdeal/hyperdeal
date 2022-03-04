@@ -28,6 +28,8 @@ namespace hyperdeal
     , vec_Ti(vec_Ti)
     , only_Ti_is_ghosted(only_Ti_is_ghosted)
   {
+    // Runge-Kutta coefficients
+    // see: Kennedy, Carpenter, Lewis, 2000
     if (type == "rk33")
       {
         bi = {{0.245170287303492, 0.184896052186740, 0.569933660509768}};
@@ -94,19 +96,6 @@ namespace hyperdeal
     const std::function<void(const VectorType &, VectorType &, const Number)>
       &op)
   {
-    // Runge-Kutta coefficients
-    // see: Kennedy, Carpenter, Lewis, 2000
-    std::vector<Number> ai = {{970286171893. / 4311952581923.,
-                               6584761158862. / 12103376702013.,
-                               2251764453980. / 15575788980749.,
-                               26877169314380. / 34165994151039.}};
-
-    std::vector<Number> bi = {{1153189308089. / 22510343858157.,
-                               1772645290293. / 4653164025191.,
-                               -1672844663538. / 4480602732383.,
-                               2114624349019. / 3568978502595.,
-                               5198255086312. / 14908931495163.}};
-
     // cache local size
     const unsigned int size = solution.locally_owned_size();
 
