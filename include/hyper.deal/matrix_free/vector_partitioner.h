@@ -604,13 +604,14 @@ namespace internal
           unsigned int     len_local = src_1.size();
           std::vector<int> len_global(
             size); // actually unsigned int but MPI wants int
-          MPI_Allgather(&len_local,
-                        1,
-                        MPI_INT,
-                        &len_global[0],
-                        1,
-                        dealii::Utilities::MPI::mpi_type_id(&len_local),
-                        comm);
+          MPI_Allgather(
+            &len_local,
+            1,
+            MPI_INT,
+            &len_global[0],
+            1,
+            dealii::Utilities::MPI::mpi_type_id_for_type<decltype(len_local)>,
+            comm);
 
 
           std::vector<int> displs; // actually unsigned int but MPI wants int
@@ -626,22 +627,24 @@ namespace internal
 
           std::vector<T> dst_1(total_size);
           std::vector<U> dst_2(total_size);
-          MPI_Allgatherv(&src_1[0],
-                         len_local,
-                         dealii::Utilities::MPI::mpi_type_id(&src_1[0]),
-                         &dst_1[0],
-                         &len_global[0],
-                         &displs[0],
-                         dealii::Utilities::MPI::mpi_type_id(&dst_1[0]),
-                         comm);
-          MPI_Allgatherv(&src_2[0],
-                         len_local,
-                         dealii::Utilities::MPI::mpi_type_id(&src_2[0]),
-                         &dst_2[0],
-                         &len_global[0],
-                         &displs[0],
-                         dealii::Utilities::MPI::mpi_type_id(&dst_2[0]),
-                         comm);
+          MPI_Allgatherv(
+            &src_1[0],
+            len_local,
+            dealii::Utilities::MPI::mpi_type_id_for_type<decltype(src_1[0])>,
+            &dst_1[0],
+            &len_global[0],
+            &displs[0],
+            dealii::Utilities::MPI::mpi_type_id_for_type<decltype(dst_1[0])>,
+            comm);
+          MPI_Allgatherv(
+            &src_2[0],
+            len_local,
+            dealii::Utilities::MPI::mpi_type_id_for_type<decltype(src_2[0])>,
+            &dst_2[0],
+            &len_global[0],
+            &displs[0],
+            dealii::Utilities::MPI::mpi_type_id_for_type<decltype(dst_2[0])>,
+            comm);
 
           std::vector<std::pair<T, U>> dst(total_size);
 
@@ -957,10 +960,12 @@ namespace internal
 
               MPI_Allgather(&my_offset,
                             1,
-                            dealii::Utilities::MPI::mpi_type_id(&my_offset),
+                            dealii::Utilities::MPI::mpi_type_id_for_type<
+                              decltype(my_offset)>,
                             offsets.data(),
                             1,
-                            dealii::Utilities::MPI::mpi_type_id(&my_offset),
+                            dealii::Utilities::MPI::mpi_type_id_for_type<
+                              decltype(my_offset)>,
                             this->comm_sm);
 
               std::map<std::pair<unsigned int, unsigned int>,
@@ -1159,10 +1164,10 @@ namespace internal
 
           for (unsigned int i = 0; i < send_ranks.size(); i++)
             {
-              dealii::types::global_dof_index dummy;
               MPI_Isend(send_data[i].data(),
                         2 * send_data[i].size(),
-                        dealii::Utilities::MPI::mpi_type_id(&dummy),
+                        dealii::Utilities::MPI::mpi_type_id_for_type<
+                          dealii::types::global_dof_index>,
                         send_ranks[i],
                         105,
                         comm,
@@ -1188,10 +1193,10 @@ namespace internal
 
               // determine number of ghost faces * 2 (since we are considering
               // pairs)
-              int                             len;
-              dealii::types::global_dof_index dummy;
+              int len;
               MPI_Get_count(&status,
-                            dealii::Utilities::MPI::mpi_type_id(&dummy),
+                            dealii::Utilities::MPI::mpi_type_id_for_type<
+                              dealii::types::global_dof_index>,
                             &len);
 
               AssertThrow(len % 2 == 0,
@@ -1206,7 +1211,8 @@ namespace internal
               // receive data
               ierr = MPI_Recv(recv_data.data(),
                               len,
-                              dealii::Utilities::MPI::mpi_type_id(&dummy),
+                              dealii::Utilities::MPI::mpi_type_id_for_type<
+                                dealii::types::global_dof_index>,
                               status.MPI_SOURCE,
                               status.MPI_TAG,
                               comm,

@@ -179,71 +179,72 @@ namespace hyperdeal
     void
     print_log(const MPI_Comm &comm_global, const std::string &prefix) const
     {
-      const auto print_statistics = [&](const auto &       v,
-                                        std::string        slabel,
-                                        const unsigned int tag) {
-        const auto my_rank =
-          dealii::Utilities::MPI::this_mpi_process(comm_global);
+      const auto print_statistics =
+        [&](const auto &v, std::string slabel, const unsigned int tag) {
+          const auto my_rank =
+            dealii::Utilities::MPI::this_mpi_process(comm_global);
 
-        if (my_rank == 0)
-          {
-            std::ofstream myfile;
-            myfile.open(prefix + "_" + slabel + ".stat");
+          if (my_rank == 0)
+            {
+              std::ofstream myfile;
+              myfile.open(prefix + "_" + slabel + ".stat");
 
-            for (unsigned int i = 0;
-                 i < dealii::Utilities::MPI::n_mpi_processes(comm_global);
-                 i++)
-              {
-                std::vector<double> recv_data;
-                if (i == 0)
-                  {
-                    recv_data = v;
-                  }
-                else
-                  {
-                    // wait for any request
-                    MPI_Status status;
-                    auto       ierr =
-                      MPI_Probe(MPI_ANY_SOURCE, tag, comm_global, &status);
-                    AssertThrowMPI(ierr);
+              for (unsigned int i = 0;
+                   i < dealii::Utilities::MPI::n_mpi_processes(comm_global);
+                   i++)
+                {
+                  std::vector<double> recv_data;
+                  if (i == 0)
+                    {
+                      recv_data = v;
+                    }
+                  else
+                    {
+                      // wait for any request
+                      MPI_Status status;
+                      auto       ierr =
+                        MPI_Probe(MPI_ANY_SOURCE, tag, comm_global, &status);
+                      AssertThrowMPI(ierr);
 
-                    // determine number of ghost faces * 2 (since we are
-                    // considering pairs)
-                    int len;
-                    MPI_Get_count(&status,
-                                  dealii::Utilities::MPI::mpi_type_id(v.data()),
-                                  &len);
+                      // determine number of ghost faces * 2 (since we are
+                      // considering pairs)
+                      int len;
+                      MPI_Get_count(
+                        &status,
+                        dealii::Utilities::MPI::mpi_type_id_for_type<double>,
+                        &len);
 
-                    recv_data.resize(len);
+                      recv_data.resize(len);
 
-                    // receive data
-                    MPI_Recv(recv_data.data(),
-                             len,
-                             dealii::Utilities::MPI::mpi_type_id(v.data()),
-                             status.MPI_SOURCE,
-                             status.MPI_TAG,
-                             comm_global,
-                             &status);
-                  }
+                      // receive data
+                      MPI_Recv(
+                        recv_data.data(),
+                        len,
+                        dealii::Utilities::MPI::mpi_type_id_for_type<double>,
+                        status.MPI_SOURCE,
+                        status.MPI_TAG,
+                        comm_global,
+                        &status);
+                    }
 
-                for (const auto j : recv_data)
-                  myfile << i << " " << j << std::endl;
-              }
+                  for (const auto j : recv_data)
+                    myfile << i << " " << j << std::endl;
+                }
 
-            myfile.close();
-          }
-        else
-          {
-            MPI_Send(v.data(),
-                     v.size(),
-                     dealii::Utilities::MPI::mpi_type_id(v.data()),
-                     0,
-                     tag,
-                     comm_global);
-          }
+              myfile.close();
+            }
+          else
+            {
+              MPI_Send(v.data(),
+                       v.size(),
+                       dealii::Utilities::MPI::mpi_type_id_for_type<double>,
+                       0,
+                       tag,
+                       comm_global);
+            }
 
-        MPI_Barrier(comm_global);
-      };
+          MPI_Barrier(comm_global);
+        };
 
 
       unsigned int tag = 110;
