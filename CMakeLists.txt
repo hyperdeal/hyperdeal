@@ -98,6 +98,11 @@ IF(EXISTS ${CMAKE_SOURCE_DIR}/tests/CMakeLists.txt)
   SET(DEAL_II_HAVE_TESTS_DIRECTORY TRUE)
 ENDIF()
 
+# deal.II/tests/test.h from deal.II
+FIND_FILE(DEAL_II_TESTS_H tests.h HINTS ${DEAL_II_SOURCE_DIR}/tests)
+CONFIGURE_FILE(${DEAL_II_TESTS_H} ${CMAKE_CURRENT_BINARY_DIR}/tests/external/deal.II/tests/tests.h)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/tests/external)
+
 # documentation
 ADD_SUBDIRECTORY(doc/doxygen)
 
