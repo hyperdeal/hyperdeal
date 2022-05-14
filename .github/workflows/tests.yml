@@ -24,12 +24,9 @@ jobs:
     
     container:
       image: dealii/dealii:${{ matrix.dealii_version }}-focal
+      options: --user root
 
     steps:
-      - name: Setup
-        run: |
-          sudo chown -R $USER:$USER $GITHUB_WORKSPACE
-          
       - uses: actions/checkout@v2
 
       - name: Compile
@@ -41,5 +38,7 @@ jobs:
           
       - name: Test
         run: |
+          export OMPI_ALLOW_RUN_AS_ROOT=1
+          export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           cd build
           ctest -V
