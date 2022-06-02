@@ -47,8 +47,7 @@ namespace hyperdeal
          * Indices of degrees of freedom of the 2*dim faces.
          *
          * @note This is similar to
-         *   dealii::internal::MatrixFreeFunctions::ShapeInfo without
-         *   the annoying orientation switch in 3D.
+         *   dealii::internal::MatrixFreeFunctions::ShapeInfo
          */
         std::vector<std::vector<unsigned int>> face_to_cell_index_nodal;
 
@@ -94,34 +93,44 @@ namespace hyperdeal
 
         // Patch quad order for directions 1 and 4
         std::vector<unsigned int> tmp(dofs_per_component_on_face);
-        for (const auto face : dealii::GeometryInfo<dim>::face_indices()) {
-          const auto direction = face / 2;
-          const auto& face_to_cell_local = face_to_cell_index_nodal[face];
+        for (const auto face : dealii::GeometryInfo<dim>::face_indices())
+          {
+            const auto  direction          = face / 2;
+            const auto &face_to_cell_local = face_to_cell_index_nodal[face];
 
-          const auto dofs_per_x_face = dealii::Utilities::pow(points, dim_x - 1);
-          const auto dofs_per_v_face = dealii::Utilities::pow(points, dim_v - 1);
-          const auto dofs_per_x_cell = dealii::Utilities::pow(points, dim_x);
+            const auto dofs_per_x_face =
+              dealii::Utilities::pow(points, dim_x - 1);
+            const auto dofs_per_v_face =
+              dealii::Utilities::pow(points, dim_v - 1);
+            const auto dofs_per_x_cell = dealii::Utilities::pow(points, dim_x);
 
-          if (direction == 1) {
-            // Here the faces are in X space, so their DoF indices are located sequentially.
-            // Offset is the number of DoFs in preceding faces.
-            for (auto offset = 0u; offset < dofs_per_face; offset += dofs_per_x_face)
-              for (auto j = 0u; j < dofs_per_x_face / points; ++j)
-                for (auto i = 0u; i < points; ++i)
-                  tmp.at(offset + j + i*points) = face_to_cell_local.at(offset + i + j*points);
-            face_to_cell_index_nodal[face] = tmp;
+            if (direction == 1)
+              {
+                // Here the faces are in X space, so their DoF indices are
+                // located sequentially. Offset is the number of DoFs in
+                // preceding faces.
+                for (auto offset = 0u; offset < dofs_per_face;
+                     offset += dofs_per_x_face)
+                  for (auto j = 0u; j < dofs_per_x_face / points; ++j)
+                    for (auto i = 0u; i < points; ++i)
+                      tmp.at(offset + j + i * points) =
+                        face_to_cell_local.at(offset + i + j * points);
+                face_to_cell_index_nodal[face] = tmp;
+              }
+            else if (direction == 4)
+              {
+                // Here the faces are in V space, so for each face its DoFs are
+                // separated by `dofs_per_cell` other DoFs. Offset is the number
+                // of DoFs in preceding faces.
+                for (auto offset = 0u; offset < dofs_per_x_cell; ++offset)
+                  for (auto j = 0u; j < dofs_per_v_face / points; ++j)
+                    for (auto i = 0u; i < points; ++i)
+                      tmp.at(offset + dofs_per_x_cell * (j + i * points)) =
+                        face_to_cell_local.at(offset + dofs_per_x_cell *
+                                                         (i + j * points));
+                face_to_cell_index_nodal[face] = tmp;
+              }
           }
-          else if (direction == 4) {
-            // Here the faces are in V space, so for each face its DoFs are separated by
-            // `dofs_per_cell` other DoFs.
-            // Offset is the number of DoFs in preceding faces.
-            for (auto offset = 0u; offset < dofs_per_x_cell; ++offset)
-              for (auto j = 0u; j < dofs_per_v_face / points; ++j)
-                for (auto i = 0u; i < points; ++i)
-                  tmp.at(offset + dofs_per_x_cell*(j + i*points)) = face_to_cell_local.at(offset + dofs_per_x_cell*(i + j*points));
-            face_to_cell_index_nodal[face] = tmp;
-          }
-        }
 
         // clang-format off
         if (dim_x == 3 || dim_v == 3)
