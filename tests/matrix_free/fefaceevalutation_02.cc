@@ -269,7 +269,7 @@ test(const MPI_Comm &comm)
                     deallog << "succeeded!" << std::endl;
                   else
                     {
-                      deallog << " failed!" << std::endl;
+                      deallog << "failed!" << std::endl;
                     }
 
                   deallog.pop();
