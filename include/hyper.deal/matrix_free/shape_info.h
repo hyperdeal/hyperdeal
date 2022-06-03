@@ -68,8 +68,10 @@ namespace hyperdeal
         {
           // adopted from dealii::internal::ShapeInfo::reinit()
 
+#ifdef DEBUG
           const unsigned int dofs_per_component_on_cell =
             dealii::Utilities::pow(points, dim);
+#endif
           const unsigned int dofs_per_component_on_face =
             dealii::Utilities::pow(points, dim - 1);
           face_to_cell_index_nodal.reinit(
