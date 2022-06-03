@@ -104,7 +104,7 @@ namespace hyperdeal
               dealii::Utilities::pow(points, dim_v - 1);
             const auto dofs_per_x_cell = dealii::Utilities::pow(points, dim_x);
 
-            if (direction == 1)
+            if (direction == 1 && dim_x == 3)
               {
                 // Here the faces are in X space, so their DoF indices are
                 // located sequentially. Offset is the number of DoFs in
@@ -117,7 +117,7 @@ namespace hyperdeal
                         face_to_cell_local.at(offset + i + j * points);
                 face_to_cell_index_nodal[face] = tmp;
               }
-            else if (direction == 4)
+            else if (direction == 4 && dim_v == 3)
               {
                 // Here the faces are in V space, so for each face its DoFs are
                 // separated by `dofs_per_cell` other DoFs. Offset is the number
