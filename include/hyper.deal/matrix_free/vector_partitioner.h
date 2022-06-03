@@ -793,61 +793,56 @@ namespace internal
             }
 
           // determine (ghost sm cell) -> (sm rank, offset)
-          dealii::Utilities::MPI::ConsensusAlgorithms::AnonymousProcess<
+          dealii::Utilities::MPI::ConsensusAlgorithms::selector<
             std::vector<dealii::types::global_dof_index>,
-            std::vector<unsigned int>>
-            temp(
-              [&]() {
-                std::vector<unsigned int> result;
-                for (auto &i : shared_procs_to_cells)
-                  result.push_back(i.first);
-                return result;
-              },
-              [&](const auto other_rank, auto &send_buffer) {
-                send_buffer = shared_procs_to_cells[other_rank];
-              },
-              [&](const auto &other_rank,
-                  const auto &buffer_recv,
-                  auto &      request_buffer) {
-                request_buffer.resize(buffer_recv.size());
+            std::vector<unsigned int>>(
+            [&]() {
+              std::vector<unsigned int> result;
+              for (auto &i : shared_procs_to_cells)
+                result.push_back(i.first);
+              return result;
+            }(),
+            [&](const auto other_rank) {
+              return shared_procs_to_cells[other_rank];
+            },
+            [&](const auto &other_rank, const auto &buffer_recv) {
+              std::vector<unsigned int> request_buffer(buffer_recv.size());
 
-                for (unsigned int i = 0; i < buffer_recv.size(); i++)
-                  {
-                    const auto value = buffer_recv[i];
-                    const auto ptr =
-                      std::find(local_cells.begin(), local_cells.end(), value);
+              for (unsigned int i = 0; i < buffer_recv.size(); i++)
+                {
+                  const auto value = buffer_recv[i];
+                  const auto ptr =
+                    std::find(local_cells.begin(), local_cells.end(), value);
 
-                    AssertThrow(
-                      ptr != local_cells.end(),
-                      dealii::ExcMessage(
-                        "Cell " + std::to_string(value) + " at index " +
-                        std::to_string(i) + " on rank " +
-                        std::to_string(
-                          dealii::Utilities::MPI::this_mpi_process(comm)) +
-                        " requested by rank " + std::to_string(other_rank) +
-                        " not found!"));
+                  AssertThrow(ptr != local_cells.end(),
+                              dealii::ExcMessage(
+                                "Cell " + std::to_string(value) + " at index " +
+                                std::to_string(i) + " on rank " +
+                                std::to_string(
+                                  dealii::Utilities::MPI::this_mpi_process(
+                                    comm)) +
+                                " requested by rank " +
+                                std::to_string(other_rank) + " not found!"));
 
-                    request_buffer[i] = std::distance(local_cells.begin(), ptr);
-                  }
-              },
-              [&](const auto other_rank, const auto &recv_buffer) {
-                for (unsigned int i = 0; i < recv_buffer.size(); i++)
-                  {
-                    const dealii::types::global_dof_index cell =
-                      shared_procs_to_cells[other_rank][i];
-                    const unsigned int offset = recv_buffer[i];
+                  request_buffer[i] = std::distance(local_cells.begin(), ptr);
+                }
+              return request_buffer;
+            },
+            [&](const auto other_rank, const auto &recv_buffer) {
+              for (unsigned int i = 0; i < recv_buffer.size(); i++)
+                {
+                  const dealii::types::global_dof_index cell =
+                    shared_procs_to_cells[other_rank][i];
+                  const unsigned int offset = recv_buffer[i];
 
-                    Assert(maps.find(cell) == maps.end(),
-                           dealii::ExcMessage("Cell " + std::to_string(cell) +
-                                              " is already in maps!"));
+                  Assert(maps.find(cell) == maps.end(),
+                         dealii::ExcMessage("Cell " + std::to_string(cell) +
+                                            " is already in maps!"));
 
-                    this->maps[cell] = {other_rank, offset * dofs_per_cell};
-                  }
-              });
-          dealii::Utilities::MPI::ConsensusAlgorithms::Selector<
-            std::vector<dealii::types::global_dof_index>,
-            std::vector<unsigned int>>()
-            .run(temp, this->comm_sm);
+                  this->maps[cell] = {other_rank, offset * dofs_per_cell};
+                }
+            },
+            this->comm_sm);
         }
 
 
@@ -1028,35 +1023,32 @@ namespace internal
                   send_data[ptr1->second.first].push_back(v);
                 }
 
-            dealii::Utilities::MPI::ConsensusAlgorithms::AnonymousProcess<
-              std::vector<LocalDoFType>,
-              std::vector<LocalDoFType>>
-              temp(
-                [&]() {
-                  std::vector<unsigned int> result;
-                  for (auto &i : send_data)
-                    result.push_back(i.first);
-                  return result;
-                },
-                [&](const auto other_rank, auto &send_buffer) {
-                  for (const auto &i : send_data[other_rank])
-                    for (const auto &j : i)
-                      send_buffer.push_back(j);
-                },
-                [&](const auto & /*other_rank*/,
-                    const auto &buffer_recv,
-                    auto & /*request_buffer*/) {
-                  for (unsigned int i = 0; i < buffer_recv.size(); i += 5)
-                    maps_ghost_inverse_precomp.push_back(
-                      {{buffer_recv[i],
-                        buffer_recv[i + 1],
-                        buffer_recv[i + 2],
-                        buffer_recv[i + 3],
-                        buffer_recv[i + 4]}});
-                });
-            dealii::Utilities::MPI::ConsensusAlgorithms::
-              Selector<std::vector<LocalDoFType>, std::vector<LocalDoFType>>()
-                .run(temp, this->comm_sm);
+            dealii::Utilities::MPI::ConsensusAlgorithms::selector<
+              std::vector<LocalDoFType>>(
+              [&]() {
+                std::vector<unsigned int> result;
+                for (auto &i : send_data)
+                  result.push_back(i.first);
+                return result;
+              }(),
+              [&](const auto other_rank) {
+                std::vector<LocalDoFType> send_buffer;
+
+                for (const auto &i : send_data[other_rank])
+                  for (const auto &j : i)
+                    send_buffer.push_back(j);
+
+                return send_buffer;
+              },
+              [&](const auto & /*other_rank*/, const auto &buffer_recv) {
+                for (unsigned int i = 0; i < buffer_recv.size(); i += 5)
+                  maps_ghost_inverse_precomp.push_back({{buffer_recv[i],
+                                                         buffer_recv[i + 1],
+                                                         buffer_recv[i + 2],
+                                                         buffer_recv[i + 3],
+                                                         buffer_recv[i + 4]}});
+              },
+              this->comm_sm);
 
             std::sort(maps_ghost_inverse_precomp.begin(),
                       maps_ghost_inverse_precomp.end());
