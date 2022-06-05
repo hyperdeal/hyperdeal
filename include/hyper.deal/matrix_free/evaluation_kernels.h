@@ -7,13 +7,15 @@ namespace hyperdeal
 {
   namespace internal
   {
-    template <int dim,
+    template <int dim_x,
+              int dim_v,
               int n_rows,
               int n_columns,
               typename Number,
               typename Number2 = Number>
     struct EvaluatorTensorProduct
     {
+      static constexpr int          dim = dim_x + dim_v;
       static constexpr unsigned int n_rows_of_product =
         dealii::Utilities::pow(n_rows, dim);
       static constexpr unsigned int n_columns_of_product =
@@ -205,6 +207,7 @@ namespace hyperdeal
           }
       }
 
+    private:
       const Number2 *shape_values;
       const Number2 *shape_gradients;
       const Number2 *shape_hessians;
@@ -261,12 +264,12 @@ namespace hyperdeal
       {
         if (face_direction == face_no / 2)
           {
-            EvaluatorTensorProduct<dim, fe_degree + 1, 0, Number> evalf(
-              shape_data[face_no % 2],
-              dealii::AlignedVector<Number>(),
-              dealii::AlignedVector<Number>(),
-              n_points_1d,
-              0);
+            EvaluatorTensorProduct<dim_x, dim_v, fe_degree + 1, 0, Number>
+              evalf(shape_data[face_no % 2],
+                    dealii::AlignedVector<Number>(),
+                    dealii::AlignedVector<Number>(),
+                    n_points_1d,
+                    0);
 
             const unsigned int in_stride = do_evaluate ?
                                              dofs_per_component_on_cell :
