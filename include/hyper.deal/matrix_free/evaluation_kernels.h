@@ -65,6 +65,78 @@ namespace hyperdeal
                 bool add,
                 int  max_derivative>
       void
+      apply_face_1D(const Number *DEAL_II_RESTRICT in,
+                    Number *DEAL_II_RESTRICT out,
+                    const unsigned int       in_index,
+                    const unsigned int       out_index) const
+      {
+        constexpr int in_stride =
+          dealii::Utilities::pow(n_rows, face_direction);
+        constexpr int out_stride = dealii::Utilities::pow(n_rows, dim - 1);
+
+        const Number *DEAL_II_RESTRICT shape_values = this->shape_values;
+
+        if (contract_onto_face == true)
+          {
+            Number res0 = shape_values[0] * in[in_index + 0];
+            Number res1, res2;
+            if (max_derivative > 0)
+              res1 = shape_values[n_rows] * in[in_index + 0];
+            if (max_derivative > 1)
+              res2 = shape_values[2 * n_rows] * in[in_index + 0];
+            for (int ind = 1; ind < n_rows; ++ind)
+              {
+                res0 += shape_values[ind] * in[in_index + in_stride * ind];
+                if (max_derivative > 0)
+                  res1 +=
+                    shape_values[ind + n_rows] * in[in_index + in_stride * ind];
+                if (max_derivative > 1)
+                  res2 += shape_values[ind + 2 * n_rows] *
+                          in[in_index + in_stride * ind];
+              }
+            if (add)
+              {
+                out[out_index + 0] += res0;
+                if (max_derivative > 0)
+                  out[out_index + out_stride] += res1;
+                if (max_derivative > 1)
+                  out[out_index + 2 * out_stride] += res2;
+              }
+            else
+              {
+                out[out_index + 0] = res0;
+                if (max_derivative > 0)
+                  out[out_index + out_stride] = res1;
+                if (max_derivative > 1)
+                  out[out_index + 2 * out_stride] = res2;
+              }
+          }
+        else
+          {
+            for (int col = 0; col < n_rows; ++col)
+              {
+                if (add)
+                  out[in_index + col * in_stride] +=
+                    shape_values[col] * in[out_index + 0];
+                else
+                  out[in_index + col * in_stride] =
+                    shape_values[col] * in[out_index + 0];
+                if (max_derivative > 0)
+                  out[in_index + col * in_stride] +=
+                    shape_values[col + n_rows] * in[out_index + out_stride];
+                if (max_derivative > 1)
+                  out[in_index + col * in_stride] +=
+                    shape_values[col + 2 * n_rows] *
+                    in[out_index + 2 * out_stride];
+              }
+          }
+      }
+
+      template <int  face_direction,
+                bool contract_onto_face,
+                bool add,
+                int  max_derivative>
+      void
       apply_face(const Number *DEAL_II_RESTRICT in,
                  Number *DEAL_II_RESTRICT out) const
       {
@@ -104,70 +176,10 @@ namespace hyperdeal
                     i1 + i2 * dealii::Utilities::pow<unsigned int>(
                                 n_rows, face_direction + 1);
 
-                  constexpr int in_stride =
-                    dealii::Utilities::pow(n_rows, face_direction);
-                  constexpr int out_stride =
-                    dealii::Utilities::pow(n_rows, dim - 1);
-
-                  const Number *DEAL_II_RESTRICT shape_values =
-                    this->shape_values;
-
-                  if (contract_onto_face == true)
-                    {
-                      Number res0 = shape_values[0] * in[in_index + 0];
-                      Number res1, res2;
-                      if (max_derivative > 0)
-                        res1 = shape_values[n_rows] * in[in_index + 0];
-                      if (max_derivative > 1)
-                        res2 = shape_values[2 * n_rows] * in[in_index + 0];
-                      for (int ind = 1; ind < n_rows; ++ind)
-                        {
-                          res0 +=
-                            shape_values[ind] * in[in_index + in_stride * ind];
-                          if (max_derivative > 0)
-                            res1 += shape_values[ind + n_rows] *
-                                    in[in_index + in_stride * ind];
-                          if (max_derivative > 1)
-                            res2 += shape_values[ind + 2 * n_rows] *
-                                    in[in_index + in_stride * ind];
-                        }
-                      if (add)
-                        {
-                          out[out_index + 0] += res0;
-                          if (max_derivative > 0)
-                            out[out_index + out_stride] += res1;
-                          if (max_derivative > 1)
-                            out[out_index + 2 * out_stride] += res2;
-                        }
-                      else
-                        {
-                          out[out_index + 0] = res0;
-                          if (max_derivative > 0)
-                            out[out_index + out_stride] = res1;
-                          if (max_derivative > 1)
-                            out[out_index + 2 * out_stride] = res2;
-                        }
-                    }
-                  else
-                    {
-                      for (int col = 0; col < n_rows; ++col)
-                        {
-                          if (add)
-                            out[in_index + col * in_stride] +=
-                              shape_values[col] * in[out_index + 0];
-                          else
-                            out[in_index + col * in_stride] =
-                              shape_values[col] * in[out_index + 0];
-                          if (max_derivative > 0)
-                            out[in_index + col * in_stride] +=
-                              shape_values[col + n_rows] *
-                              in[out_index + out_stride];
-                          if (max_derivative > 1)
-                            out[in_index + col * in_stride] +=
-                              shape_values[col + 2 * n_rows] *
-                              in[out_index + 2 * out_stride];
-                        }
-                    }
+                  apply_face_1D<face_direction,
+                                contract_onto_face,
+                                add,
+                                max_derivative>(in, out, in_index, out_index);
                 }
           }
       }
