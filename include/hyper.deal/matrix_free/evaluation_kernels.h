@@ -150,8 +150,25 @@ namespace hyperdeal
 
         if ((dim_x == 3) && (face_direction == 1))
           {
-            for (int i = 0; i < dealii::Utilities::pow(n_rows, dim - 1); ++i)
-              out[i] = -1.0;
+            for (int i3 = 0;
+                 i3 < dealii::Utilities::pow<unsigned int>(n_rows, dim_v);
+                 ++i3)
+              for (int i2 = 0; i2 < n_rows; ++i2)
+                for (int i1 = 0; i1 < n_rows; ++i1)
+                  {
+                    const unsigned out_index =
+                      i2 + i1 * n_rows +
+                      i3 * dealii::Utilities::pow<unsigned int>(n_rows, 2);
+                    const unsigned in_index =
+                      i1 +
+                      i2 * dealii::Utilities::pow<unsigned int>(n_rows, 2) +
+                      i3 * dealii::Utilities::pow<unsigned int>(n_rows, 3);
+
+                    apply_face_1D<face_direction,
+                                  contract_onto_face,
+                                  add,
+                                  max_derivative>(in, out, in_index, out_index);
+                  }
           }
         else if ((dim_v == 3) && (face_direction == (1 + dim_x)))
           {

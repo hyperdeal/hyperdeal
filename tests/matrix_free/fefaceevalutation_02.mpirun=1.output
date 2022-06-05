@@ -225,8 +225,8 @@ DEAL:0:dim_x=3:1:dir=0:FCL:dir=6::succeeded!
 DEAL:0:dim_x=3:1:dir=0:FCL:dir=7::succeeded!
 DEAL:0:dim_x=3:1:dir=0:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:1:dir=0:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:1:dir=0:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:1:dir=0:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:1:dir=0:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:1:dir=0:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:1:dir=0:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:1:dir=0:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:1:dir=0:ECL:dir=6::succeeded!
@@ -241,8 +241,8 @@ DEAL:0:dim_x=3:1:dir=1:FCL:dir=6::succeeded!
 DEAL:0:dim_x=3:1:dir=1:FCL:dir=7::succeeded!
 DEAL:0:dim_x=3:1:dir=1:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:1:dir=1:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:1:dir=1:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:1:dir=1:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:1:dir=1:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:1:dir=1:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:1:dir=1:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:1:dir=1:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:1:dir=1:ECL:dir=6::succeeded!
@@ -257,8 +257,8 @@ DEAL:0:dim_x=3:1:dir=2:FCL:dir=6::succeeded!
 DEAL:0:dim_x=3:1:dir=2:FCL:dir=7::succeeded!
 DEAL:0:dim_x=3:1:dir=2:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:1:dir=2:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:1:dir=2:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:1:dir=2:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:1:dir=2:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:1:dir=2:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:1:dir=2:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:1:dir=2:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:1:dir=2:ECL:dir=6::succeeded!
@@ -273,8 +273,8 @@ DEAL:0:dim_x=3:1:dir=3:FCL:dir=6::succeeded!
 DEAL:0:dim_x=3:1:dir=3:FCL:dir=7::succeeded!
 DEAL:0:dim_x=3:1:dir=3:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:1:dir=3:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:1:dir=3:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:1:dir=3:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:1:dir=3:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:1:dir=3:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:1:dir=3:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:1:dir=3:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:1:dir=3:ECL:dir=6::succeeded!
@@ -391,8 +391,8 @@ DEAL:0:dim_x=3:2:dir=0:FCL:dir=8::succeeded!
 DEAL:0:dim_x=3:2:dir=0:FCL:dir=9::succeeded!
 DEAL:0:dim_x=3:2:dir=0:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:2:dir=0:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:2:dir=0:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:2:dir=0:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:2:dir=0:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:2:dir=0:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:2:dir=0:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:2:dir=0:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:2:dir=0:ECL:dir=6::succeeded!
@@ -411,8 +411,8 @@ DEAL:0:dim_x=3:2:dir=1:FCL:dir=8::succeeded!
 DEAL:0:dim_x=3:2:dir=1:FCL:dir=9::succeeded!
 DEAL:0:dim_x=3:2:dir=1:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:2:dir=1:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:2:dir=1:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:2:dir=1:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:2:dir=1:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:2:dir=1:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:2:dir=1:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:2:dir=1:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:2:dir=1:ECL:dir=6::succeeded!
@@ -431,8 +431,8 @@ DEAL:0:dim_x=3:2:dir=2:FCL:dir=8::succeeded!
 DEAL:0:dim_x=3:2:dir=2:FCL:dir=9::succeeded!
 DEAL:0:dim_x=3:2:dir=2:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:2:dir=2:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:2:dir=2:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:2:dir=2:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:2:dir=2:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:2:dir=2:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:2:dir=2:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:2:dir=2:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:2:dir=2:ECL:dir=6::succeeded!
@@ -451,8 +451,8 @@ DEAL:0:dim_x=3:2:dir=3:FCL:dir=8::succeeded!
 DEAL:0:dim_x=3:2:dir=3:FCL:dir=9::succeeded!
 DEAL:0:dim_x=3:2:dir=3:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:2:dir=3:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:2:dir=3:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:2:dir=3:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:2:dir=3:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:2:dir=3:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:2:dir=3:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:2:dir=3:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:2:dir=3:ECL:dir=6::succeeded!
@@ -471,8 +471,8 @@ DEAL:0:dim_x=3:2:dir=4:FCL:dir=8::succeeded!
 DEAL:0:dim_x=3:2:dir=4:FCL:dir=9::succeeded!
 DEAL:0:dim_x=3:2:dir=4:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:2:dir=4:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:2:dir=4:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:2:dir=4:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:2:dir=4:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:2:dir=4:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:2:dir=4:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:2:dir=4:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:2:dir=4:ECL:dir=6::succeeded!
@@ -493,8 +493,8 @@ DEAL:0:dim_x=3:3:dir=0:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=0:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=0:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=0:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=0:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=0:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=0:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=0:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=0:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=0:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=0:ECL:dir=6::succeeded!
@@ -517,8 +517,8 @@ DEAL:0:dim_x=3:3:dir=1:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=1:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=1:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=1:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=1:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=1:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=1:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=1:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=1:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=1:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=1:ECL:dir=6::succeeded!
@@ -541,8 +541,8 @@ DEAL:0:dim_x=3:3:dir=2:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=2:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=2:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=2:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=2:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=2:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=2:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=2:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=2:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=2:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=2:ECL:dir=6::succeeded!
@@ -565,8 +565,8 @@ DEAL:0:dim_x=3:3:dir=3:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=3:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=3:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=3:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=3:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=3:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=3:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=3:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=3:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=3:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=3:ECL:dir=6::succeeded!
@@ -589,8 +589,8 @@ DEAL:0:dim_x=3:3:dir=4:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=4:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=4:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=4:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=4:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=4:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=4:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=4:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=4:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=4:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=4:ECL:dir=6::succeeded!
@@ -613,8 +613,8 @@ DEAL:0:dim_x=3:3:dir=5:FCL:dir=10::succeeded!
 DEAL:0:dim_x=3:3:dir=5:FCL:dir=11::succeeded!
 DEAL:0:dim_x=3:3:dir=5:ECL:dir=0::succeeded!
 DEAL:0:dim_x=3:3:dir=5:ECL:dir=1::succeeded!
-DEAL:0:dim_x=3:3:dir=5:ECL:dir=2:: failed!
-DEAL:0:dim_x=3:3:dir=5:ECL:dir=3:: failed!
+DEAL:0:dim_x=3:3:dir=5:ECL:dir=2::succeeded!
+DEAL:0:dim_x=3:3:dir=5:ECL:dir=3::succeeded!
 DEAL:0:dim_x=3:3:dir=5:ECL:dir=4::succeeded!
 DEAL:0:dim_x=3:3:dir=5:ECL:dir=5::succeeded!
 DEAL:0:dim_x=3:3:dir=5:ECL:dir=6::succeeded!
