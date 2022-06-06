@@ -148,17 +148,18 @@ namespace hyperdeal
 
         AssertIndexRange(face_direction, dim);
 
+        using namespace dealii::Utilities;
+
         if ((dim_x == 3) && (face_direction == 1))
           {
-            for (int i3 = 0; i3 < dealii::Utilities::pow(n_rows, dim_v); ++i3)
+            for (int i3 = 0; i3 < pow(n_rows, dim_v); ++i3)
               for (int i2 = 0; i2 < n_rows; ++i2)
                 for (int i1 = 0; i1 < n_rows; ++i1)
                   {
                     const unsigned out_index =
-                      i2 + i1 * n_rows + i3 * dealii::Utilities::pow(n_rows, 2);
+                      i2 + i1 * n_rows + i3 * pow(n_rows, 2);
                     const unsigned in_index =
-                      i1 + i2 * dealii::Utilities::pow(n_rows, 2) +
-                      i3 * dealii::Utilities::pow(n_rows, 3);
+                      i1 + i2 * pow(n_rows, 2) + i3 * pow(n_rows, 3);
 
                     apply_face_1D<face_direction,
                                   contract_onto_face,
@@ -170,15 +171,12 @@ namespace hyperdeal
           {
             for (int i3 = 0; i3 < n_rows; ++i3)
               for (int i2 = 0; i2 < n_rows; ++i2)
-                for (int i1 = 0; i1 < dealii::Utilities::pow(n_rows, dim_x);
-                     ++i1)
+                for (int i1 = 0; i1 < pow(n_rows, dim_x); ++i1)
                   {
-                    const unsigned out_index =
-                      i1 + i3 * dealii::Utilities::pow(n_rows, dim_x) +
-                      i2 * dealii::Utilities::pow(n_rows, dim_x + 1);
-                    const unsigned in_index =
-                      i1 + i2 * dealii::Utilities::pow(n_rows, dim_x) +
-                      i3 * dealii::Utilities::pow(n_rows, dim_x + 2);
+                    const unsigned out_index = i1 + i3 * pow(n_rows, dim_x) +
+                                               i2 * pow(n_rows, dim_x + 1);
+                    const unsigned in_index = i1 + i2 * pow(n_rows, dim_x) +
+                                              i3 * pow(n_rows, dim_x + 2);
 
                     apply_face_1D<face_direction,
                                   contract_onto_face,
@@ -188,20 +186,17 @@ namespace hyperdeal
           }
         else // lex
           {
-            constexpr int n_blocks1 =
-              dealii::Utilities::pow(n_rows, face_direction);
+            constexpr int n_blocks1 = pow(n_rows, face_direction);
             constexpr int n_blocks2 =
-              dealii::Utilities::pow(n_rows,
-                                     std::max(dim - face_direction - 1, 0));
+              pow(n_rows, std::max(dim - face_direction - 1, 0));
 
             for (int i2 = 0; i2 < n_blocks2; ++i2)
               for (int i1 = 0; i1 < n_blocks1; ++i1)
                 {
                   const unsigned out_index =
-                    i1 + i2 * dealii::Utilities::pow(n_rows, face_direction);
+                    i1 + i2 * pow(n_rows, face_direction);
                   const unsigned in_index =
-                    i1 +
-                    i2 * dealii::Utilities::pow(n_rows, face_direction + 1);
+                    i1 + i2 * pow(n_rows, face_direction + 1);
 
                   apply_face_1D<face_direction,
                                 contract_onto_face,
