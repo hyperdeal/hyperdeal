@@ -150,16 +150,18 @@ namespace hyperdeal
 
         using namespace dealii::Utilities;
 
-        if ((dim_x == 3) && (face_direction == 1))
+        if ((dim_x == 3) && (face_direction == 1)) // swap x face
           {
             for (int i3 = 0; i3 < pow(n_rows, dim_v); ++i3)
               for (int i2 = 0; i2 < n_rows; ++i2)
                 for (int i1 = 0; i1 < n_rows; ++i1)
                   {
-                    const unsigned out_index =
-                      i2 + i1 * n_rows + i3 * pow(n_rows, 2);
                     const unsigned in_index =
                       i1 + i2 * pow(n_rows, 2) + i3 * pow(n_rows, 3);
+
+                    // swap i1 and i2
+                    const unsigned out_index =
+                      i2 + i1 * n_rows + i3 * pow(n_rows, 2);
 
                     apply_face_1D<face_direction,
                                   contract_onto_face,
@@ -167,16 +169,18 @@ namespace hyperdeal
                                   max_derivative>(in, out, in_index, out_index);
                   }
           }
-        else if ((dim_v == 3) && (face_direction == (1 + dim_x)))
+        else if ((dim_v == 3) && (face_direction == (1 + dim_x))) // swap v face
           {
             for (int i3 = 0; i3 < n_rows; ++i3)
               for (int i2 = 0; i2 < n_rows; ++i2)
                 for (int i1 = 0; i1 < pow(n_rows, dim_x); ++i1)
                   {
-                    const unsigned out_index = i1 + i3 * pow(n_rows, dim_x) +
-                                               i2 * pow(n_rows, dim_x + 1);
                     const unsigned in_index = i1 + i2 * pow(n_rows, dim_x) +
                                               i3 * pow(n_rows, dim_x + 2);
+
+                    // swap i2 and i3
+                    const unsigned out_index = i1 + i3 * pow(n_rows, dim_x) +
+                                               i2 * pow(n_rows, dim_x + 1);
 
                     apply_face_1D<face_direction,
                                   contract_onto_face,
@@ -193,10 +197,10 @@ namespace hyperdeal
             for (int i2 = 0; i2 < n_blocks2; ++i2)
               for (int i1 = 0; i1 < n_blocks1; ++i1)
                 {
-                  const unsigned out_index =
-                    i1 + i2 * pow(n_rows, face_direction);
                   const unsigned in_index =
                     i1 + i2 * pow(n_rows, face_direction + 1);
+                  const unsigned out_index =
+                    i1 + i2 * pow(n_rows, face_direction);
 
                   apply_face_1D<face_direction,
                                 contract_onto_face,
