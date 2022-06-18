@@ -24,6 +24,7 @@
 #include <hyper.deal/base/utilities.h>
 #include <hyper.deal/grid/grid_generator.h>
 #include <hyper.deal/lac/sm_vector.h>
+#include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_face.h>
 #include <hyper.deal/numerics/vector_tools.h>
 
@@ -239,18 +240,18 @@ test(const MPI_Comm &comm)
                   phi_m.reinit(cell, face);
 
 
-                  dealii::internal::FEFaceNormalEvaluationImpl<
-                    dim,
+                  hyperdeal::internal::FEFaceNormalEvaluationImpl<
+                    dim_x,
+                    dim_v,
                     n_points - 1,
-                    VectorizedArrayType,
-                    true>::template interpolate_quadrature<true,
-                                                           false>(
-                    1,
-                    dealii::EvaluationFlags::values,
-                    matrix_free.get_matrix_free_x().get_shape_info(),
-                    /*out=*/phi_cell_inv.get_data_ptr(),
-                    /*in=*/data_ptr1,
-                    face);
+                    VectorizedArrayType>::
+                    template interpolate_quadrature<true, false>(
+                      1,
+                      dealii::EvaluationFlags::values,
+                      matrix_free.get_matrix_free_x().get_shape_info(),
+                      /*out=*/phi_cell_inv.get_data_ptr(),
+                      /*in=*/data_ptr1,
+                      face);
 
                   std::set<unsigned int> failed;
 
@@ -268,7 +269,7 @@ test(const MPI_Comm &comm)
                     deallog << "succeeded!" << std::endl;
                   else
                     {
-                      deallog << " failed!" << std::endl;
+                      deallog << "failed!" << std::endl;
                     }
 
                   deallog.pop();

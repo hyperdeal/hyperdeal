@@ -58,6 +58,54 @@ namespace hyperdeal
         std::vector<std::vector<unsigned int>> face_orientations;
       };
 
+      namespace
+      {
+        template <int dim>
+        void
+        fill_face_to_cell_index_nodal(
+          const unsigned int              points,
+          dealii::Table<2, unsigned int> &face_to_cell_index_nodal)
+        {
+          // adopted from dealii::internal::ShapeInfo::reinit()
+
+#ifdef DEBUG
+          const unsigned int dofs_per_component_on_cell =
+            dealii::Utilities::pow(points, dim);
+#endif
+          const unsigned int dofs_per_component_on_face =
+            dealii::Utilities::pow(points, dim - 1);
+          face_to_cell_index_nodal.reinit(
+            dealii::GeometryInfo<dim>::faces_per_cell,
+            dofs_per_component_on_face);
+          for (const auto f : dealii::GeometryInfo<dim>::face_indices())
+            {
+              const unsigned int direction = f / 2;
+              const unsigned int stride    = direction < dim - 1 ? points : 1;
+              int                shift     = 1;
+              for (unsigned int d = 0; d < direction; ++d)
+                shift *= points;
+              const unsigned int offset = (f % 2) * (points - 1) * shift;
+
+              if (direction == 0 || direction == dim - 1)
+                for (unsigned int i = 0; i < dofs_per_component_on_face; ++i)
+                  face_to_cell_index_nodal(f, i) = offset + i * stride;
+              else
+                // local coordinate system on faces 2 and 3 is zx in
+                // deal.II, not xz as expected for tensor products -> adjust
+                // that here
+                for (unsigned int j = 0; j < points; ++j)
+                  for (unsigned int i = 0; i < points; ++i)
+                    {
+                      const unsigned int ind =
+                        offset + j * dofs_per_component_on_face + i;
+                      AssertIndexRange(ind, dofs_per_component_on_cell);
+                      const unsigned int l           = i * points + j;
+                      face_to_cell_index_nodal(f, l) = ind;
+                    }
+            }
+        }
+      } // namespace
+
       template <typename Number>
       template <int dim_x, int dim_v>
       void
@@ -75,21 +123,33 @@ namespace hyperdeal
         face_to_cell_index_nodal.resize(
           dealii::GeometryInfo<dim>::faces_per_cell);
 
+        dealii::Table<2, unsigned int> face_to_cell_index_nodal_x;
+        dealii::Table<2, unsigned int> face_to_cell_index_nodal_v;
+
+        fill_face_to_cell_index_nodal<dim_x>(points,
+                                             face_to_cell_index_nodal_x);
+        fill_face_to_cell_index_nodal<dim_v>(points,
+                                             face_to_cell_index_nodal_v);
+
         for (unsigned int surface = 0;
              surface < dealii::GeometryInfo<dim>::faces_per_cell;
              surface++)
           {
             face_to_cell_index_nodal[surface].resize(
               dofs_per_component_on_face);
-            // create indices for one surfaces
-            const unsigned int d = surface / 2; // direction
-            const unsigned int s = surface % 2; // left or right surface
 
-            for (int i = 0, k = 0; i < std::pow(points, dim - d - 1); i++)
-              for (int j = 0; j < std::pow(points, d); j++)
-                face_to_cell_index_nodal[surface][k++] =
-                  i * std::pow(points, d + 1) +
-                  (s == 0 ? 0 : (points - 1)) * std::pow(points, d) + j;
+            if (surface < dim_x * 2)
+              for (int i = 0, k = 0; i < std::pow(points, dim_v); i++)
+                for (int j = 0; j < std::pow(points, dim_x - 1); j++)
+                  face_to_cell_index_nodal[surface][k++] =
+                    face_to_cell_index_nodal_x(surface, j) +
+                    std::pow(points, dim_x) * i;
+            else
+              for (int i = 0, k = 0; i < std::pow(points, dim_v - 1); i++)
+                for (int j = 0; j < std::pow(points, dim_x); j++)
+                  face_to_cell_index_nodal[surface][k++] =
+                    j + std::pow(points, dim_x) *
+                          face_to_cell_index_nodal_v(surface - 2 * dim_x, i);
           }
 
         // clang-format off
