@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['matrixfree_0',['MatrixFree',['../classhyperdeal_1_1MatrixFree.html',1,'hyperdeal']]],
-  ['memoryconsumption_1',['MemoryConsumption',['../classhyperdeal_1_1MemoryConsumption.html',1,'hyperdeal']]],
-  ['memorystatmonitor_2',['MemoryStatMonitor',['../classhyperdeal_1_1MemoryStatMonitor.html',1,'hyperdeal']]]
+  ['lowstoragerungekuttaintegrator_0',['LowStorageRungeKuttaIntegrator',['../classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html',1,'hyperdeal']]],
+  ['lowstoragerungekuttaintegratorparamters_1',['LowStorageRungeKuttaIntegratorParamters',['../structhyperdeal_1_1LowStorageRungeKuttaIntegratorParamters.html',1,'hyperdeal']]]
 ];

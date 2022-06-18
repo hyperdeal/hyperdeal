@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['lowstoragerungekuttaintegrator_0',['LowStorageRungeKuttaIntegrator',['../classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html',1,'hyperdeal']]],
-  ['lowstoragerungekuttaintegratorparamters_1',['LowStorageRungeKuttaIntegratorParamters',['../structhyperdeal_1_1LowStorageRungeKuttaIntegratorParamters.html',1,'hyperdeal']]]
+  ['globalcellinfo_0',['GlobalCellInfo',['../structhyperdeal_1_1internal_1_1GlobalCellInfo.html',1,'hyperdeal::internal']]],
+  ['globalcellinfoprocessor_1',['GlobalCellInfoProcessor',['../structhyperdeal_1_1internal_1_1GlobalCellInfoProcessor.html',1,'hyperdeal::internal']]],
+  ['globalecellidtranslator_2',['GlobaleCellIDTranslator',['../classhyperdeal_1_1internal_1_1GlobaleCellIDTranslator.html',1,'hyperdeal::internal']]]
 ];
