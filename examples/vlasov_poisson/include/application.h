@@ -550,10 +550,11 @@ namespace hyperdeal
                        ++cell)
                     {
                       phi_x.reinit(cell);
-                      phi_x.gather_evaluate(src, true, false);
+                      phi_x.gather_evaluate(src,
+                                            dealii::EvaluationFlags::values);
                       for (unsigned int q = 0; q < phi_x.n_q_points; ++q)
                         phi_x.submit_value(-phi_x.get_value(q), q);
-                      phi_x.integrate(true, false);
+                      phi_x.integrate(dealii::EvaluationFlags::values);
                       phi_x.set_dof_values(dst);
                     }
                 },
@@ -690,10 +691,11 @@ namespace hyperdeal
                          ++cell)
                       {
                         phi_x.reinit(cell);
-                        phi_x.gather_evaluate(src, true, false);
+                        phi_x.gather_evaluate(src,
+                                              dealii::EvaluationFlags::values);
                         for (unsigned int q = 0; q < phi_x.n_q_points; ++q)
                           phi_x.submit_value(-phi_x.get_value(q), q);
-                        phi_x.integrate(true, false);
+                        phi_x.integrate(dealii::EvaluationFlags::values);
                         phi_x.set_dof_values(dst);
                       }
                   },
