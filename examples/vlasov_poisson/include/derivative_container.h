@@ -184,7 +184,8 @@ namespace hyperdeal
             for (auto cell = range.first; cell < range.second; ++cell)
               {
                 phi_rho.reinit(cell);
-                phi_rho.gather_evaluate(src, false, true);
+                phi_rho.gather_evaluate(src,
+                                        dealii::EvaluationFlags::gradients);
                 for (unsigned int q = 0; q < n_points_cell; ++q)
                   this->values_cells[cell * n_points_cell + q] =
                     phi_rho.get_gradient(q);
@@ -201,14 +202,16 @@ namespace hyperdeal
               {
                 // ... interior face
                 phi_rho_i.reinit(face);
-                phi_rho_i.gather_evaluate(src, false, true);
+                phi_rho_i.gather_evaluate(src,
+                                          dealii::EvaluationFlags::gradients);
                 for (unsigned int q = 0; q < n_points_face; ++q)
                   this->values_faces_int[face * n_points_face + q] =
                     phi_rho_i.get_gradient(q);
 
                 // ... exterior face
                 phi_rho_e.reinit(face);
-                phi_rho_e.gather_evaluate(src, false, true);
+                phi_rho_e.gather_evaluate(src,
+                                          dealii::EvaluationFlags::gradients);
                 for (unsigned int q = 0; q < n_points_face; ++q)
                   this->values_faces_ext[face * n_points_face + q] =
                     phi_rho_e.get_gradient(q);
@@ -225,7 +228,8 @@ namespace hyperdeal
             for (auto face = range.first; face < range.second; ++face)
               {
                 phi_rho_i.reinit(face);
-                phi_rho_i.gather_evaluate(src, false, true);
+                phi_rho_i.gather_evaluate(src,
+                                          dealii::EvaluationFlags::gradients);
                 for (unsigned int q = 0; q < n_points_face; ++q)
                   this->values_faces_int[face * n_points_face + q] =
                     phi_rho_i.get_gradient(q);

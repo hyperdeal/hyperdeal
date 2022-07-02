@@ -115,7 +115,7 @@ namespace hyperdeal
           {
             dealii::Tensor<1, dim_x, VectorizedArrayType> local_sum;
             phi_rho.reinit(cell);
-            phi_rho.gather_evaluate(src, false, true);
+            phi_rho.gather_evaluate(src, dealii::EvaluationFlags::gradients);
             for (unsigned int q = 0; q < phi_rho.n_q_points; ++q)
               for (unsigned int d = 0; d < dim_x; ++d)
                 local_sum[d] += phi_rho.get_gradient(q)[d] *
