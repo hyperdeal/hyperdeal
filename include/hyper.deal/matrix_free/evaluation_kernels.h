@@ -4,6 +4,7 @@
 #include <hyper.deal/base/config.h>
 
 #include <deal.II/matrix_free/evaluation_flags.h>
+#include <deal.II/matrix_free/shape_info.h>
 
 namespace hyperdeal
 {
