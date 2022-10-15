@@ -45,9 +45,9 @@ For getting started, check out the [following site](../../wiki/Getting-started).
 
 The principal developers are (in alphabetical order):
 
-- [Katharina Kormann](https://katalog.uu.se/profile/?id=N7-598) ([@kkormann](https://github.com/kkormann)), Uppsala University, SW
-- [Martin Kronbichler](https://www.it.uu.se/katalog/markr292) ([@kronbichler](https://github.com/kronbichler)), Uppsala University, SW
-- [Peter Munch](https://www.lnm.mw.tum.de/staff/peter-muench/) ([@peterrum](https://github.com/peterrum)), Technical University of Munich and Helmholtz-Zentrum Hereon, DE
+- [Katharina Kormann](https://www.ruhr-uni-bochum.de/ffm/Lehrstuehle/Kormann/) ([@kkormann](https://github.com/kkormann)), Ruhr University Bochum, DE
+- [Martin Kronbichler](https://www.uni-augsburg.de/de/fakultaet/mntf/math/prof/hpc/team/kronbichler/) ([@kronbichler](https://github.com/kronbichler)), University of Augsburg, DE
+- [Peter Munch](https://www.uni-augsburg.de/en/fakultaet/mntf/math/prof/hpc/team/munch/) ([@peterrum](https://github.com/peterrum)), University of Augsburg, DE
 
 ## Philosophy
 
