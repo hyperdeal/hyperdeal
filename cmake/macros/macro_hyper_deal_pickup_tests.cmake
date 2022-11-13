@@ -19,11 +19,11 @@ MACRO(get_mpi_count _filename)
     FILE(READ ${_filename} file_content)
 
     # get partitions in x-space
-    STRING(REGEX MATCH "\"PartitionX\": \"([1-3])\"," _ ${file_content})
+    STRING(REGEX MATCH "\"PartitionX\": \"([1-9])\"," _ ${file_content})
     set(_mpi_count_x ${CMAKE_MATCH_1})
 
     # get partitions in v-space
-    STRING(REGEX MATCH "\"PartitionV\": \"([1-3])\"," _ ${file_content})
+    STRING(REGEX MATCH "\"PartitionV\": \"([1-9])\"," _ ${file_content})
     set(_mpi_count_v ${CMAKE_MATCH_1})
 
     # compute overall partitions

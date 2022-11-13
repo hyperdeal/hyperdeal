@@ -1,18 +1,18 @@
 {
     "General": {
-        "DimX": "2",
-        "DimV": "2",
+        "DimX": "1",
+        "DimV": "1",
         "DegreeX": "3",
         "DegreeV": "3",
-        "PartitionX": "2",
-        "PartitionV": "2",
+        "PartitionX": "8",
+        "PartitionV": "5",
         "UseVirtualTopology" : "true",
         "Verbose"            : "true",
         "Case": "hyperrectangle"
     },
     "Case": {
-        "NRefinementsX": "2",
-        "NRefinementsV": "2",
+        "NRefinementsX": "5",
+        "NRefinementsV": "5",
         "PeriodicX": "true",
         "PeriodicV": "true",
         "NSubdivisionsX"     : {"X" : 1, "Y" : 1, "Z" : 1},
@@ -29,12 +29,13 @@
     },
     "TemporalDiscretization": {
         "StartTime"          : "0.0",
-        "FinalTime"          : "0.5",
+        "FinalTime"          : "50.0",
         "TimeStep"           : "0.1",
         "MaxTimeStepNumber"  : "100000000",
         "CFLNumber"          : "0.05",
-        "OutputTick"         : "0.001",
-	"DiagnosticsFileName": "time_history_diagnostic.out"
+        "OutputTick"         : "0.1",
+        "DiagnosticsVTK"     : true,
+	    "DiagnosticsFileName": "time_history_diagnostic.out"
     },
     "Matrixfree" : {
         "DoBuffering"        : "false",

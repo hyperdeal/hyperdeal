@@ -38,21 +38,23 @@ namespace hyperdeal
           for (unsigned int d = 0; d < dim_x; ++d)
             advection[d] = 1.0;
           for (unsigned int d = 0; d < dim_v; ++d)
-            advection[d + dim_v] = 6.0;
+            advection[d + dim_v] = 5.0;
         }
 
         virtual double
         value(const dealii::Point<DIM> &p,
               const unsigned int = 1) const override
         {
-          const dealii::Tensor<1, DIM> position = p;
-          double                       result =
+          dealii::Tensor<1, DIM> position = p;
+          position[1] -= 1.0;
+          double result =
             1.0; // std::sin(wave_number * position[0] * numbers::PI);
 
           for (unsigned int d = 0; d < 1; ++d)
             result = result + 0.01 * std::cos(wave_number * position[d]);
           for (unsigned int d = dim_x; d < dim_x + dim_v; ++d)
-            result = result * std::exp(-0.5 * pow(position[d], 2)) /
+            result = result * pow(position[d], 2) *
+                     std::exp(-0.5 * pow(position[d], 2)) /
                      std::sqrt(2.0 * dealii::numbers::PI);
 
           return result;
@@ -156,10 +158,10 @@ namespace hyperdeal
             p2_x(d) = 4.0 * dealii::numbers::PI;
           dealii::Point<dim_v> p1_v;
           for (unsigned int d = 0; d < dim_v; ++d)
-            p1_v(d) = -6.0;
+            p1_v(d) = -5.0;
           dealii::Point<dim_v> p2_v;
           for (unsigned int d = 0; d < dim_v; ++d)
-            p2_v(d) = 6.0;
+            p2_v(d) = 5.0;
 
           // clang-format off
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 

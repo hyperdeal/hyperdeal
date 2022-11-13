@@ -35,6 +35,7 @@
 #include <hyper.deal/base/timers.h>
 #include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
+#include <hyper.deal/numerics/data_out.h>
 #include <hyper.deal/numerics/vector_tools.h>
 #include <hyper.deal/operators/advection/advection_operation.h>
 #include <hyper.deal/operators/advection/cfl.h>
@@ -717,7 +718,9 @@ namespace hyperdeal
                 flags.write_higher_order_cells = true;
 
                 dealii::DataOut<dim_x> data_out;
-                data_out.set_flags(flags);
+
+                if (dim_x > 1)
+                  data_out.set_flags(flags);
 
                 data_out.attach_dof_handler(*dof_handler_x);
                 data_out.add_data_vector(particle_density_temp,
@@ -730,6 +733,12 @@ namespace hyperdeal
                 const std::string filename =
                   "solution_" + std::to_string(time_step_counter) + ".vtu";
                 data_out.write_vtu_in_parallel(filename, comm_row);
+              }
+
+            if (true)
+              {
+                DataOut::write_vtu_in_parallel<degree, n_points>(
+                  matrix_free, vct_solution, 0, 0, 2, 2, time_step_counter);
               }
           });
 
