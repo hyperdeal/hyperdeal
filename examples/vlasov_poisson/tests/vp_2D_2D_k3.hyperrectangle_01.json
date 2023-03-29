@@ -16,7 +16,8 @@
         "PeriodicX": "true",
         "PeriodicV": "true",
         "NSubdivisionsX"     : {"X" : 1, "Y" : 1, "Z" : 1},
-        "NSubdivisionsV"     : {"X" : 1, "Y" : 1, "Z" : 1}
+        "NSubdivisionsV"     : {"X" : 1, "Y" : 1, "Z" : 1},
+        "LandauDamping" : "false"
     },
     "Triangulation" : {
         "Type"               : "fullydistributed",
@@ -29,7 +30,7 @@
     },
     "TemporalDiscretization": {
         "StartTime"          : "0.0",
-        "FinalTime"          : "50.0",
+        "FinalTime"          : "400.0",
         "TimeStep"           : "0.1",
         "MaxTimeStepNumber"  : "100000000",
         "CFLNumber"          : "0.05",
