@@ -118,14 +118,14 @@ namespace internal
         }
 
         unsigned int
-        n_import_sm_procs() const
+        n_import_sm_procs() const override
         {
           AssertThrow(false, ExcNotImplemented());
           return 0; // TODO
         }
 
         types::global_dof_index
-        size() const
+        size() const override
         {
           AssertThrow(false, ExcNotImplemented());
           return 0; // TODO

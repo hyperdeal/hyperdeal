@@ -101,7 +101,7 @@ namespace hyperdeal
      */
     void
     reinit(typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::ID
-             cell_index)
+             cell_index) override
     {
       PARENT::reinit(cell_index);
       phi_x.reinit(this->macro_cell_x);
