@@ -132,7 +132,7 @@ namespace hyperdeal
      */
     void
     reinit(typename MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::ID
-             face_index)
+             face_index) override
     {
       PARENT::reinit(face_index);
       this->type   = face_index.type;

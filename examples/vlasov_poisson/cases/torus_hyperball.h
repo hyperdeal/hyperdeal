@@ -48,7 +48,7 @@ namespace hyperdeal
 
         virtual double
         value(const dealii::Point<dim_x + dim_v> &p,
-              const unsigned int = 1) const
+              const unsigned int = 1) const override
         {
           // project p on x-z plane -> direction vector
           const dealii::Point<dim_x> pp(p[0], 0.0, p[2]);
@@ -85,7 +85,7 @@ namespace hyperdeal
       {
       public:
         void
-        add_parameters(dealii::ParameterHandler &prm)
+        add_parameters(dealii::ParameterHandler &prm) override
         {
           prm.enter_subsection("Case");
 
@@ -103,6 +103,7 @@ namespace hyperdeal
         create_grid(
           std::shared_ptr<dealii::parallel::TriangulationBase<dim_x>> &tria_x,
           std::shared_ptr<dealii::parallel::TriangulationBase<dim_v>> &tria_v)
+          override
         {
           const auto fu_x = [&](auto &tria) {
             if constexpr (dim_x == 3)
@@ -146,7 +147,7 @@ namespace hyperdeal
         set_boundary_conditions(
           std::shared_ptr<
             hyperdeal::advection::BoundaryDescriptor<dim_x + dim_v, Number>>
-            boundary_descriptor)
+            boundary_descriptor) override
         {
           boundary_descriptor->homogeneous_dirichlet_bc.insert(0);
         }
@@ -154,13 +155,13 @@ namespace hyperdeal
         void
         set_analytical_solution(
           std::shared_ptr<dealii::Function<dim_x + dim_v, Number>>
-            &analytical_solution)
+            &analytical_solution) override
         {
           analytical_solution.reset(new ExactSolution<dim_x, dim_v, Number>());
         }
 
         dealii::Tensor<1, dim_x + dim_v>
-        get_transport_direction()
+        get_transport_direction() override
         {
           return ExactSolution<dim_x, dim_v, Number>()
             .get_transport_direction();

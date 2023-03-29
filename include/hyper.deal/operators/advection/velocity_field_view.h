@@ -80,12 +80,12 @@ namespace hyperdeal
         , transport_direction_v(extract<dim_v>(transport_direction, dim_x))
       {}
 
-      void reinit(TensorID /*id*/)
+      void reinit(TensorID /*id*/) override
       {
         // nothing to do
       }
 
-      void reinit_face(TensorID /*id*/)
+      void reinit_face(TensorID /*id*/) override
       {
         // nothing to do
       }
@@ -93,7 +93,7 @@ namespace hyperdeal
 
 
       void
-      reinit_face(TensorID /*id*/, unsigned int /*face*/)
+      reinit_face(TensorID /*id*/, unsigned int /*face*/) override
       {
         // nothing to do
       }
@@ -104,7 +104,7 @@ namespace hyperdeal
         dealii::Tensor<1, dim_x, VectorizedArrayType>
         evaluate_x(unsigned int /*q*/,
                    unsigned int /*qx*/,
-                   unsigned int /*qv*/) const
+                   unsigned int /*qv*/) const override
       {
         return transport_direction_x;
       }
@@ -115,7 +115,7 @@ namespace hyperdeal
         dealii::Tensor<1, dim_v, VectorizedArrayType>
         evaluate_v(unsigned int /*q*/,
                    unsigned int /*qx*/,
-                   unsigned int /*qv*/) const
+                   unsigned int /*qv*/) const override
       {
         return transport_direction_v;
       }
@@ -126,7 +126,7 @@ namespace hyperdeal
         dealii::Tensor<1, dim_x, VectorizedArrayType>
         evaluate_face_x(unsigned int /*q*/,
                         unsigned int /*qx*/,
-                        unsigned int /*qv*/) const
+                        unsigned int /*qv*/) const override
       {
         return transport_direction_x;
       }
@@ -137,7 +137,7 @@ namespace hyperdeal
         dealii::Tensor<1, dim_v, VectorizedArrayType>
         evaluate_face_v(unsigned int /*q*/,
                         unsigned int /*qx*/,
-                        unsigned int /*qv*/) const
+                        unsigned int /*qv*/) const override
       {
         return transport_direction_v;
       }

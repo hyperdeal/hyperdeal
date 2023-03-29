@@ -42,7 +42,8 @@ namespace hyperdeal
         }
 
         virtual double
-        value(const dealii::Point<DIM> &p, const unsigned int = 1) const
+        value(const dealii::Point<DIM> &p,
+              const unsigned int = 1) const override
         {
           const dealii::Tensor<1, DIM> position = p;
           double                       result =
