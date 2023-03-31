@@ -145,7 +145,7 @@ namespace hyperdeal
         {}
 
         dealii::Point<dim>
-        push_forward(const dealii::Point<dim> &chart_point) const
+        push_forward(const dealii::Point<dim> &chart_point) const override
         {
           double sinval = deformation;
           for (unsigned int d = 0; d < dim; ++d)
@@ -158,7 +158,7 @@ namespace hyperdeal
         }
 
         dealii::Point<dim>
-        pull_back(const dealii::Point<dim> &space_point) const
+        pull_back(const dealii::Point<dim> &space_point) const override
         {
           dealii::Point<dim> x = space_point;
           dealii::Point<dim> one;
