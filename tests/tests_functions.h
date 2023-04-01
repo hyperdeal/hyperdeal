@@ -27,7 +27,7 @@ public:
   {}
 
   virtual Number
-  value(const dealii::Point<DIM> &p, const unsigned int = 1) const
+  value(const dealii::Point<DIM> &p, const unsigned int = 1) const override
   {
     Number result = std::sin(p[0] * dealii::numbers::PI);
 
@@ -47,7 +47,7 @@ public:
   {}
 
   virtual Number
-  value(const dealii::Point<DIM> &p, const unsigned int = 1) const
+  value(const dealii::Point<DIM> &p, const unsigned int = 1) const override
   {
     return std::max(0.0, (0.5 - p.norm()));
   }
