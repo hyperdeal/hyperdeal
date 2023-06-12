@@ -28,6 +28,8 @@
 
 #include <deal.II/grid/grid_generator.h>
 
+#include <deal.II/lac/la_parallel_block_vector.h>
+
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/lac/sm_vector.h>
 
@@ -37,7 +39,7 @@
 
 const auto comm = MPI_COMM_WORLD;
 
-template <typename VectorType>
+template <typename VectorType, bool is_block_vector>
 std::tuple<VectorType, VectorType, VectorType>
 construct_vectors()
 {
@@ -50,20 +52,46 @@ construct_vectors()
   parallel::distributed::Triangulation<dim> tria(comm);
   GridGenerator::subdivided_hyper_cube(tria, subdivisions, 0, 1);
   DoFHandler<dim> dof_handler(tria);
-  const FE_Q<dim> fe(degree);
-  dof_handler.distribute_dofs(fe);
-  const auto locally_owned_indices = dof_handler.locally_owned_dofs();
-  const auto locally_relevant_indices =
-    DoFTools::extract_locally_relevant_dofs(dof_handler);
 
-  VectorType vct_Ki(locally_owned_indices, comm);
-  VectorType vct_Ti(locally_owned_indices, locally_relevant_indices, comm);
-  VectorType vct_y(locally_owned_indices, locally_relevant_indices, comm);
+  if constexpr (is_block_vector)
+    {
+      constexpr auto      n_blocks = 2;
+      const FESystem<dim> fe(FE_Q<dim>(degree), 1, FE_Q<dim>(degree), 1);
 
-  return std::make_tuple(vct_Ki, vct_Ti, vct_y);
+      dof_handler.distribute_dofs(fe);
+      DoFRenumbering::block_wise(dof_handler);
+      const auto dofs_per_block =
+        DoFTools::count_dofs_per_fe_block(dof_handler);
+      const auto locally_owned_indices =
+        dof_handler.locally_owned_dofs().split_by_block(dofs_per_block);
+      const auto locally_relevant_indices =
+        DoFTools::extract_locally_relevant_dofs(dof_handler)
+          .split_by_block(dofs_per_block);
+
+      VectorType vct_Ki(locally_owned_indices, comm);
+      VectorType vct_Ti(locally_owned_indices, locally_relevant_indices, comm);
+      VectorType vct_y(locally_owned_indices, locally_relevant_indices, comm);
+
+      return std::make_tuple(vct_Ki, vct_Ti, vct_y);
+    }
+  else
+    {
+      const FE_Q<dim> fe(degree);
+
+      dof_handler.distribute_dofs(fe);
+      const auto locally_owned_indices = dof_handler.locally_owned_dofs();
+      const auto locally_relevant_indices =
+        DoFTools::extract_locally_relevant_dofs(dof_handler);
+
+      VectorType vct_Ki(locally_owned_indices, comm);
+      VectorType vct_Ti(locally_owned_indices, locally_relevant_indices, comm);
+      VectorType vct_y(locally_owned_indices, locally_relevant_indices, comm);
+
+      return std::make_tuple(vct_Ki, vct_Ti, vct_y);
+    }
 }
 
-template <typename Number, typename VectorType>
+template <typename Number, typename VectorType, bool is_block_vector = false>
 void
 test()
 {
@@ -74,7 +102,8 @@ test()
   const Number dt     = 0.1;
   const Number y0     = 1.0;
 
-  auto [vct_Ki, vct_Ti, vct_y] = construct_vectors<VectorType>();
+  auto [vct_Ki, vct_Ti, vct_y] =
+    construct_vectors<VectorType, is_block_vector>();
   Integrator integrator(vct_Ki, vct_Ti, "rk45", /*only_Ti_is_ghosted=*/true);
 
   // Initial condition
@@ -108,6 +137,11 @@ main(int argc, char *argv[])
   MPILogInitAll                    all;
 
   test<double, dealii::LinearAlgebra::SharedMPI::Vector<double>>();
+  deallog << std::endl;
+  MPI_Barrier(comm);
+  test<double,
+       dealii::LinearAlgebra::distributed::BlockVector<double>,
+       /*is_block_vector=*/true>();
 
   return 0;
 }

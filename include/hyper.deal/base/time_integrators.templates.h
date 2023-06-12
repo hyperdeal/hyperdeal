@@ -13,6 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
+#include <deal.II/base/exceptions.h>
+
 #include <hyper.deal/base/time_integrators.h>
 
 namespace hyperdeal
@@ -95,8 +97,7 @@ namespace hyperdeal
     const std::function<void(const VectorType &, VectorType &, const Number)>
       &op)
   {
-    // cache local size
-    const unsigned int size = solution.locally_owned_size();
+    const auto &local_elements = solution.locally_owned_elements();
 
     // definition of a stage
     auto perform_stage = [&](const Number      current_time,
@@ -113,21 +114,21 @@ namespace hyperdeal
       const Number bi = factor_solution;
       if (ai == Number())
         {
-          for (unsigned int i = 0; i < size; ++i)
+          for (const auto i : local_elements)
             {
-              const Number K_i          = vec_Ki.local_element(i);
-              const Number sol_i        = solution.local_element(i);
-              solution.local_element(i) = sol_i + bi * K_i;
+              const Number K_i   = vec_Ki(i);
+              const Number sol_i = solution(i);
+              solution(i)        = sol_i + bi * K_i;
             }
         }
       else
         {
-          for (unsigned int i = 0; i < size; ++i)
+          for (const auto i : local_elements)
             {
-              const Number K_i          = vec_Ki.local_element(i);
-              const Number sol_i        = solution.local_element(i);
-              solution.local_element(i) = sol_i + bi * K_i;
-              next_Ti.local_element(i)  = sol_i + ai * K_i;
+              const Number K_i   = vec_Ki(i);
+              const Number sol_i = solution(i);
+              solution(i)        = sol_i + bi * K_i;
+              next_Ti(i)         = sol_i + ai * K_i;
             }
         }
     };
@@ -137,8 +138,8 @@ namespace hyperdeal
     if (only_Ti_is_ghosted)
       {
         // swap solution and Ti
-        for (unsigned int i = 0; i < size; i++)
-          vec_Ti.local_element(i) = solution.local_element(i);
+        for (const auto i : local_elements)
+          vec_Ti(i) = solution(i);
 
         perform_stage(current_time,
                       bi[0] * time_step,

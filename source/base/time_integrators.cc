@@ -13,6 +13,8 @@
 //
 // ---------------------------------------------------------------------
 
+#include <deal.II/lac/la_parallel_block_vector.h>
+
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/base/time_integrators.templates.h>
 #include <hyper.deal/lac/sm_vector.h>
@@ -22,5 +24,8 @@ namespace hyperdeal
   template class LowStorageRungeKuttaIntegrator<
     double,
     dealii::LinearAlgebra::SharedMPI::Vector<double>>;
+  template class LowStorageRungeKuttaIntegrator<
+    double,
+    dealii::LinearAlgebra::distributed::BlockVector<double>>;
 
 } // namespace hyperdeal
