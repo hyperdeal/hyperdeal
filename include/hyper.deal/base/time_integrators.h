@@ -18,6 +18,8 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/base/exceptions.h>
+
 #include <functional>
 #include <string>
 #include <vector>
