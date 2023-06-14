@@ -24,6 +24,8 @@
 
 #include <deal.II/grid/grid_out.h>
 
+#include <deal.II/lac/la_parallel_vector.h>
+
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/tools.h>
 
@@ -33,7 +35,6 @@
 #include <hyper.deal/base/time_integrators.h>
 #include <hyper.deal/base/time_loop.h>
 #include <hyper.deal/base/timers.h>
-#include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/matrix_free.h>
 #include <hyper.deal/numerics/vector_tools.h>
 #include <hyper.deal/operators/advection/advection_operation.h>
@@ -77,7 +78,7 @@ namespace hyperdeal
       using PoissonMatrixType =
         LaplaceOperator<dim_x, degree, n_points, Number, VectorizedArrayType>;
 
-      using VectorType  = dealii::LinearAlgebra::SharedMPI::Vector<Number>;
+      using VectorType  = dealii::LinearAlgebra::distributed::Vector<Number>;
       using VectorType2 = dealii::LinearAlgebra::distributed::Vector<Number>;
 
 

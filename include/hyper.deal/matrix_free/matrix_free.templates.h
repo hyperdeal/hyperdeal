@@ -1367,10 +1367,10 @@ namespace hyperdeal
   template <int dim_x, int dim_v, typename Number, typename VectorizedArrayType>
   void
   MatrixFree<dim_x, dim_v, Number, VectorizedArrayType>::initialize_dof_vector(
-    dealii::LinearAlgebra::SharedMPI::Vector<Number> &vec,
-    const unsigned int                                dof_handler_index,
-    const bool                                        do_ghosts,
-    const bool                                        zero_out_values) const
+    dealii::LinearAlgebra::distributed::Vector<Number> &vec,
+    const unsigned int                                  dof_handler_index,
+    const bool                                          do_ghosts,
+    const bool                                          zero_out_values) const
   {
     AssertThrow(dof_handler_index == 0,
                 dealii::ExcMessage(

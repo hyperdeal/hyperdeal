@@ -113,8 +113,9 @@ namespace hyperdeal
      * Read values from @p src vector and write it into the buffer @p data.
      */
     void
-    read_dof_values(const dealii::LinearAlgebra::SharedMPI::Vector<Number> &src,
-                    VectorizedArrayType *data) const
+    read_dof_values(
+      const dealii::LinearAlgebra::distributed::Vector<Number> &src,
+      VectorizedArrayType *                                     data) const
     {
       internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
         this->matrix_free.get_dof_info(),
@@ -134,7 +135,8 @@ namespace hyperdeal
      * Read values from @p src vector and write them into the internal buffer.
      */
     void
-    read_dof_values(const dealii::LinearAlgebra::SharedMPI::Vector<Number> &src)
+    read_dof_values(
+      const dealii::LinearAlgebra::distributed::Vector<Number> &src)
     {
       read_dof_values(src, &this->data[0]);
     }
@@ -145,7 +147,8 @@ namespace hyperdeal
      * Sum values from the internal buffer into the vector @p dst.
      */
     void
-    set_dof_values(dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
+    set_dof_values(
+      dealii::LinearAlgebra::distributed::Vector<Number> &dst) const
     {
       internal::MatrixFreeFunctions::ReadWriteOperation<Number>(
         this->matrix_free.get_dof_info(),

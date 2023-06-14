@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------
 
 
-// Update ghost values with the help of LinearAlgebra::SharedMPI::Partitioner.
+// Update ghost values with the help of LinearAlgebra::distributed::Partitioner.
 
 #include <deal.II/base/mpi.h>
 

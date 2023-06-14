@@ -18,11 +18,12 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/lac/la_parallel_vector.h>
+
 #include <deal.II/matrix_free/matrix_free.h>
 
 #include <hyper.deal/base/memory_consumption.h>
 #include <hyper.deal/base/timers.h>
-#include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/dof_info.h>
 #include <hyper.deal/matrix_free/face_info.h>
 #include <hyper.deal/matrix_free/id.h>
@@ -240,10 +241,11 @@ namespace hyperdeal
      *   partitioner is set up.
      */
     void
-    initialize_dof_vector(dealii::LinearAlgebra::SharedMPI::Vector<Number> &vec,
-                          const unsigned int dof_handler_index = 0,
-                          const bool         do_ghosts         = true,
-                          const bool         zero_out_values   = true) const;
+    initialize_dof_vector(
+      dealii::LinearAlgebra::distributed::Vector<Number> &vec,
+      const unsigned int                                  dof_handler_index = 0,
+      const bool                                          do_ghosts = true,
+      const bool zero_out_values = true) const;
 
     /**
      * Return boundary id of face.

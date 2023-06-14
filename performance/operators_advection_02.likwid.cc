@@ -1375,7 +1375,7 @@ test(const MPI_Comm &                    comm_global,
 
   const auto &matrix_free = matrixfree_wrapper.get_matrix_free();
 
-  using VectorType = dealii::LinearAlgebra::SharedMPI::Vector<Number>;
+  using VectorType = dealii::LinearAlgebra::distributed::Vector<Number>;
 
   using VelocityFieldView =
     hyperdeal::advection::ConstantVelocityFieldView<dim_x + dim_v,

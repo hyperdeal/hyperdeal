@@ -29,9 +29,9 @@
 #include <deal.II/grid/grid_generator.h>
 
 #include <deal.II/lac/la_parallel_block_vector.h>
+#include <deal.II/lac/la_parallel_vector.h>
 
 #include <hyper.deal/base/time_integrators.h>
-#include <hyper.deal/lac/sm_vector.h>
 
 #include <tuple>
 
@@ -136,7 +136,7 @@ main(int argc, char *argv[])
   Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
   MPILogInitAll                    all;
 
-  test<double, dealii::LinearAlgebra::SharedMPI::Vector<double>>();
+  test<double, dealii::LinearAlgebra::distributed::Vector<double>>();
   deallog << std::endl;
   MPI_Barrier(comm);
   test<double,

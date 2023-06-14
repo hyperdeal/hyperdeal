@@ -227,7 +227,8 @@ namespace hyperdeal
      * Read data from a global vector into the internal buffer.
      */
     void
-    read_dof_values(const dealii::LinearAlgebra::SharedMPI::Vector<Number> &src)
+    read_dof_values(
+      const dealii::LinearAlgebra::distributed::Vector<Number> &src)
     {
       read_dof_values(src, &this->data[0]);
     }
@@ -238,8 +239,9 @@ namespace hyperdeal
      * Read data from a global vector into a given buffer.
      */
     void
-    read_dof_values(const dealii::LinearAlgebra::SharedMPI::Vector<Number> &src,
-                    VectorizedArrayType *data) const
+    read_dof_values(
+      const dealii::LinearAlgebra::distributed::Vector<Number> &src,
+      VectorizedArrayType *                                     data) const
     {
       if (this->matrix_free.are_ghost_faces_supported())
         {
@@ -322,7 +324,7 @@ namespace hyperdeal
      */
     void
     distribute_local_to_global(
-      dealii::LinearAlgebra::SharedMPI::Vector<Number> &dst) const
+      dealii::LinearAlgebra::distributed::Vector<Number> &dst) const
     {
       Assert(is_ecl == false, dealii::StandardExceptions::ExcNotImplemented());
 
