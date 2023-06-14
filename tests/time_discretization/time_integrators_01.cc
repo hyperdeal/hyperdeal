@@ -16,8 +16,9 @@
 
 // Test number of stages of time integrators.
 
+#include <deal.II/lac/la_parallel_vector.h>
+
 #include <hyper.deal/base/time_integrators.h>
-#include <hyper.deal/lac/sm_vector.h>
 
 #include "../tests.h"
 
@@ -27,7 +28,7 @@ main()
   initlog();
 
   using Number     = double;
-  using VectorType = dealii::LinearAlgebra::SharedMPI::Vector<Number>;
+  using VectorType = dealii::LinearAlgebra::distributed::Vector<Number>;
   using Integrator =
     hyperdeal::LowStorageRungeKuttaIntegrator<Number, VectorType>;
 

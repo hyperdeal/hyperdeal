@@ -13,8 +13,9 @@
 //
 // ---------------------------------------------------------------------
 
+#include <deal.II/lac/la_parallel_vector.h>
+
 #include <hyper.deal/base/time_loop.h>
-#include <hyper.deal/lac/sm_vector.h>
 
 namespace hyperdeal
 {
@@ -66,6 +67,6 @@ namespace hyperdeal
   }
 
   template class TimeLoop<double,
-                          dealii::LinearAlgebra::SharedMPI::Vector<double>>;
+                          dealii::LinearAlgebra::distributed::Vector<double>>;
 
 } // namespace hyperdeal

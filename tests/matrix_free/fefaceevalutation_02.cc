@@ -20,10 +20,11 @@
 #include <deal.II/base/function.h>
 #include <deal.II/base/mpi.h>
 
+#include <deal.II/lac/la_parallel_vector.h>
+
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/base/utilities.h>
 #include <hyper.deal/grid/grid_generator.h>
-#include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/matrix_free/evaluation_kernels.h>
 #include <hyper.deal/matrix_free/fe_evaluation_face.h>
 #include <hyper.deal/numerics/vector_tools.h>
@@ -61,7 +62,7 @@ template <
   int n_points,
   typename Number              = double,
   typename VectorizedArrayType = dealii::VectorizedArray<double, 1>,
-  typename VectorType = dealii::LinearAlgebra::SharedMPI::Vector<double>>
+  typename VectorType = dealii::LinearAlgebra::distributed::Vector<double>>
 void
 test(const MPI_Comm &comm)
 {

@@ -14,17 +14,18 @@
 // ---------------------------------------------------------------------
 
 
-// Update ghost values with the help of LinearAlgebra::SharedMPI::Partitioner.
+// Update ghost values with the help of LinearAlgebra::distributed::Partitioner.
 
 #include <deal.II/base/function.h>
 #include <deal.II/base/mpi.h>
+
+#include <deal.II/lac/la_parallel_vector.h>
 
 #include <deal.II/numerics/data_out.h>
 
 #include <hyper.deal/base/mpi.h>
 #include <hyper.deal/base/utilities.h>
 #include <hyper.deal/grid/grid_generator.h>
-#include <hyper.deal/lac/sm_vector.h>
 #include <hyper.deal/numerics/vector_tools.h>
 
 #include "../tests_functions.h"
@@ -163,5 +164,5 @@ main(int argc, char *argv[])
          4,
          double,
          dealii::VectorizedArray<double>,
-         dealii::LinearAlgebra::SharedMPI::Vector<double>>(comm, refs);
+         dealii::LinearAlgebra::distributed::Vector<double>>(comm, refs);
 }
