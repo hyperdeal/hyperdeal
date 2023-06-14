@@ -405,7 +405,7 @@ namespace hyperdeal
       all.emplace_back(label, this->memory_consumption());
 
       for (const auto &v : vec)
-        for (const auto i : v.collect())
+        for (const auto &i : v.collect())
           all.emplace_back(label + ":" + i.first, i.second);
 
       return all;

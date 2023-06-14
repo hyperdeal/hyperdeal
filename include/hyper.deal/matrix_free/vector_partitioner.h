@@ -1251,7 +1251,7 @@ namespace internal
           recv_size.clear();
           recv_ranks.clear();
 
-          for (const auto i : receive_info)
+          for (const auto &i : receive_info)
             {
               recv_ranks.push_back(i.first);
               recv_size.push_back(i.second.first);
