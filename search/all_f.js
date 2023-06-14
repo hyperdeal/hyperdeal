@@ -2,7 +2,7 @@ var searchData=
 [
   ['scopedlikwidtimerwrapper_0',['ScopedLikwidTimerWrapper',['../classhyperdeal_1_1ScopedLikwidTimerWrapper.html',1,'hyperdeal']]],
   ['scopedtimerwrapper_1',['ScopedTimerWrapper',['../classhyperdeal_1_1ScopedTimerWrapper.html',1,'hyperdeal']]],
-  ['set_5fdof_5fvalues_2',['set_dof_values',['../classhyperdeal_1_1FEEvaluation.html#a2646a0cc1049df98c376dc21b5c6adb2',1,'hyperdeal::FEEvaluation']]],
+  ['set_5fdof_5fvalues_2',['set_dof_values',['../classhyperdeal_1_1FEEvaluation.html#ae6eb9505db5e13454c6213d5231dfb13',1,'hyperdeal::FEEvaluation']]],
   ['set_5ftime_3',['set_time',['../structhyperdeal_1_1advection_1_1BoundaryDescriptor.html#a57f9f19a4218591c0392a346953562d7',1,'hyperdeal::advection::BoundaryDescriptor']]],
   ['shape_5fgradients_4',['shape_gradients',['../classhyperdeal_1_1FEEvaluationBase.html#a44010233b335f7316db786308b9b1bfb',1,'hyperdeal::FEEvaluationBase']]],
   ['shape_5fvalues_5',['shape_values',['../classhyperdeal_1_1FEEvaluationBase.html#ad8e86bfd501e28a4b8695fcf89905ff3',1,'hyperdeal::FEEvaluationBase']]],

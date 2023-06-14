@@ -3,7 +3,7 @@ var searchData=
   ['data_0',['data',['../classhyperdeal_1_1FEEvaluationBase.html#a7ddb7dbc1455eebe6a56515f0c7394ae',1,'hyperdeal::FEEvaluationBase']]],
   ['dataaccessonfaces_1',['DataAccessOnFaces',['../classhyperdeal_1_1MatrixFree.html#a4bef463e7f3c724ec7699fb818723073',1,'hyperdeal::MatrixFree']]],
   ['dirichlet_5fbc_2',['dirichlet_bc',['../structhyperdeal_1_1advection_1_1BoundaryDescriptor.html#a1615b80edb8f1ba58f13c8cb103d44ea',1,'hyperdeal::advection::BoundaryDescriptor']]],
-  ['distribute_5flocal_5fto_5fglobal_3',['distribute_local_to_global',['../classhyperdeal_1_1FEFaceEvaluation.html#a746170baeb4540e66d51781d92dc421c',1,'hyperdeal::FEFaceEvaluation']]],
+  ['distribute_5flocal_5fto_5fglobal_3',['distribute_local_to_global',['../classhyperdeal_1_1FEFaceEvaluation.html#a99b5b79a6bbb322e9f9ffbb33e224889',1,'hyperdeal::FEFaceEvaluation']]],
   ['distribute_5fto_5fbuffer_4',['distribute_to_buffer',['../classhyperdeal_1_1FEFaceEvaluation.html#af7b5c7776b064ff277bf5a399dbdcd5a',1,'hyperdeal::FEFaceEvaluation']]],
   ['do_5fbuffering_5',['do_buffering',['../structhyperdeal_1_1MatrixFree_1_1AdditionalData.html#a83e1cd52214ea6b6f388c3e7c3d9d11d',1,'hyperdeal::MatrixFree::AdditionalData']]],
   ['do_5fghost_5ffaces_6',['do_ghost_faces',['../structhyperdeal_1_1MatrixFree_1_1AdditionalData.html#a4f828616ef3dd6a9ea7f06f1ffd37db4',1,'hyperdeal::MatrixFree::AdditionalData']]],

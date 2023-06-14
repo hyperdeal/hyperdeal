@@ -483,7 +483,7 @@ $(function() {
 <div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>      all.emplace_back(label, this-&gt;memory_consumption());</div>
 <div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span> </div>
 <div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;v : vec)</div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> i : v.collect())</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;i : v.collect())</div>
 <div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>          all.emplace_back(label + <span class="stringliteral">&quot;:&quot;</span> + i.first, i.second);</div>
 <div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span> </div>
 <div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>      <span class="keywordflow">return</span> all;</div>

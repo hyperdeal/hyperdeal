@@ -1243,7 +1243,7 @@ $(function() {
 <div class="line"><a id="l01251" name="l01251"></a><span class="lineno"> 1251</span>          recv_size.clear();</div>
 <div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>          recv_ranks.clear();</div>
 <div class="line"><a id="l01253" name="l01253"></a><span class="lineno"> 1253</span> </div>
-<div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span>          <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> i : receive_info)</div>
+<div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span>          <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;i : receive_info)</div>
 <div class="line"><a id="l01255" name="l01255"></a><span class="lineno"> 1255</span>            {</div>
 <div class="line"><a id="l01256" name="l01256"></a><span class="lineno"> 1256</span>              recv_ranks.push_back(i.first);</div>
 <div class="line"><a id="l01257" name="l01257"></a><span class="lineno"> 1257</span>              recv_size.push_back(i.second.first);</div>

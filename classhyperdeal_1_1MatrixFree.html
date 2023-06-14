@@ -133,8 +133,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a40b9f52f041f09201109f80205baf4b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fb7ceefa4f5e64b5ec7c40b2e913749"><td class="memItemLeft" align="right" valign="top">const MPI_Comm &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#a0fb7ceefa4f5e64b5ec7c40b2e913749">get_communicator</a> () const</td></tr>
 <tr class="separator:a0fb7ceefa4f5e64b5ec7c40b2e913749"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1f8334310f290d9081d0c01cdcbdbb7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#ac1f8334310f290d9081d0c01cdcbdbb7">initialize_dof_vector</a> (dealii::LinearAlgebra::SharedMPI::Vector&lt; Number &gt; &amp;vec, const unsigned int dof_handler_index=0, const bool do_ghosts=true, const bool zero_out_values=true) const</td></tr>
-<tr class="separator:ac1f8334310f290d9081d0c01cdcbdbb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd03bc13c514121cdcb3f90857ca99a8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#abd03bc13c514121cdcb3f90857ca99a8">initialize_dof_vector</a> (dealii::LinearAlgebra::distributed::Vector&lt; Number &gt; &amp;vec, const unsigned int dof_handler_index=0, const bool do_ghosts=true, const bool zero_out_values=true) const</td></tr>
+<tr class="separator:abd03bc13c514121cdcb3f90857ca99a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a6d711083a14d2497e5b9deb8d1d73e"><td class="memItemLeft" align="right" valign="top">dealii::types::boundary_id&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#a6a6d711083a14d2497e5b9deb8d1d73e">get_boundary_id</a> (const <a class="el" href="structhyperdeal_1_1TensorID.html">ID</a> macro_face) const</td></tr>
 <tr class="separator:a6a6d711083a14d2497e5b9deb8d1d73e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b0d7c461d9bfe5e689d4458f9b4bb9f"><td class="memItemLeft" align="right" valign="top">dealii::types::boundary_id&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhyperdeal_1_1MatrixFree.html#a6b0d7c461d9bfe5e689d4458f9b4bb9f">get_faces_by_cells_boundary_id</a> (const <a class="el" href="structhyperdeal_1_1TensorID.html">TensorID</a> &amp;macro_cell, const unsigned int face_number) const</td></tr>
@@ -506,8 +506,8 @@ template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType
 
 </div>
 </div>
-<a id="ac1f8334310f290d9081d0c01cdcbdbb7" name="ac1f8334310f290d9081d0c01cdcbdbb7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1f8334310f290d9081d0c01cdcbdbb7">&#9670;&#160;</a></span>initialize_dof_vector()</h2>
+<a id="abd03bc13c514121cdcb3f90857ca99a8" name="abd03bc13c514121cdcb3f90857ca99a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd03bc13c514121cdcb3f90857ca99a8">&#9670;&#160;</a></span>initialize_dof_vector()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -517,7 +517,7 @@ template&lt;int dim_x, int dim_v, typename Number , typename VectorizedArrayType
         <tr>
           <td class="memname">void <a class="el" href="classhyperdeal_1_1MatrixFree.html">hyperdeal::MatrixFree</a>&lt; dim_x, dim_v, Number, VectorizedArrayType &gt;::initialize_dof_vector </td>
           <td>(</td>
-          <td class="paramtype">dealii::LinearAlgebra::SharedMPI::Vector&lt; Number &gt; &amp;&#160;</td>
+          <td class="paramtype">dealii::LinearAlgebra::distributed::Vector&lt; Number &gt; &amp;&#160;</td>
           <td class="paramname"><em>vec</em>, </td>
         </tr>
         <tr>
