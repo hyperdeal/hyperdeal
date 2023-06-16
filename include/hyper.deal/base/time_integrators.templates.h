@@ -130,7 +130,11 @@ namespace hyperdeal
               solution(i)        = sol_i + bi * K_i;
               next_Ti(i)         = sol_i + ai * K_i;
             }
+          if constexpr (manual_compress)
+            next_Ti.compress(dealii::VectorOperation::insert);
         }
+      if constexpr (manual_compress)
+        solution.compress(dealii::VectorOperation::insert);
     };
 
 
@@ -140,6 +144,8 @@ namespace hyperdeal
         // swap solution and Ti
         for (const auto i : local_elements)
           vec_Ti(i) = solution(i);
+        if constexpr (manual_compress)
+          vec_Ti.compress(dealii::VectorOperation::insert);
 
         perform_stage(current_time,
                       bi[0] * time_step,
