@@ -208,62 +208,68 @@ $(function() {
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>              solution(i)        = sol_i + bi * K_i;</div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>              next_Ti(i)         = sol_i + ai * K_i;</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>            }</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>        }</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    };</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <span class="comment">// perform first stage</span></div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    <span class="keywordflow">if</span> (only_Ti_is_ghosted)</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>      {</div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        <span class="comment">// swap solution and Ti</span></div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> i : local_elements)</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>          vec_Ti(i) = solution(i);</div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>        perform_stage(current_time,</div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>                      bi[0] * time_step,</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>                      ai[0] * time_step,</div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>                      vec_Ti,</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>                      vec_Ki,</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>                      solution,</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>                      vec_Ti);</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>      }</div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>    <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>      {</div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>        perform_stage(current_time,</div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>                      bi[0] * time_step,</div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>                      ai[0] * time_step,</div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>                      solution,</div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>                      vec_Ti,</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>                      solution,</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>                      vec_Ti);</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>      }</div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <span class="comment">// perform rest stages</span></div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    Number sum_previous_bi = 0;</div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> stage = 1; stage &lt; bi.size(); ++stage)</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>      {</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>        <span class="keyword">const</span> Number c_i = sum_previous_bi + ai[stage - 1];</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>        perform_stage(current_time + c_i * time_step,</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>                      bi[stage] * time_step,</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>                      (stage == bi.size() - 1 ? 0 : ai[stage] * time_step),</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>                      vec_Ti,</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>                      vec_Ki,</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>                      solution,</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>                      vec_Ti);</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>        sum_previous_bi += bi[stage - 1];</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>      }</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>  }</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Number, <span class="keyword">typename</span> VectorType&gt;</div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span></div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>  <a class="code hl_class" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">LowStorageRungeKuttaIntegrator&lt;Number, VectorType&gt;::n_stages</a>()<span class="keyword"> const</span></div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span><span class="keyword">  </span>{</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keywordflow">return</span> bi.size();</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  }</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>} <span class="comment">// namespace hyperdeal</span></div>
-<div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">hyperdeal::LowStorageRungeKuttaIntegrator</a></div><div class="ttdef"><b>Definition</b> time_integrators.h:41</div></div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>          <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (manual_compress)</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>            next_Ti.compress(dealii::VectorOperation::insert);</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>        }</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>      <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (manual_compress)</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>        solution.compress(dealii::VectorOperation::insert);</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    };</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span> </div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>    <span class="comment">// perform first stage</span></div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>    <span class="keywordflow">if</span> (only_Ti_is_ghosted)</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>      {</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>        <span class="comment">// swap solution and Ti</span></div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> i : local_elements)</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>          vec_Ti(i) = solution(i);</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>        <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (manual_compress)</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>          vec_Ti.compress(dealii::VectorOperation::insert);</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span> </div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>        perform_stage(current_time,</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>                      bi[0] * time_step,</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>                      ai[0] * time_step,</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>                      vec_Ti,</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>                      vec_Ki,</div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>                      solution,</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>                      vec_Ti);</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>      }</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>      {</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>        perform_stage(current_time,</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>                      bi[0] * time_step,</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>                      ai[0] * time_step,</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>                      solution,</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>                      vec_Ti,</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>                      solution,</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>                      vec_Ti);</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>      }</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span> </div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="comment">// perform rest stages</span></div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    Number sum_previous_bi = 0;</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> stage = 1; stage &lt; bi.size(); ++stage)</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>      {</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>        <span class="keyword">const</span> Number c_i = sum_previous_bi + ai[stage - 1];</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>        perform_stage(current_time + c_i * time_step,</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>                      bi[stage] * time_step,</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>                      (stage == bi.size() - 1 ? 0 : ai[stage] * time_step),</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                      vec_Ti,</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                      vec_Ki,</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>                      solution,</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>                      vec_Ti);</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>        sum_previous_bi += bi[stage - 1];</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>      }</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  }</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Number, <span class="keyword">typename</span> VectorType&gt;</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span></div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>  <a class="code hl_class" href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">LowStorageRungeKuttaIntegrator&lt;Number, VectorType&gt;::n_stages</a>()<span class="keyword"> const</span></div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span><span class="keyword">  </span>{</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordflow">return</span> bi.size();</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>  }</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span> </div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>} <span class="comment">// namespace hyperdeal</span></div>
+<div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html">hyperdeal::LowStorageRungeKuttaIntegrator</a></div><div class="ttdef"><b>Definition</b> time_integrators.h:49</div></div>
 <div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html_aa4638a1eb696b67f59d6879d111cc351"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#aa4638a1eb696b67f59d6879d111cc351">hyperdeal::LowStorageRungeKuttaIntegrator::perform_time_step</a></div><div class="ttdeci">void perform_time_step(VectorType &amp;solution, const Number &amp;current_time, const Number &amp;time_step, const std::function&lt; void(const VectorType &amp;, VectorType &amp;, const Number)&gt; &amp;op)</div><div class="ttdef"><b>Definition</b> time_integrators.templates.h:93</div></div>
 <div class="ttc" id="aclasshyperdeal_1_1LowStorageRungeKuttaIntegrator_html_afd5497392807cf193c8d9c28aa786cd6"><div class="ttname"><a href="classhyperdeal_1_1LowStorageRungeKuttaIntegrator.html#afd5497392807cf193c8d9c28aa786cd6">hyperdeal::LowStorageRungeKuttaIntegrator::LowStorageRungeKuttaIntegrator</a></div><div class="ttdeci">LowStorageRungeKuttaIntegrator(VectorType &amp;vec_Ki, VectorType &amp;vec_Ti, const std::string type, const bool only_Ti_is_ghosted=true)</div><div class="ttdef"><b>Definition</b> time_integrators.templates.h:24</div></div>
 </div><!-- fragment --></div><!-- contents -->
