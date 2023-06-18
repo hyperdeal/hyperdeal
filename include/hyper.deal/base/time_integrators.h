@@ -18,10 +18,18 @@
 
 #include <hyper.deal/base/config.h>
 
+#include <deal.II/base/config.h>
+
 #include <deal.II/base/exceptions.h>
+
+#include <deal.II/lac/petsc_block_vector.h>
+#include <deal.II/lac/petsc_vector.h>
+#include <deal.II/lac/trilinos_parallel_block_vector.h>
+#include <deal.II/lac/trilinos_vector.h>
 
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace hyperdeal
@@ -89,6 +97,21 @@ namespace hyperdeal
      * Coefficients of the Runge-Kutta stages.
      */
     std::vector<Number> ai, bi;
+
+    /**
+     * If manual vector compression is needed.
+     */
+    static constexpr bool manual_compress =
+      false
+#ifdef DEAL_II_WITH_PETSC
+      || std::is_same_v<VectorType, dealii::PETScWrappers::MPI::Vector> ||
+      std::is_same_v<VectorType, dealii::PETScWrappers::MPI::BlockVector>
+#endif
+#ifdef DEAL_II_WITH_TRILINOS
+      || std::is_same_v<VectorType, dealii::TrilinosWrappers::MPI::Vector> ||
+      std::is_same_v<VectorType, dealii::TrilinosWrappers::MPI::BlockVector>
+#endif
+      ;
   };
 
 
