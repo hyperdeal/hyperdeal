@@ -74,7 +74,7 @@ namespace internal
          * Initialize partitioner with a list of locally owned cells and
          * a list of ghost faces (cell and face no).
          */
-        void
+        inline void
         reinit(const std::vector<dealii::types::global_dof_index> local_cells,
                const std::vector<std::pair<dealii::types::global_dof_index,
                                            std::vector<unsigned int>>>
@@ -134,7 +134,7 @@ namespace internal
         /**
          * Start to export to ghost array.
          */
-        void
+        inline void
         export_to_ghosted_array_start(
           const unsigned int                     communication_channel,
           const dealii::ArrayView<const double> &locally_owned_array,
@@ -146,7 +146,7 @@ namespace internal
         /**
          * Finish to export to ghost array.
          */
-        void
+        inline void
         export_to_ghosted_array_finish(
           const dealii::ArrayView<const double> &locally_owned_array,
           const std::vector<dealii::ArrayView<const double>> &shared_arrays,
@@ -156,7 +156,7 @@ namespace internal
         /**
          * Start to import from ghost array.
          */
-        void
+        inline void
         import_from_ghosted_array_start(
           const dealii::VectorOperation::values  vector_operation,
           const unsigned int                     communication_channel,
@@ -169,7 +169,7 @@ namespace internal
         /**
          * Finish to import from ghost array.
          */
-        void
+        inline void
         import_from_ghosted_array_finish(
           const dealii::VectorOperation::values vector_operation,
           const dealii::ArrayView<double> &     locally_owned_storage,
@@ -181,7 +181,7 @@ namespace internal
         /**
          * Start to export to ghost array.
          */
-        void
+        inline void
         export_to_ghosted_array_start(
           const unsigned int                    communication_channel,
           const dealii::ArrayView<const float> &locally_owned_array,
@@ -193,7 +193,7 @@ namespace internal
         /**
          * Finish to export to ghost array.
          */
-        void
+        inline void
         export_to_ghosted_array_finish(
           const dealii::ArrayView<const float> &locally_owned_array,
           const std::vector<dealii::ArrayView<const float>> &shared_arrays,
@@ -203,7 +203,7 @@ namespace internal
         /**
          * Start to import from ghost array.
          */
-        void
+        inline void
         import_from_ghosted_array_start(
           const dealii::VectorOperation::values vector_operation,
           const unsigned int                    communication_channel,
@@ -216,7 +216,7 @@ namespace internal
         /**
          * Finish to import from ghost array.
          */
-        void
+        inline void
         import_from_ghosted_array_finish(
           const dealii::VectorOperation::values vector_operation,
           const dealii::ArrayView<float> &      locally_owned_storage,
@@ -307,16 +307,17 @@ namespace internal
         /**
          * Return position of shared cell: cell -> (owner, offset)
          */
-        const std::map<dealii::types::global_dof_index,
-                       std::pair<unsigned int, unsigned int>> &
+        inline const std::map<dealii::types::global_dof_index,
+                              std::pair<unsigned int, unsigned int>> &
         get_maps() const;
 
 
         /**
          * Return position of ghost face: (cell, no) -> (owner, offset)
          */
-        const std::map<std::pair<dealii::types::global_dof_index, unsigned int>,
-                       std::pair<unsigned int, unsigned int>> &
+        inline const std::map<
+          std::pair<dealii::types::global_dof_index, unsigned int>,
+          std::pair<unsigned int, unsigned int>> &
         get_maps_ghost() const;
 
         /**
@@ -324,13 +325,13 @@ namespace internal
          *
          * @note: Only counts the buffers [TODO].
          */
-        std::size_t
+        inline std::size_t
         memory_consumption() const;
 
         /**
          * Synchronize.
          */
-        void
+        inline void
         sync(const unsigned int tag = 0) const;
 
       private:
@@ -399,7 +400,7 @@ namespace internal
       };
 
 
-      void
+      inline void
       Contiguous::export_to_ghosted_array_start(
         const unsigned int                     communication_channel,
         const dealii::ArrayView<const double> &locally_owned_array,
@@ -418,7 +419,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::export_to_ghosted_array_finish(
         const dealii::ArrayView<const double> &             locally_owned_array,
         const std::vector<dealii::ArrayView<const double>> &shared_arrays,
@@ -433,7 +434,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::import_from_ghosted_array_start(
         const dealii::VectorOperation::values  vector_operation,
         const unsigned int                     communication_channel,
@@ -454,7 +455,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::import_from_ghosted_array_finish(
         const dealii::VectorOperation::values vector_operation,
         const dealii::ArrayView<double> &     locally_owned_storage,
@@ -473,7 +474,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::export_to_ghosted_array_start(
         const unsigned int                    communication_channel,
         const dealii::ArrayView<const float> &locally_owned_array,
@@ -492,7 +493,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::export_to_ghosted_array_finish(
         const dealii::ArrayView<const float> &             locally_owned_array,
         const std::vector<dealii::ArrayView<const float>> &shared_arrays,
@@ -507,7 +508,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::import_from_ghosted_array_start(
         const dealii::VectorOperation::values vector_operation,
         const unsigned int                    communication_channel,
@@ -528,7 +529,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::import_from_ghosted_array_finish(
         const dealii::VectorOperation::values vector_operation,
         const dealii::ArrayView<float> &      locally_owned_storage,
@@ -547,7 +548,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::sync(const unsigned int tag) const
       {
         std::vector<MPI_Request> req(sm_targets.size() + sm_sources.size());
@@ -666,7 +667,7 @@ namespace internal
 
 
 
-      void
+      inline void
       Contiguous::reinit(
         const std::vector<dealii::types::global_dof_index> local_cells,
         const std::vector<
@@ -1791,8 +1792,8 @@ namespace internal
 
 
 
-      const std::map<dealii::types::global_dof_index,
-                     std::pair<unsigned int, unsigned int>> &
+      inline const std::map<dealii::types::global_dof_index,
+                            std::pair<unsigned int, unsigned int>> &
       Contiguous::get_maps() const
       {
         return maps;
@@ -1800,8 +1801,9 @@ namespace internal
 
 
 
-      const std::map<std::pair<dealii::types::global_dof_index, unsigned int>,
-                     std::pair<unsigned int, unsigned int>> &
+      inline const std::map<
+        std::pair<dealii::types::global_dof_index, unsigned int>,
+        std::pair<unsigned int, unsigned int>> &
       Contiguous::get_maps_ghost() const
       {
         return maps_ghost;
@@ -1809,7 +1811,7 @@ namespace internal
 
 
 
-      std::size_t
+      inline std::size_t
       Contiguous::memory_consumption() const
       {
         // [TODO] not counting maps and maps_ghost
