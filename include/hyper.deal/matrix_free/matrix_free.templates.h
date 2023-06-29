@@ -567,7 +567,7 @@ namespace hyperdeal
       std::vector<unsigned int> n2;
     };
 
-    void
+    inline void
     combine_global_cell_info(const MPI_Comm        comm_x,
                              const MPI_Comm        comm_v,
                              const GlobalCellInfo &info_x,
