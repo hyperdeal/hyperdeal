@@ -479,8 +479,8 @@ namespace hyperdeal
                              dealii::Point<dim_x>(0.0, 0.0, 0.0),
                 2.0 * (dim_x == 2 ? std::sqrt(0.5) : std::sqrt(0.75)));
 
-              for (auto &cell : *triangulation_x)
-                cell.set_all_manifold_ids(dealii::numbers::flat_manifold_id);
+              for (auto &cell : triangulation_x->cell_iterators())
+                cell->set_all_manifold_ids(dealii::numbers::flat_manifold_id);
               ;
               dealii::GridGenerator::hyper_ball(
                 *triangulation_v,
@@ -488,8 +488,8 @@ namespace hyperdeal
                              dealii::Point<dim_v>(0.0, 0.0, 0.0),
                 2.0 * (dim_v == 2 ? std::sqrt(0.5) : std::sqrt(0.75)));
 
-              for (auto &cell : *triangulation_v)
-                cell.set_all_manifold_ids(dealii::numbers::flat_manifold_id);
+              for (auto &cell : triangulation_v->cell_iterators())
+                cell->set_all_manifold_ids(dealii::numbers::flat_manifold_id);
 
               if (do_periodic_x)
                 internal::apply_periodicity(triangulation_x, left_x, right_x);
@@ -525,8 +525,8 @@ namespace hyperdeal
                                dealii::Point<dim_x>(0.0, 0.0, 0.0),
                   2.0 * (dim_x == 2 ? std::sqrt(0.5) : std::sqrt(0.75)));
 
-                for (auto &cell : tria)
-                  cell.set_all_manifold_ids(dealii::numbers::flat_manifold_id);
+                for (auto &cell : tria.cell_iterators())
+                  cell->set_all_manifold_ids(dealii::numbers::flat_manifold_id);
 
                 if (do_periodic_x)
                   internal::apply_periodicity(&tria, left_x, right_x);
@@ -564,8 +564,8 @@ namespace hyperdeal
                                dealii::Point<dim_v>(0.0, 0.0, 0.0),
                   2.0 * (dim_v == 2 ? std::sqrt(0.5) : std::sqrt(0.75)));
 
-                for (auto &cell : tria)
-                  cell.set_all_manifold_ids(dealii::numbers::flat_manifold_id);
+                for (auto &cell : tria.cell_iterators())
+                  cell->set_all_manifold_ids(dealii::numbers::flat_manifold_id);
 
                 if (do_periodic_v)
                   internal::apply_periodicity(&tria,
@@ -752,8 +752,8 @@ namespace hyperdeal
 
                 orientated_hyper_cube_impl(tria, orientation_v);
 
-                for (auto &cell : tria)
-                  cell.set_all_manifold_ids(dealii::numbers::flat_manifold_id);
+                for (auto &cell : tria.cell_iterators())
+                  cell->set_all_manifold_ids(dealii::numbers::flat_manifold_id);
 
                 if (do_periodic_v)
                   internal::apply_periodicity(&tria,
