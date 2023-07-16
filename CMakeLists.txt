@@ -23,6 +23,8 @@ MESSAGE("_______________________________________________________________________
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 FIND_PACKAGE(deal.II 9.1 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
