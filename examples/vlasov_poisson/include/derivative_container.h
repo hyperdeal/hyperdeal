@@ -18,6 +18,7 @@
 
 #include <deal.II/base/aligned_vector.h>
 #include <deal.II/base/tensor.h>
+#include <deal.II/base/utilities.h>
 
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/matrix_free.h>
@@ -35,8 +36,10 @@ namespace hyperdeal
     template <int dim, int n_points, typename UnitType>
     class QuadraturePointContainer
     {
-      static const unsigned int n_points_cell = std::pow(n_points, dim - 0);
-      static const unsigned int n_points_face = std::pow(n_points, dim - 1);
+      static const unsigned int n_points_cell =
+        dealii::Utilities::pow(n_points, dim - 0);
+      static const unsigned int n_points_face =
+        dealii::Utilities::pow(n_points, dim - 1);
 
     public:
       /**
@@ -143,8 +146,10 @@ namespace hyperdeal
                                   n_points,
                                   dealii::Tensor<1, dim, VectorizedArrayType>>
     {
-      static const unsigned int n_points_cell = std::pow(n_points, dim - 0);
-      static const unsigned int n_points_face = std::pow(n_points, dim - 1);
+      static const unsigned int n_points_cell =
+        dealii::Utilities::pow(n_points, dim - 0);
+      static const unsigned int n_points_face =
+        dealii::Utilities::pow(n_points, dim - 1);
 
     public:
       /*
