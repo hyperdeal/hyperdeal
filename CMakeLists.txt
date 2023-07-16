@@ -22,6 +22,7 @@ MESSAGE("_______________________________________________________________________
 # this is the standard deal.II search mechanism
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+set(CMAKE_CXX_STANDARD 17)
 
 FIND_PACKAGE(deal.II 9.1 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
