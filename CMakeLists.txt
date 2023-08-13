@@ -112,3 +112,12 @@ enable_testing()
 ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(examples/advection/tests)
 ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
+
+# Install library
+INSTALL(TARGETS hyperdeal LIBRARY)
+# Install headers
+INSTALL(DIRECTORY include/hyper.deal
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PATTERN "*.in" EXCLUDE)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/hyper.deal/base/revision.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hyper.deal/base)
