@@ -77,6 +77,7 @@ MESSAGE("--")
 cmake_policy(SET CMP0053 OLD)
 SET(HYPER_DEAL_GIT_BRANCH "@HYPER_DEAL_GIT_BRANCH@")
 SET(HYPER_DEAL_GIT_REVISION "@HYPER_DEAL_GIT_REVISION@")
+SET(HYPER_DEAL_VERSION "0.0.1")     # placeholder
 
 CONFIGURE_FILE(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/hyper.deal/base/revision.h.in
@@ -121,3 +122,5 @@ INSTALL(DIRECTORY include/hyper.deal
         PATTERN "*.in" EXCLUDE)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/hyper.deal/base/revision.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hyper.deal/base)
+# Install CMake config
+ADD_SUBDIRECTORY(cmake/config)
