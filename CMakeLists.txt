@@ -46,6 +46,11 @@ INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 PROJECT(hyperdeal)
 
+# Build options
+OPTION(HYPER_DEAL_EXAMPLES "Build examples" OFF)
+OPTION(HYPER_DEAL_PERFORMANCE_TESTS "Build performance tests" OFF)
+OPTION(HYPER_DEAL_TESTS "Build tests" OFF)
+
 ADD_LIBRARY(hyperdeal  ${TARGET_SRC})
 
 # Define custom targets to easily switch the build type:
@@ -95,7 +100,9 @@ ADD_SUBDIRECTORY(source)
 # target the source files
 TARGET_LINK_LIBRARIES(hyperdeal obj_base obj_grid)
 
-ADD_SUBDIRECTORY(examples)
+if(HYPERDEAL_EXAMPLES)
+  ADD_SUBDIRECTORY(examples)
+endif()
 
 
 IF(EXISTS ${CMAKE_SOURCE_DIR}/tests/CMakeLists.txt)
@@ -106,13 +113,19 @@ ENDIF()
 ADD_SUBDIRECTORY(doc/doxygen)
 
 # performance tests
-ADD_SUBDIRECTORY(performance)
+if(HYPER_DEAL_PERFORMANCE_TESTS)
+  ADD_SUBDIRECTORY(performance)
+endif()
 
 # tests
-enable_testing()
-ADD_SUBDIRECTORY(tests)
-ADD_SUBDIRECTORY(examples/advection/tests)
-ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
+if(HYPER_DEAL_TESTS)
+  enable_testing()
+  ADD_SUBDIRECTORY(tests)
+  if(HYPER_DEAL_EXAMPLES)
+    ADD_SUBDIRECTORY(examples/advection/tests)
+    ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
+  endif()
+endif()
 
 # Install library
 INSTALL(TARGETS hyperdeal LIBRARY)
