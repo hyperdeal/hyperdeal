@@ -127,6 +127,8 @@ if(HYPER_DEAL_TESTS)
   endif()
 endif()
 
+include(GNUInstallDirs)
+
 # Install library
 INSTALL(TARGETS hyperdeal LIBRARY)
 # Install headers

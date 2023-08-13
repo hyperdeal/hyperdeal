@@ -15,6 +15,8 @@
 
 # based on https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 
+include(GNUInstallDirs)
+
 option(HYPER_DEAL_DOCUMENTATION "Build Doxygen documentation" ON)
 
 if (HYPER_DEAL_DOCUMENTATION)
