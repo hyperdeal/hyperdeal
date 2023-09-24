@@ -162,15 +162,13 @@ test(const MPI_Comm &comm)
                 dealii::internal::EvaluatorQuantity::value,
                 dim - 1,
                 degree + 1,
-                n_points,
-                VectorizedArrayType,
-                VectorizedArrayType>::do_forward(1,
-                                                 matrix_free.get_matrix_free_x()
-                                                   .get_shape_info()
-                                                   .data.front()
-                                                   .shape_values_eo,
-                                                 data_ptr1,
-                                                 data_ptr1);
+                n_points>::do_forward(1,
+                                      matrix_free.get_matrix_free_x()
+                                        .get_shape_info()
+                                        .data.front()
+                                        .shape_values_eo,
+                                      data_ptr1,
+                                      data_ptr1);
 
               std::set<unsigned int> failed;
 
@@ -216,15 +214,13 @@ test(const MPI_Comm &comm)
                 dealii::internal::EvaluatorQuantity::value,
                 dim,
                 degree + 1,
-                n_points,
-                VectorizedArrayType,
-                VectorizedArrayType>::do_forward(1,
-                                                 matrix_free.get_matrix_free_x()
-                                                   .get_shape_info()
-                                                   .data.front()
-                                                   .shape_values_eo,
-                                                 data_ptr,
-                                                 data_ptr);
+                n_points>::do_forward(1,
+                                      matrix_free.get_matrix_free_x()
+                                        .get_shape_info()
+                                        .data.front()
+                                        .shape_values_eo,
+                                      data_ptr,
+                                      data_ptr);
 
 
               VectorizedArrayType *buffer = phi_cell_inv.get_data_ptr();
