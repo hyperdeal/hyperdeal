@@ -65,12 +65,7 @@ namespace hyperdeal
           dealii::internal::EvaluatorQuantity::value,
           dim,
           degree + 1,
-          n_points,
-          VectorizedArrayType,
-          VectorizedArrayType>::do_forward(1,
-                                           *phi.get_shape_values(),
-                                           data_ptr,
-                                           data_ptr);
+          n_points>::do_forward(1, *phi.get_shape_values(), data_ptr, data_ptr);
 
         return data_ptr;
       }

@@ -306,9 +306,7 @@ namespace hyperdeal
                                               dealii::internal::EvaluatorQuantity::value,
                                               dim,
                                               degree + 1,
-                                              n_points,
-                                              VNumber,
-                                              VNumber>::
+                                              n_points>::
                     do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                               data_ptr, 
                               data_ptr);   
@@ -441,9 +439,7 @@ namespace hyperdeal
                                                 dealii::internal::EvaluatorQuantity::value, 
                                                 dim - 1,
                                                 degree + 1,
-                                                n_points,
-                                                VNumber,
-                                                VNumber>::
+                                                n_points>::
                       do_forward(1 ,data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                                  data_ptr2, 
                                  data_ptr2);   
@@ -552,9 +548,7 @@ namespace hyperdeal
                                               dealii::internal::EvaluatorQuantity::hessian,
                                               dim,
                                               degree + 1,
-                                              n_points,
-                                              VNumber,
-                                              VNumber>::
+                                              n_points>::
                     do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().inverse_shape_values_eo,  
                                 false,
                                 data_ptr, 
@@ -697,9 +691,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr, 
                              data_ptr);   
@@ -806,9 +798,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
                              false,
                              data_ptr, 
@@ -886,9 +876,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value, 
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr1, 
                              data_ptr1);   
@@ -913,9 +901,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr2, 
                              data_ptr2);   
@@ -967,9 +953,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
                              data_ptr1, 
                              data_ptr1);   
@@ -995,9 +979,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, false,
                              data_ptr2, 
                              data_ptr2);   
@@ -1072,9 +1054,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_forward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo,
                              data_ptr1, 
                              data_ptr1);   
@@ -1130,9 +1110,7 @@ namespace hyperdeal
                                             dealii::internal::EvaluatorQuantity::value,
                                             dim - 1,
                                             degree + 1,
-                                            n_points,
-                                            VNumber,
-                                            VNumber>::
+                                            n_points>::
                   do_backward(1, data.get_matrix_free_x().get_shape_info().data.front().shape_values_eo, 
                              false,
                              data_ptr1, 
