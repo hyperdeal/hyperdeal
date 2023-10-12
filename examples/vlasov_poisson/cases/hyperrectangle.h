@@ -31,20 +31,37 @@ namespace hyperdeal
       {
       public:
         static const unsigned int DIM = dim_x + dim_v;
-        ExactSolution(const double time = 0.)
+        ExactSolution(const bool landau_damping, const double time = 0.)
           : dealii::Function<DIM, Number>(1, time)
+          , landau_damping(landau_damping)
           , wave_number(0.5)
         {
           for (unsigned int d = 0; d < dim_x; ++d)
             advection[d] = 1.0;
           for (unsigned int d = 0; d < dim_v; ++d)
-            advection[d + dim_v] = 6.0;
+            advection[d + dim_v] = landau_damping ? 6.0 : 5.0;
         }
 
         virtual double
         value(const dealii::Point<DIM> &p,
               const unsigned int = 1) const override
         {
+          if (!landau_damping)
+            {
+              dealii::Tensor<1, DIM> position = p;
+              position[1] -= 1.0;
+              double result =
+                1.0; // std::sin(wave_number * position[0] * numbers::PI);
+
+              for (unsigned int d = 0; d < 1; ++d)
+                result = result + 0.01 * std::cos(wave_number * position[d]);
+              for (unsigned int d = dim_x; d < dim_x + dim_v; ++d)
+                result = result * pow(position[d], 2) *
+                         std::exp(-0.5 * pow(position[d], 2)) /
+                         std::sqrt(2.0 * dealii::numbers::PI);
+
+              return result;
+            }
           const dealii::Tensor<1, DIM> position = p;
           double                       result =
             1.0; // std::sin(wave_number * position[0] * numbers::PI);
@@ -66,6 +83,7 @@ namespace hyperdeal
 
       private:
         dealii::Tensor<1, DIM> advection;
+        const bool             landau_damping;
         const double           wave_number;
       };
 
@@ -139,6 +157,10 @@ namespace hyperdeal
             deform_mesh,
             "Deform Cartesian mesh with an arbitrary non-linear manifold.");
 
+          prm.add_parameter("LandauDamping",
+                            landau_damping,
+                            "Run Landau damping or two-stream instability.");
+
           prm.leave_subsection();
         }
 
@@ -156,10 +178,10 @@ namespace hyperdeal
             p2_x(d) = 4.0 * dealii::numbers::PI;
           dealii::Point<dim_v> p1_v;
           for (unsigned int d = 0; d < dim_v; ++d)
-            p1_v(d) = -6.0;
+            p1_v(d) = -1.0 * (landau_damping ? 6.0 : 5.0);
           dealii::Point<dim_v> p2_v;
           for (unsigned int d = 0; d < dim_v; ++d)
-            p2_v(d) = 6.0;
+            p2_v(d) = +1.0 * (landau_damping ? 6.0 : 5.0);
 
           // clang-format off
           hyperdeal::GridGenerator::subdivided_hyper_rectangle(tria_x, tria_v, 
@@ -176,12 +198,12 @@ namespace hyperdeal
         {
           boundary_descriptor->dirichlet_bc[0] =
             std::shared_ptr<dealii::Function<dim_x + dim_v, Number>>(
-              new ExactSolution<dim_x, dim_v, Number>());
+              new ExactSolution<dim_x, dim_v, Number>(landau_damping));
 
           // TODO: hack for 1D
           boundary_descriptor->dirichlet_bc[1] =
             std::shared_ptr<dealii::Function<dim_x + dim_v, Number>>(
-              new ExactSolution<dim_x, dim_v, Number>());
+              new ExactSolution<dim_x, dim_v, Number>(landau_damping));
         }
 
         void
@@ -189,13 +211,14 @@ namespace hyperdeal
           std::shared_ptr<dealii::Function<dim_x + dim_v, Number>>
             &analytical_solution) override
         {
-          analytical_solution.reset(new ExactSolution<dim_x, dim_v, Number>());
+          analytical_solution.reset(
+            new ExactSolution<dim_x, dim_v, Number>(landau_damping));
         }
 
         dealii::Tensor<1, dim_x + dim_v>
         get_transport_direction() override
         {
-          return ExactSolution<dim_x, dim_v, Number>()
+          return ExactSolution<dim_x, dim_v, Number>(landau_damping)
             .get_transport_direction();
         }
 
@@ -214,7 +237,8 @@ namespace hyperdeal
         std::vector<unsigned int> n_subdivisions_x;
         std::vector<unsigned int> n_subdivisions_v;
 
-        bool deform_mesh = false;
+        bool deform_mesh    = false;
+        bool landau_damping = true;
       };
     } // namespace hyperrectangle
   }   // namespace vp
