@@ -123,14 +123,12 @@ namespace hyperdeal
              tensor_symmetric_collocation),
           (data.get_matrix_free_v().get_shape_info(0, 0).data[0].element_type ==
            dealii::internal::MatrixFreeFunctions::ElementType::
-             tensor_symmetric_collocation))
+             tensor_symmetric_collocation));
 
-          const bool do_collocation =
-            data.get_matrix_free_x()
-              .get_shape_info(0, 0)
-              .data[0]
-              .element_type == dealii::internal::MatrixFreeFunctions::
-                                 ElementType::tensor_symmetric_collocation;
+        const bool do_collocation =
+          data.get_matrix_free_x().get_shape_info(0, 0).data[0].element_type ==
+          dealii::internal::MatrixFreeFunctions::ElementType::
+            tensor_symmetric_collocation;
 
         this->do_collocation = do_collocation;
 
@@ -746,14 +744,12 @@ namespace hyperdeal
              tensor_symmetric_collocation),
           (data.get_matrix_free_v().get_shape_info(0, 0).data[0].element_type ==
            dealii::internal::MatrixFreeFunctions::ElementType::
-             tensor_symmetric_collocation))
+             tensor_symmetric_collocation));
 
-          const bool do_collocation =
-            data.get_matrix_free_x()
-              .get_shape_info(0, 0)
-              .data[0]
-              .element_type == dealii::internal::MatrixFreeFunctions::
-                                 ElementType::tensor_symmetric_collocation;
+        const bool do_collocation =
+          data.get_matrix_free_x().get_shape_info(0, 0).data[0].element_type ==
+          dealii::internal::MatrixFreeFunctions::ElementType::
+            tensor_symmetric_collocation;
 
         this->do_collocation = do_collocation;
 
