@@ -15,6 +15,8 @@
 
 # based on https://vicrucann.github.io/tutorials/quick-cmake-doxygen/
 
+include(GNUInstallDirs)
+
 option(HYPER_DEAL_DOCUMENTATION "Build Doxygen documentation" ON)
 
 if (HYPER_DEAL_DOCUMENTATION)
@@ -36,5 +38,8 @@ if (HYPER_DEAL_DOCUMENTATION)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT "Generating Doxygen documentation"
       VERBATIM )
+
+    # install it
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} OPTIONAL)
   endif (DOXYGEN_FOUND)
 endif (HYPER_DEAL_DOCUMENTATION)
