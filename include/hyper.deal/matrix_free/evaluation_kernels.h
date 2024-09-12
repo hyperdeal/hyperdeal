@@ -75,7 +75,7 @@ namespace hyperdeal
           dealii::Utilities::pow(n_rows, face_direction);
         constexpr int out_stride = dealii::Utilities::pow(n_rows, dim - 1);
 
-        const Number *DEAL_II_RESTRICT shape_values = this->shape_values;
+        const Number2 *DEAL_II_RESTRICT shape_values = this->shape_values;
 
         if (contract_onto_face == true)
           {
@@ -224,15 +224,15 @@ namespace hyperdeal
       /**
        * Interpolate the values on the cell quadrature points onto a face.
        */
-      template <bool do_evaluate, bool add_into_output>
+      template <bool do_evaluate, bool add_into_output, typename Number2>
       static void
       interpolate_quadrature(
         const unsigned int                             n_components,
         const dealii::EvaluationFlags::EvaluationFlags flags,
         const dealii::internal::MatrixFreeFunctions::ShapeInfo<Number>
           &                shape_info,
-        const Number *     input,
-        Number *           output,
+        const Number2 *    input,
+        Number2 *          output,
         const unsigned int face_no)
       {
         Assert(static_cast<unsigned int>(fe_degree + 1) ==
@@ -253,12 +253,15 @@ namespace hyperdeal
       }
 
     private:
-      template <bool do_evaluate, bool add_into_output, int face_direction = 0>
+      template <bool do_evaluate,
+                bool add_into_output,
+                int  face_direction = 0,
+                typename Number2>
       static void
       interpolate_generic(
         const unsigned int                                  n_components,
-        const Number *                                      input,
-        Number *                                            output,
+        const Number2 *                                     input,
+        Number2 *                                           output,
         const dealii::EvaluationFlags::EvaluationFlags      flag,
         const unsigned int                                  face_no,
         const unsigned int                                  n_points_1d,
@@ -268,7 +271,12 @@ namespace hyperdeal
       {
         if (face_direction == face_no / 2)
           {
-            EvaluatorTensorProduct<dim_x, dim_v, fe_degree + 1, 0, Number>
+            EvaluatorTensorProduct<dim_x,
+                                   dim_v,
+                                   fe_degree + 1,
+                                   0,
+                                   Number2,
+                                   Number>
               evalf(shape_data[face_no % 2],
                     dealii::AlignedVector<Number>(),
                     dealii::AlignedVector<Number>(),

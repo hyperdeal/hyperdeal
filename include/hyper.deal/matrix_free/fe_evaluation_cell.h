@@ -279,10 +279,10 @@ namespace hyperdeal
     inline DEAL_II_ALWAYS_INLINE //
       void
       submit_value(VectorizedArrayType *__restrict data_ptr_out,
-                   const VectorizedArrayType __restrict values_in,
-                   const unsigned int q,
-                   const unsigned int qx,
-                   const unsigned int qv) const
+                   const VectorizedArrayType values_in,
+                   const unsigned int        q,
+                   const unsigned int        qx,
+                   const unsigned int        qv) const
     {
       const auto jxw =
         phi_x.JxW(qx) * phi_v.JxW(qv)[n_vectors_v == 1 ? 0 : this->lane_y];

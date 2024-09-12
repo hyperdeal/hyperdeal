@@ -237,11 +237,10 @@ test(const MPI_Comm &comm)
                   phi_m.reinit(cell, face);
 
 
-                  hyperdeal::internal::FEFaceNormalEvaluationImpl<
-                    dim_x,
-                    dim_v,
-                    n_points - 1,
-                    VectorizedArrayType>::
+                  hyperdeal::internal::FEFaceNormalEvaluationImpl<dim_x,
+                                                                  dim_v,
+                                                                  n_points - 1,
+                                                                  Number>::
                     template interpolate_quadrature<true, false>(
                       1,
                       dealii::EvaluationFlags::values,

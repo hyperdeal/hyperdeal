@@ -267,13 +267,12 @@ namespace hyperdeal
               data,
               (is_ecl == false || this->is_minus_face) ?
                 &this->face_no :
-                &this->matrix_free.get_face_info()
-                   .no_faces[3][(2 * dim * this->macro + this->face_no) *
-                                n_vectors],
+                this->matrix_free.get_face_info().no_faces[3].data() +
+                  (2 * dim * this->macro + this->face_no) * n_vectors,
               (is_ecl == false || this->is_minus_face) ?
                 &face_orientation :
-                &this->matrix_free.get_face_info().face_orientations
-                   [3][(2 * dim * this->macro + this->face_no) * n_vectors],
+                this->matrix_free.get_face_info().face_orientations[3].data() +
+                  (2 * dim * this->macro + this->face_no) * n_vectors,
               this->type == SpaceType::X ? 0 : 8,
               this->macro,
               is_ecl ? 2 : !is_minus_face,

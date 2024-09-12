@@ -23,7 +23,6 @@
 
 #include <deal.II/base/config.h>
 
-#include <deal.II/base/cuda.h>
 #include <deal.II/base/exceptions.h>
 #include <deal.II/base/job_identifier.h>
 #include <deal.II/base/logstream.h>
@@ -424,51 +423,6 @@ struct LimitConcurrency
 
 
 
-#ifdef DEAL_II_WITH_PETSC
-#  include <petscsys.h>
-
-namespace
-{
-  void
-  check_petsc_allocations()
-  {
-#  if DEAL_II_PETSC_VERSION_GTE(3, 2, 0)
-    PetscStageLog stageLog;
-    PetscLogGetStageLog(&stageLog);
-
-    // I don't quite understand petsc and it looks like
-    // stageLog->stageInfo->classLog->classInfo[i].id is always -1, so we look
-    // it up in stageLog->classLog, make sure it has the same number of entries:
-    Assert(stageLog->stageInfo->classLog->numClasses ==
-             stageLog->classLog->numClasses,
-           dealii::ExcInternalError());
-
-    bool errors = false;
-    for (int i = 0; i < stageLog->stageInfo->classLog->numClasses; ++i)
-      {
-        if (stageLog->stageInfo->classLog->classInfo[i].destructions !=
-            stageLog->stageInfo->classLog->classInfo[i].creations)
-          {
-            errors = true;
-            std::cerr
-              << "ERROR: PETSc objects leaking of type '"
-              << stageLog->classLog->classInfo[i].name << "'"
-              << " with "
-              << stageLog->stageInfo->classLog->classInfo[i].creations
-              << " creations and only "
-              << stageLog->stageInfo->classLog->classInfo[i].destructions
-              << " destructions." << std::endl;
-          }
-      }
-
-    if (errors)
-      throw dealii::ExcMessage("PETSc memory leak");
-#  endif
-  }
-} // namespace
-#endif
-
-
 // Function to initialize deallog. Normally, it should be called at
 // the beginning of main() like
 //
@@ -569,11 +523,6 @@ struct MPILogInitAll
       }
 
     MPI_Barrier(MPI_COMM_WORLD);
-
-#  ifdef DEAL_II_WITH_PETSC
-    check_petsc_allocations();
-    MPI_Barrier(MPI_COMM_WORLD);
-#  endif
 
     if (myid == 0)
       {

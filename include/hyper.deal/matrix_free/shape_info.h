@@ -139,16 +139,24 @@ namespace hyperdeal
               dofs_per_component_on_face);
 
             if (surface < dim_x * 2)
-              for (int i = 0, k = 0; i < std::pow(points, dim_v); i++)
-                for (int j = 0; j < std::pow(points, dim_x - 1); j++)
+              for (unsigned int i = 0, k = 0;
+                   i < dealii::Utilities::pow(points, dim_v);
+                   i++)
+                for (unsigned int j = 0;
+                     j < dealii::Utilities::pow(points, dim_x - 1);
+                     j++)
                   face_to_cell_index_nodal[surface][k++] =
                     face_to_cell_index_nodal_x(surface, j) +
-                    std::pow(points, dim_x) * i;
+                    dealii::Utilities::pow(points, dim_x) * i;
             else
-              for (int i = 0, k = 0; i < std::pow(points, dim_v - 1); i++)
-                for (int j = 0; j < std::pow(points, dim_x); j++)
+              for (unsigned int i = 0, k = 0;
+                   i < dealii::Utilities::pow(points, dim_v - 1);
+                   i++)
+                for (unsigned int j = 0;
+                     j < dealii::Utilities::pow(points, dim_x);
+                     j++)
                   face_to_cell_index_nodal[surface][k++] =
-                    j + std::pow(points, dim_x) *
+                    j + dealii::Utilities::pow(points, dim_x) *
                           face_to_cell_index_nodal_v(surface - 2 * dim_x, i);
           }
 

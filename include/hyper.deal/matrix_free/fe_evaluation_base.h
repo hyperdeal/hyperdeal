@@ -57,6 +57,11 @@ namespace hyperdeal
       const MatrixFree<dim_x, dim_v, Number, VectorizedArrayType> &matrix_free);
 
     /**
+     * Destructor.
+     */
+    virtual ~FEEvaluationBase() = default;
+
+    /**
      * Set the view to the current cell.
      */
     virtual void
@@ -72,13 +77,13 @@ namespace hyperdeal
     /**
      * Return shape values.
      */
-    const dealii::AlignedVector<VectorizedArrayType> *
+    const dealii::AlignedVector<Number> *
     get_shape_values() const;
 
     /**
      * Return gradient of the shape values.
      */
-    const dealii::AlignedVector<VectorizedArrayType> *
+    const dealii::AlignedVector<Number> *
     get_shape_gradients() const;
 
   protected:
@@ -114,12 +119,12 @@ namespace hyperdeal
     /**
      * Pointer to the shape functions.
      */
-    const dealii::AlignedVector<VectorizedArrayType> *shape_values;
+    const dealii::AlignedVector<Number> *shape_values;
 
     /**
      * Pointer to the gradient of the shape functions.
      */
-    const dealii::AlignedVector<VectorizedArrayType> *shape_gradients;
+    const dealii::AlignedVector<Number> *shape_gradients;
   };
 
 
@@ -199,7 +204,7 @@ namespace hyperdeal
             int n_points,
             typename Number,
             typename VectorizedArrayType>
-  const dealii::AlignedVector<VectorizedArrayType> *
+  const dealii::AlignedVector<Number> *
   FEEvaluationBase<dim_x,
                    dim_v,
                    degree,
@@ -218,7 +223,7 @@ namespace hyperdeal
             int n_points,
             typename Number,
             typename VectorizedArrayType>
-  const dealii::AlignedVector<VectorizedArrayType> *
+  const dealii::AlignedVector<Number> *
   FEEvaluationBase<dim_x,
                    dim_v,
                    degree,

@@ -57,7 +57,7 @@ namespace hyperdeal
     /**
      * Return inverse shape function.
      */
-    const dealii::AlignedVector<VectorizedArrayType> *
+    const dealii::AlignedVector<Number> *
     get_inverse_shape() const;
 
     /**
@@ -74,7 +74,7 @@ namespace hyperdeal
     /**
      * Reference to the inverse shape function.
      */
-    const dealii::AlignedVector<VectorizedArrayType> &inverse_shape;
+    const dealii::AlignedVector<Number> &inverse_shape;
   };
 
 
@@ -105,7 +105,7 @@ namespace hyperdeal
             int n_points,
             typename Number,
             typename VNumber>
-  const dealii::AlignedVector<VNumber> *
+  const dealii::AlignedVector<Number> *
   FEEvaluationInverse<dim_x, dim_v, degree, n_points, Number, VNumber>::
     get_inverse_shape() const
   {

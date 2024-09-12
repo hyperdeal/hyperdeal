@@ -67,7 +67,7 @@ struct ParametersDriver
 
     if (print_parameter && pcout.is_active())
       prm.print_parameters(pcout.get_stream(),
-                           dealii::ParameterHandler::OutputStyle::Text);
+                           dealii::ParameterHandler::OutputStyle::PRM);
 
     file.close();
   }

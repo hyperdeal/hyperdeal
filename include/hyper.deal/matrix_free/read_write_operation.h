@@ -208,6 +208,8 @@ namespace hyperdeal
              v < v_len;
              v++)
           {
+            AssertIndexRange(v_len * face_batch_number + v,
+                             dof_indices_contiguous_ptr[face_side].size());
             const auto sm_ptr =
               dof_indices_contiguous_ptr[face_side]
                                         [v_len * face_batch_number + v];
@@ -219,38 +221,55 @@ namespace hyperdeal
               v_len &&
             (face_side == 2 || face_all[face_side][face_batch_number]))
           {
-            const auto &face_orientations_ =
-              face_orientations[face_orientation[0] + face_orientation_offset];
-
-            if (face_side != 2 &&
-                face_type[face_side][v_len * face_batch_number])
+            if ((dim_x <= 2 && dim_v <= 2) || face_orientation[0] == 0)
               {
-                // case 1: read from buffers
-                for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                if (face_side != 2 &&
+                    face_type[face_side][v_len * face_batch_number])
                   {
-                    const unsigned int i_ = (((dim_x <= 2) && (dim_v <= 2)) ||
-                                             face_orientation[0] == 0) ?
-                                              i :
-                                              face_orientations_[i];
-
-                    for (unsigned int v = 0; v < v_len; ++v)
-                      operation.process_dof(global_ptr[v][i], local[i_][v]);
+                    // case 1: read from buffers
+                    for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                      for (unsigned int v = 0; v < v_len; ++v)
+                        operation.process_dof(global_ptr[v][i], local[i][v]);
+                  }
+                else
+                  {
+                    // case 2: read from shared memory
+                    for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                      for (unsigned int v = 0; v < v_len; ++v)
+                        operation.process_dof(
+                          global_ptr[v]
+                                    [face_to_cell_index_nodal[face_no[0]][i]],
+                          local[i][v]);
                   }
               }
             else
               {
-                // case 2: read from shared memory
-                for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                const auto &face_orientations_ =
+                  face_orientations[face_orientation[0] +
+                                    face_orientation_offset];
+                if (face_side != 2 &&
+                    face_type[face_side][v_len * face_batch_number])
                   {
-                    const unsigned int i_ = (((dim_x <= 2) && (dim_v <= 2)) ||
-                                             face_orientation[0] == 0) ?
-                                              i :
-                                              face_orientations_[i];
-
-                    for (unsigned int v = 0; v < v_len; ++v)
-                      operation.process_dof(
-                        global_ptr[v][face_to_cell_index_nodal[face_no[0]][i]],
-                        local[i_][v]);
+                    // case 1: read from buffers
+                    for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                      {
+                        const unsigned int i_ = face_orientations_[i];
+                        for (unsigned int v = 0; v < v_len; ++v)
+                          operation.process_dof(global_ptr[v][i], local[i_][v]);
+                      }
+                  }
+                else
+                  {
+                    // case 2: read from shared memory
+                    for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                      {
+                        const unsigned int i_ = face_orientations_[i];
+                        for (unsigned int v = 0; v < v_len; ++v)
+                          operation.process_dof(
+                            global_ptr[v]
+                                      [face_to_cell_index_nodal[face_no[0]][i]],
+                            local[i_][v]);
+                      }
                   }
               }
           }
@@ -260,40 +279,55 @@ namespace hyperdeal
                v < v_len;
                v++)
             {
-              const auto &face_orientations_ =
-                face_orientations[face_orientation[face_side == 3 ? v : 0] +
-                                  face_orientation_offset];
-
-              if (face_side != 2 &&
-                  face_type[face_side][v_len * face_batch_number + v])
+              if (((dim_x <= 2) && (dim_v <= 2)) ||
+                  face_orientation[face_side == 3 ? v : 0] == 0)
                 {
-                  // case 1: read from buffers
-                  for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                  if (face_side != 2 &&
+                      face_type[face_side][v_len * face_batch_number + v])
                     {
-                      const unsigned int i_ =
-                        (((dim_x <= 2) && (dim_v <= 2)) ||
-                         face_orientation[face_side == 3 ? v : 0] == 0) ?
-                          i :
-                          face_orientations_[i];
-
-                      operation.process_dof(global_ptr[v][i], local[i_][v]);
+                      // case 1: read from buffers
+                      for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                        operation.process_dof(global_ptr[v][i], local[i][v]);
+                    }
+                  else
+                    {
+                      // case 2: read from shared memory
+                      for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                        operation.process_dof(
+                          global_ptr[v][face_to_cell_index_nodal
+                                          [face_no[face_side == 3 ? v : 0]][i]],
+                          local[i][v]);
                     }
                 }
               else
                 {
-                  // case 2: read from shared memory
-                  for (unsigned int i = 0; i < n_dofs_per_face; ++i)
-                    {
-                      const unsigned int i_ =
-                        (((dim_x <= 2) && (dim_v <= 2)) ||
-                         face_orientation[face_side == 3 ? v : 0] == 0) ?
-                          i :
-                          face_orientations_[i];
+                  const auto &face_orientations_ =
+                    face_orientations[face_orientation[face_side == 3 ? v : 0] +
+                                      face_orientation_offset];
 
-                      operation.process_dof(
-                        global_ptr[v][face_to_cell_index_nodal
-                                        [face_no[face_side == 3 ? v : 0]][i]],
-                        local[i_][v]);
+                  if (face_side != 2 &&
+                      face_type[face_side][v_len * face_batch_number + v])
+                    {
+                      // case 1: read from buffers
+                      for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                        {
+                          const unsigned int i_ = face_orientations_[i];
+
+                          operation.process_dof(global_ptr[v][i], local[i_][v]);
+                        }
+                    }
+                  else
+                    {
+                      // case 2: read from shared memory
+                      for (unsigned int i = 0; i < n_dofs_per_face; ++i)
+                        {
+                          const unsigned int i_ = face_orientations_[i];
+                          operation.process_dof(
+                            global_ptr[v]
+                                      [face_to_cell_index_nodal
+                                         [face_no[face_side == 3 ? v : 0]][i]],
+                            local[i_][v]);
+                        }
                     }
                 }
             }
