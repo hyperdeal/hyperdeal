@@ -629,21 +629,21 @@ namespace internal
           std::vector<T> dst_1(total_size);
           std::vector<U> dst_2(total_size);
           MPI_Allgatherv(
-            &src_1[0],
+            src_1.data(),
             len_local,
             dealii::Utilities::MPI::mpi_type_id_for_type<decltype(src_1[0])>,
-            &dst_1[0],
-            &len_global[0],
-            &displs[0],
+            dst_1.data(),
+            len_global.data(),
+            displs.data(),
             dealii::Utilities::MPI::mpi_type_id_for_type<decltype(dst_1[0])>,
             comm);
           MPI_Allgatherv(
-            &src_2[0],
+            src_2.data(),
             len_local,
             dealii::Utilities::MPI::mpi_type_id_for_type<decltype(src_2[0])>,
-            &dst_2[0],
-            &len_global[0],
-            &displs[0],
+            dst_2.data(),
+            len_global.data(),
+            displs.data(),
             dealii::Utilities::MPI::mpi_type_id_for_type<decltype(dst_2[0])>,
             comm);
 
@@ -849,7 +849,7 @@ namespace internal
 
         // 3) merge local_ghost_faces_remote and sort -> ghost_faces_remote
         const auto local_ghost_faces_remote_pairs_global =
-          [&local_ghost_faces_remote, &comm, this]() {
+          [&local_ghost_faces_remote, this]() {
             std::vector<
               std::pair<dealii::types::global_dof_index, unsigned int>>
               local_ghost_faces_remote_pairs_local;
@@ -948,7 +948,6 @@ namespace internal
           const auto maps_ghost_inverse =
             [&distributed_local_ghost_faces_remote_pairs_global,
              &dofs_per_ghost,
-             &local_cells,
              this,
              &sm_procs,
              &my_offset]() {
@@ -1067,11 +1066,10 @@ namespace internal
          &distributed_local_ghost_faces_remote_pairs_global,
          &sm_rank,
          &comm,
-         &dofs_per_ghost,
-         this](auto &      requests_from_relevant_precomp,
-               auto &      receive_info,
-               const auto &maps,
-               const auto &maps_ghost) {
+         &dofs_per_ghost](auto &      requests_from_relevant_precomp,
+                          auto &      receive_info,
+                          const auto &maps,
+                          const auto &maps_ghost) {
           // determine of the owner of cells of remote ghost faces
           const auto n_total_cells = dealii::Utilities::MPI::sum(
             static_cast<dealii::types::global_dof_index>(local_cells.size()),

@@ -565,6 +565,8 @@ template <typename VectorType>
 class PoissonSolverBase
 {
 public:
+  virtual ~PoissonSolverBase() = default;
+
   virtual unsigned int
   solve(VectorType &dst, const VectorType &src) = 0;
 };

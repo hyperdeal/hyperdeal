@@ -33,6 +33,8 @@ namespace hyperdeal
     class VelocityFieldView
     {
     public:
+      virtual ~VelocityFieldView() = default;
+
       virtual void
       reinit(ID id) = 0;
 

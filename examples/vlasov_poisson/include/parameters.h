@@ -120,6 +120,8 @@ namespace hyperdeal
     class Initializer
     {
     public:
+      virtual ~Initializer() = default;
+
       void
       set_input_parameters(Parameters<Number> &              param,
                            const std::string                 file_name,
@@ -140,7 +142,7 @@ namespace hyperdeal
 
         if (param.print_parameter && pcout.is_active())
           prm.print_parameters(pcout.get_stream(),
-                               dealii::ParameterHandler::OutputStyle::Text);
+                               dealii::ParameterHandler::OutputStyle::PRM);
 
         file.close();
       }
@@ -230,7 +232,7 @@ namespace hyperdeal
 
           if (print_parameter && pcout.is_active())
             prm.print_parameters(pcout.get_stream(),
-                                 dealii::ParameterHandler::OutputStyle::Text);
+                                 dealii::ParameterHandler::OutputStyle::PRM);
 
           file.close();
         }

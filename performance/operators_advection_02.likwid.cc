@@ -245,36 +245,40 @@ namespace hyperdeal
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval(*phi.get_shape_values(),
-               dealii::AlignedVector<VNumber>(),
-               dealii::AlignedVector<VNumber>());
+               dealii::AlignedVector<Number>(),
+               dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval_face(*phi.get_shape_values(),
-                    dealii::AlignedVector<VNumber>(),
-                    dealii::AlignedVector<VNumber>());
+                    dealii::AlignedVector<Number>(),
+                    dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
-                                                       VNumber>
-          eval_(dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_(dealii::AlignedVector<Number>(),
                 *phi.get_shape_gradients(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
-          eval_inv(dealii::AlignedVector<VNumber>(),
-                   dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_inv(dealii::AlignedVector<Number>(),
+                   dealii::AlignedVector<Number>(),
                    data.get_matrix_free_x()
                      .get_shape_info()
                      .data[0]
@@ -500,10 +504,10 @@ namespace hyperdeal
       template <bool do_add>
       void
       submit_value_cell(VectorizedArrayType *__restrict data_ptr_out,
-                        const VectorizedArrayType __restrict values_in,
-                        const unsigned int q,
-                        const unsigned int qx,
-                        const unsigned int qv) const
+                        const VectorizedArrayType values_in,
+                        const unsigned int        q,
+                        const unsigned int        qx,
+                        const unsigned int        qv) const
       {
         (void)qx;
         (void)qv;
@@ -859,36 +863,40 @@ namespace hyperdeal
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval(*phi.get_shape_values(),
-               dealii::AlignedVector<VNumber>(),
-               dealii::AlignedVector<VNumber>());
+               dealii::AlignedVector<Number>(),
+               dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval_face(*phi.get_shape_values(),
-                    dealii::AlignedVector<VNumber>(),
-                    dealii::AlignedVector<VNumber>());
+                    dealii::AlignedVector<Number>(),
+                    dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
-                                                       VNumber>
-          eval_(dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_(dealii::AlignedVector<Number>(),
                 *phi.get_shape_gradients(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
-          eval_inv(dealii::AlignedVector<VNumber>(),
-                   dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_inv(dealii::AlignedVector<Number>(),
+                   dealii::AlignedVector<Number>(),
                    data.get_matrix_free_x()
                      .get_shape_info()
                      .data[0]
@@ -1104,10 +1112,10 @@ namespace hyperdeal
       template <bool do_add>
       void
       submit_value_cell(VectorizedArrayType *__restrict data_ptr_out,
-                        const VectorizedArrayType __restrict values_in,
-                        const unsigned int q,
-                        const unsigned int qx,
-                        const unsigned int qv)
+                        const VectorizedArrayType values_in,
+                        const unsigned int        q,
+                        const unsigned int        qx,
+                        const unsigned int        qv)
       {
         (void)qx;
         (void)qv;
@@ -1256,7 +1264,7 @@ struct Parameters
 
     if (print_parameter && pcout.is_active())
       prm.print_parameters(pcout.get_stream(),
-                           dealii::ParameterHandler::OutputStyle::Text);
+                           dealii::ParameterHandler::OutputStyle::PRM);
 
     file.close();
   }

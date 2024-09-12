@@ -242,36 +242,40 @@ namespace hyperdeal
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval(*phi.get_shape_values(),
-               dealii::AlignedVector<VNumber>(),
-               dealii::AlignedVector<VNumber>());
+               dealii::AlignedVector<Number>(),
+               dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval_face(*phi.get_shape_values(),
-                    dealii::AlignedVector<VNumber>(),
-                    dealii::AlignedVector<VNumber>());
+                    dealii::AlignedVector<Number>(),
+                    dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
-                                                       VNumber>
-          eval_(dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_(dealii::AlignedVector<Number>(),
                 *phi.get_shape_gradients(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
-          eval_inv(dealii::AlignedVector<VNumber>(),
-                   dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_inv(dealii::AlignedVector<Number>(),
+                   dealii::AlignedVector<Number>(),
                    data.get_matrix_free_x()
                      .get_shape_info()
                      .data[0]
@@ -421,7 +425,7 @@ namespace hyperdeal
 
             if(do_collocation == false)
               {
-                hyperdeal::internal::FEFaceNormalEvaluationImpl<dim_x, dim_v, n_points - 1, VectorizedArrayType>::template interpolate_quadrature<true, false>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, face);
+                hyperdeal::internal::FEFaceNormalEvaluationImpl<dim_x, dim_v, n_points - 1, Number>::template interpolate_quadrature<true, false>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr_inv, /*in=*/data_ptr1, face);
     
                 if(degree + 1 == n_points)
                   {
@@ -457,7 +461,7 @@ namespace hyperdeal
                         {
                           const VectorizedArrayType u_minus                     = data_ptr1[q];
                           const VectorizedArrayType u_plus                      = data_ptr2[q];
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.get_normal_vector_x(qx);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                           phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -470,7 +474,7 @@ namespace hyperdeal
                         {
                           const VectorizedArrayType u_minus                     = data_ptr1[q];
                           const VectorizedArrayType u_plus                      = data_ptr2[q];
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.get_normal_vector_v(qv);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                           phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -491,7 +495,7 @@ namespace hyperdeal
                               (-u_minus) : 
                               (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.get_normal_vector_x(qx);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                           phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -507,7 +511,7 @@ namespace hyperdeal
                               (-u_minus) : 
                               (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                           
-                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                          const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.get_normal_vector_v(qv);
                           const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                           phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -516,7 +520,7 @@ namespace hyperdeal
               }
 
             if(do_collocation == false)
-              hyperdeal::internal::FEFaceNormalEvaluationImpl<dim_x, dim_v, n_points - 1, VectorizedArrayType>::template interpolate_quadrature<false, true>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, face);
+              hyperdeal::internal::FEFaceNormalEvaluationImpl<dim_x, dim_v, n_points - 1, Number>::template interpolate_quadrature<false, true>(1, dealii::EvaluationFlags::values, data.get_matrix_free_x().get_shape_info(), /*out=*/data_ptr1, /*in=*/data_ptr, face);
             else
               phi_m.distribute_to_buffer(this->phi_cell->get_data_ptr());
           }
@@ -589,9 +593,10 @@ namespace hyperdeal
                                                        dim,
                                                        degree + 1,
                                                        degree + 1,
-                                                       VectorizedArrayType>
-          eval_inv(dealii::AlignedVector<VNumber>(),
-                   dealii::AlignedVector<VNumber>(),
+                                                       VectorizedArrayType,
+                                                       Number>
+          eval_inv(dealii::AlignedVector<Number>(),
+                   dealii::AlignedVector<Number>(),
                    *phi_inv.get_inverse_shape());
 
         // clang-format off
@@ -650,19 +655,21 @@ namespace hyperdeal
                                                        dim,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval(*phi.get_shape_values(),
-               dealii::AlignedVector<VNumber>(),
-               dealii::AlignedVector<VNumber>());
+               dealii::AlignedVector<Number>(),
+               dealii::AlignedVector<Number>());
 
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim,
                                                        n_points,
                                                        n_points,
-                                                       VNumber>
-          eval_(dealii::AlignedVector<VNumber>(),
+                                                       VNumber,
+                                                       Number>
+          eval_(dealii::AlignedVector<Number>(),
                 *phi.get_shape_gradients(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>());
 
         // clang-format off
 
@@ -831,18 +838,20 @@ namespace hyperdeal
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval1(*phi_m.get_shape_values(),
-                dealii::AlignedVector<VNumber>(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>(),
+                dealii::AlignedVector<Number>());
         const dealii::internal::EvaluatorTensorProduct<tensorproduct,
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval2(*phi_p.get_shape_values(),
-                dealii::AlignedVector<VNumber>(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>(),
+                dealii::AlignedVector<Number>());
 
         this->velocity_field->reinit_face(face);
 
@@ -913,7 +922,7 @@ namespace hyperdeal
                 {
                   const VectorizedArrayType u_minus                     = data_ptr1[q];
                   const VectorizedArrayType u_plus                      = data_ptr2[q];
-                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.get_normal_vector_x(qx);
                   const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                   phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, +flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -927,7 +936,7 @@ namespace hyperdeal
                 {
                   const VectorizedArrayType u_minus                     = data_ptr1[q]; 
                   const VectorizedArrayType u_plus                      = data_ptr2[q];
-                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.get_normal_vector_v(qv);
                   const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                   phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, +flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -1019,10 +1028,11 @@ namespace hyperdeal
                                                        dim - 1,
                                                        degree + 1,
                                                        n_points,
-                                                       VNumber>
+                                                       VNumber,
+                                                       Number>
           eval1(*phi_m.get_shape_values(),
-                dealii::AlignedVector<VNumber>(),
-                dealii::AlignedVector<VNumber>());
+                dealii::AlignedVector<Number>(),
+                dealii::AlignedVector<Number>());
 
         this->velocity_field->reinit_face(face);
 
@@ -1069,7 +1079,7 @@ namespace hyperdeal
                       (-u_minus) : 
                       (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::X>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
-                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.template get_normal_vector_x(qx);
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_x(q, qx, qv) * phi_m.get_normal_vector_x(qx);
                   const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                   phi_m.template submit_value<ID::SpaceType::X>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
@@ -1085,7 +1095,7 @@ namespace hyperdeal
                       (-u_minus) : 
                       (-u_minus + 2.0 * hyperdeal::MatrixFreeTools::evaluate_scalar_function(phi_m.template get_quadrature_point<ID::SpaceType::V>(qx, qv), *boundary_pair.second, phi_m.n_vectorization_lanes_filled()));
                   
-                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.template get_normal_vector_v(qv);
+                  const VectorizedArrayType normal_times_speed          = velocity_field->evaluate_face_v(q, qx, qv) * phi_m.get_normal_vector_v(qv);
                   const VectorizedArrayType flux_times_normal_of_minus  = 0.5 * ((u_minus + u_plus) * normal_times_speed + std::abs(normal_times_speed) * (u_minus - u_plus)) * alpha;
 
                   phi_m.template submit_value<ID::SpaceType::V>(data_ptr1, flux_times_normal_of_minus - factor_skew*u_minus*normal_times_speed, q, qx, qv);
