@@ -13,12 +13,16 @@ functions.
 The library `hyper.deal` is freely available under the [LGPL 3.0 license](LICENSE.MD).
 If you use `hyper.deal`, please cite the release paper:
 ```
-@article{munch2020hyperdeal,
-  title       = {hyper.deal: An efficient, matrix-free finite-element library for
-                 high-dimensional partial differential equations},
-  author      = {Munch, Peter and Kormann, Katharina and Kronbichler, Martin},
-  year        = {2021},
-  institution = {accepted for publication in ACM Transactions on Mathematical Software}
+@article{munch2021hyper,
+  title={hyper. deal: An efficient, matrix-free finite-element library for
+         high-dimensional partial differential equations},
+  author={Munch, Peter and Kormann, Katharina and Kronbichler, Martin},
+  journal={ACM Transactions on Mathematical Software (TOMS)},
+  volume={47},
+  number={4},
+  pages={1--34},
+  year={2021},
+  publisher={ACM New York, NY}
 }
 ```
 The paper has been accepted; the preprint can be found online on [arXiv](https://arxiv.org/abs/2002.08110)
@@ -45,9 +49,9 @@ For getting started, check out the [following site](../../wiki/Getting-started).
 
 The principal developers are (in alphabetical order):
 
-- [Katharina Kormann](https://www.ruhr-uni-bochum.de/ffm/Lehrstuehle/Kormann/) ([@kkormann](https://github.com/kkormann)), Ruhr University Bochum, DE
-- [Martin Kronbichler](https://www.uni-augsburg.de/de/fakultaet/mntf/math/prof/hpc/team/kronbichler/) ([@kronbichler](https://github.com/kronbichler)), University of Augsburg, DE
-- [Peter Munch](https://www.uni-augsburg.de/en/fakultaet/mntf/math/prof/hpc/team/munch/) ([@peterrum](https://github.com/peterrum)), University of Augsburg, DE
+- [Katharina Kormann](https://math.ruhr-uni-bochum.de/fakultaet/arbeitsbereiche/numerik/gruppe-kormann/team/prof-dr-katharina-kormann/) ([@kkormann](https://github.com/kkormann)), Ruhr University Bochum, DE
+- [Martin Kronbichler](https://math.ruhr-uni-bochum.de/fakultaet/arbeitsbereiche/numerik/gruppe-kronbichler/team/prof-dr-martin-kronbichler/) ([@kronbichler](https://github.com/kronbichler)), Ruhr University Bochum, DE
+- [Peter Munch](https://peterrum.github.io/) ([@peterrum](https://github.com/peterrum)), Uppsala University, SW
 
 ## Philosophy
 
