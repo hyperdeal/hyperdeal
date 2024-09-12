@@ -14,7 +14,7 @@ The library `hyper.deal` is freely available under the [LGPL 3.0 license](LICENS
 If you use `hyper.deal`, please cite the release paper:
 ```
 @article{munch2021hyper,
-  title={hyper. deal: An efficient, matrix-free finite-element library for
+  title={hyper.deal: An efficient, matrix-free finite-element library for
          high-dimensional partial differential equations},
   author={Munch, Peter and Kormann, Katharina and Kronbichler, Martin},
   journal={ACM Transactions on Mathematical Software (TOMS)},
