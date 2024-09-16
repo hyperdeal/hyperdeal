@@ -46,6 +46,11 @@ INCLUDE_DIRECTORIES(include ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 PROJECT(hyperdeal)
 
+# Build options
+OPTION(HYPER_DEAL_EXAMPLES "Build examples" OFF)
+OPTION(HYPER_DEAL_PERFORMANCE_TESTS "Build performance tests" OFF)
+OPTION(HYPER_DEAL_TESTS "Build tests" OFF)
+
 ADD_LIBRARY(hyperdeal  ${TARGET_SRC})
 
 # Define custom targets to easily switch the build type:
@@ -77,6 +82,7 @@ MESSAGE("--")
 cmake_policy(SET CMP0053 OLD)
 SET(HYPER_DEAL_GIT_BRANCH "@HYPER_DEAL_GIT_BRANCH@")
 SET(HYPER_DEAL_GIT_REVISION "@HYPER_DEAL_GIT_REVISION@")
+SET(HYPER_DEAL_VERSION "0.0.1")     # placeholder
 
 CONFIGURE_FILE(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/hyper.deal/base/revision.h.in
@@ -94,7 +100,9 @@ ADD_SUBDIRECTORY(source)
 # target the source files
 TARGET_LINK_LIBRARIES(hyperdeal obj_base obj_grid)
 
-ADD_SUBDIRECTORY(examples)
+if(HYPERDEAL_EXAMPLES)
+  ADD_SUBDIRECTORY(examples)
+endif()
 
 
 IF(EXISTS ${CMAKE_SOURCE_DIR}/tests/CMakeLists.txt)
@@ -105,10 +113,29 @@ ENDIF()
 ADD_SUBDIRECTORY(doc/doxygen)
 
 # performance tests
-ADD_SUBDIRECTORY(performance)
+if(HYPER_DEAL_PERFORMANCE_TESTS)
+  ADD_SUBDIRECTORY(performance)
+endif()
 
 # tests
-enable_testing()
-ADD_SUBDIRECTORY(tests)
-ADD_SUBDIRECTORY(examples/advection/tests)
-ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
+if(HYPER_DEAL_TESTS)
+  enable_testing()
+  ADD_SUBDIRECTORY(tests)
+  if(HYPER_DEAL_EXAMPLES)
+    ADD_SUBDIRECTORY(examples/advection/tests)
+    ADD_SUBDIRECTORY(examples/vlasov_poisson/tests)
+  endif()
+endif()
+
+include(GNUInstallDirs)
+
+# Install library
+INSTALL(TARGETS hyperdeal LIBRARY)
+# Install headers
+INSTALL(DIRECTORY include/hyper.deal
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PATTERN "*.in" EXCLUDE)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/hyper.deal/base/revision.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hyper.deal/base)
+# Install CMake config
+ADD_SUBDIRECTORY(cmake/config)
